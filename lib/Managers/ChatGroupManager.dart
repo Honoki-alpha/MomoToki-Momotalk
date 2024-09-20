@@ -1,0 +1,94 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:bot_toast/bot_toast.dart';
+import 'package:path/path.dart';
+import '../AppData/AppLibrary.dart';
+import '../Entity/EChatTile.dart';
+import '../Entity/EChatTileGroup.dart';
+import '../Entity/EStudent.dart';
+import '../Utils/EventBus.dart';
+import 'JsonFileManager.dart';
+
+class ChatGroupManager{
+
+  //单例
+  static ChatGroupManager instance = ChatGroupManager._();
+  ChatGroupManager._(); // 私有构造函数
+
+
+  int selectedGroupIndex = 0; //当前选中的分组
+  int selectedTileIndex = 0;
+  List<EChatTileGroup> chatTileGroups = [];//消息分组
+
+  void addChatTile(EStudent student){
+    //生成唯一UID
+    String uid = AppLibrary.generateUID();
+    //新建消息列表块
+    EChatTile chatTile = EChatTile(student.id,uid, student.givenName["cn"], student.givenName["cn"], "老师好", 1, {});
+    chatTileGroups[selectedGroupIndex].chatTiles.add(chatTile);
+
+    AppLibrary.globalEvent.fire(PageRefresh());
+    //新建聊天文件
+    File(join(AppLibrary.applicationPath,"Messages","$uid.json")).writeAsString("[]");
+    File(join(AppLibrary.applicationPath,"AIChat","$uid.json")).writeAsString("[]");
+
+    //开启线程保存json
+    saveAsJson();
+  }
+
+  void addChatTileGroup(String _groupName){
+    for(var group in chatTileGroups){
+      if(group.groupName == _groupName){
+        BotToast.showText(text: "该组名已存在");
+        return;
+      }
+    }
+    //添加组
+    chatTileGroups.add(EChatTileGroup(_groupName, false, []));
+    AppLibrary.globalEvent.fire(PageRefresh());
+    //开启线程保存json
+    saveAsJson();
+  }
+
+  void alterChatTileGroup(int groupIndex,String name){
+    chatTileGroups[groupIndex].groupName = name;
+    saveAsJson();
+  }
+
+  void alterChatTile(EChatTile tile,String title,int unreadNum){
+    tile.unreadNum = unreadNum;
+    tile.tileTitle = title;
+    saveAsJson();
+  }
+
+  void alterChatTileSubtitle(String subtitle){
+    chatTileGroups[selectedGroupIndex].chatTiles[selectedTileIndex].tileSubtitle = subtitle;
+    print(chatTileGroups[selectedGroupIndex]);
+    saveAsJson();
+  }
+
+  Future removeChatTileGroup(int groupIndex)async {
+    for(int i=0;i<chatTileGroups[groupIndex].chatTiles.length;i++){
+      await removeChatTile(chatTileGroups[groupIndex],i,false);
+    }
+    chatTileGroups.removeAt(groupIndex);
+    saveAsJson();
+  }
+
+  Future removeChatTile(EChatTileGroup group,int index,bool saved)async{
+    String uid = group.chatTiles[index].chatTileUID;
+    group.chatTiles.removeAt(index);
+    await JsonFileManager.instance.removeJsonFile("Messages", "$uid.json");
+    await JsonFileManager.instance.removeJsonFile("AIChat", "$uid.json");
+    if(saved) saveAsJson();
+  }
+
+  Future saveAsJson()async{
+    List<Map> maps = [];
+    for(var group in chatTileGroups){
+      maps.add(group.toMap());
+    }
+    JsonFileManager.instance.saveJsonFile("ChatTiles", "ChatTilesGroups.json", json.encode(maps));
+  }
+
+}
