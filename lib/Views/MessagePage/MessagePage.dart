@@ -3,9 +3,10 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
+import 'package:motoki/Views/Home/WindowHome.dart';
 import 'package:path/path.dart';
-
 import '../../AppData/AppLibrary.dart';
+import '../../AppData/UserConfig.dart';
 import '../../Components/MessageBox.dart';
 import '../../Dialog/DIYEmojiDialog.dart';
 import '../../Dialog/ScreenShotDialog.dart';
@@ -14,6 +15,7 @@ import '../../Entity/EMessageBox.dart';
 import '../../Entity/EStudent.dart';
 import '../../Managers/MessageManager.dart';
 import '../../Managers/StudentManager.dart';
+import '../../Managers/ThemeManager.dart';
 import '../Secondary/SelectPage.dart';
 import '../../Utils/CommonComponents.dart';
 import '../../Utils/CommonFunctions.dart';
@@ -46,8 +48,6 @@ class _messagePageState extends State<MessagePage>{
   //载入的图片路径
   String loadImgPath = "";
   String loadImgMethod = "URL";
-
-
 
   final HotKey _attachKey = HotKey(KeyCode.enter,modifiers: [KeyModifier.control],scope: HotKeyScope.inapp);
   final HotKey _sendKey = HotKey(KeyCode.enter,scope:HotKeyScope.inapp);
@@ -89,26 +89,149 @@ class _messagePageState extends State<MessagePage>{
 
   @override
   Widget build(BuildContext context) {
+    //currentStudent = StudentManager.instance.getStudentById(MessageManager.instance.currentStudentId);
     disableAddtionButton = checkAddtionButtonUse();
-    if(!AppLibrary.appLandscapeMode){
-      return PopScope(
+    return PopScope(
         canPop: false,
         onPopInvoked: onPopInvoked,
         child: Scaffold(
-        appBar: AppBar(
-            title: Obx(()=>Text(StudentManager.instance.getStudentName(
-                currentStudent.id,skinIndex: currentStudentSkinIndex.value
-            ))),
-            actions: [
-              IconButton(onPressed: saveButtonClick, icon: const Icon(Icons.save_as_rounded)),
-            ]
-        ),
-        body: messagePageBody(context),
-      )
-      );
-    }else{
-      return messagePageBody(context);
-    }
+          appBar: getPlatformAppBar(Obx(()=>Text(StudentManager.instance.getStudentName(
+              currentStudent.id,skinIndex: currentStudentSkinIndex.value
+          ))),actions: [
+            IconButton(onPressed: saveButtonClick, icon: const Icon(Icons.save_as_rounded)),
+          ]),
+          body: Column(
+            children: [
+              //渲染消息列表
+              Expanded(
+                  child: Container(
+                      color: ThemeManager.isDarkTheme || UserConfig.denpendTheme?ThemeManager.currentTheme.cardColor:UserConfig.chatBackGroundColor,
+                      alignment: Alignment.topCenter,
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        controller: listController,
+                        itemCount: MessageManager.instance.messages.length,
+                        itemBuilder: (BuildContext context,int index){
+                          //根据加载项渲染messageBox
+                          return GestureDetector(
+                            child:Padding(
+                                padding:const EdgeInsets.symmetric(vertical: 1.0),
+                                child: Obx(()=>Container(
+                                    color: Color.fromRGBO(0, 0, 0,currentSelectedIndex.value==index?0.25:0),
+                                    child: MessageBox(index: index, isPlayMode: false)
+                                ))),
+                            onLongPress: ()=>messageBoxHoldTap(index),
+                            onDoubleTap: ()=>onMessageBoxDoubleTap(index),
+                          );
+                        },
+                      ))
+              ),
+              //底部输入框和按钮
+              Row(
+                children: [
+                  const SizedBox(width: 7,),
+                  //expanded用于限制输入范围
+                  Expanded(
+                      child:TextField(
+                        controller: input,
+                        onTap: (){
+                          if(toolBarVisible.value){
+                            setState(() {
+                              toolBarVisible.value = false;
+                            });
+                          }
+                        },
+                        decoration: InputDecoration(
+                            icon:GestureDetector(
+                              child: Obx(()=>SizedBox(
+                                  width: 40,
+                                  child: getCicleStudentAvatar(
+                                      currentStudent.id,
+                                      skinIndex: currentStudentSkinIndex.value))),
+                              onTap: (){
+                                setState(() {
+                                  toolBarVisible.value = !toolBarVisible.value;
+                                });
+                              },
+                              onDoubleTap: (){
+                                currentStudentSkinIndex.value++;
+                                if(currentStudentSkinIndex.value > currentStudent.skinList.length-1){
+                                  currentStudentSkinIndex.value = 0;
+                                }
+                              },
+                            )
+                        ),
+                        style: const TextStyle(
+                            fontSize: 13
+                        ),
+                        maxLines: null,
+                      )
+                  ),
+                  //点击“追加”按钮效果
+                  ElevatedButton(
+                      onPressed: disableAddtionButton?null:addtionButtonClick,
+                      style: ButtonStyle(
+                          backgroundColor: WidgetStateProperty.all(Colors.purple)
+                      ),
+                      child:const Text("追加",style:TextStyle(color: Colors.white))),
+                  //点击“发送”按钮效果
+                  Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 3),
+                      child:ElevatedButton(
+                          onPressed:sendButtonClick,
+                          child:Obx(()=>Text(currentSelectedIndex.value>-1?"插入":"发送")))),
+                ],
+              ),
+              Obx(()=>Container(
+                child: toolBarVisible.value?Column(
+                  children: [
+                    SizedBox(height:50,child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          IconButton(onPressed: emojiButtonClick, icon: const Icon(Icons.emoji_emotions)),
+                          IconButton(onPressed: imagePickerClick, icon: const Icon(Icons.image)),
+                          IconButton(onPressed: addUsualStudent, icon: const Icon(Icons.person_add)),
+                          IconButton(onPressed: (){}, icon: const Icon(Icons.shield)),
+                          IconButton(onPressed: playButtonClick, icon: const Icon(Icons.play_circle)),
+                          IconButton(onPressed: screenShotButton, icon: const Icon(Icons.screenshot_sharp)),
+                        ])),
+                    SizedBox(
+                        height: 120,
+                        child: GridView.builder(
+                            itemCount: StudentManager.instance.toolStudentDirctory.length+StudentManager.instance.usualStudents.length,
+                            gridDelegate:SliverGridDelegateWithFixedCrossAxisCount(
+                                mainAxisSpacing: 5,
+                                crossAxisCount: AppLibrary.appLandscapeMode?12:7,
+                                childAspectRatio: 1.0),//显示区域宽高相等
+                            itemBuilder: (context, index){
+                              int iconId = 0;
+                              int iconSkin = 0;
+                              int length = StudentManager.instance.toolStudentDirctory.length;
+                              if(index<length){
+                                iconId = index + 1;
+                              }else{
+                                List studentAndSkin = StudentManager.instance.usualStudents[index-length].split("||");
+                                iconId = int.parse(studentAndSkin[0]);
+                                iconSkin = int.parse(studentAndSkin[1]);
+                              }
+                              return GestureDetector(
+                                child:getCicleStudentAvatar(iconId,skinIndex: iconSkin),
+                                onTap: (){
+                                  currentStudentSkinIndex.value = iconSkin;
+                                  currentStudent = StudentManager.instance.getStudentById(iconId);
+
+                                  setState(() {});
+                                },
+                                onLongPress: ()=>deleteUsualStudent(index),
+                              );
+                            })),
+                  ],
+                ):const Row(),
+              ))
+            ],
+          ),
+        )
+    );
   }
 
 
@@ -131,138 +254,6 @@ class _messagePageState extends State<MessagePage>{
         (loadImgPath != "" && MessageManager.instance.messages.last["senderId"] == 4);
   }
 
-  Widget messagePageBody(BuildContext context){
-  //禁用追加按钮
-  return Column(
-    children: [
-      //渲染消息列表
-      Expanded(
-          child: Container(
-              color: Colors.white,
-              alignment: Alignment.topCenter,
-              child: ListView.builder(
-                shrinkWrap: true,
-                controller: listController,
-                itemCount: MessageManager.instance.messages.length,
-                itemBuilder: (BuildContext context,int index){
-                  //根据加载项渲染messageBox
-                  return GestureDetector(
-                    child:Padding(
-                        padding:const EdgeInsets.symmetric(vertical: 1.0),
-                        child: Obx(()=>Container(
-                            color: Color.fromRGBO(0, 0, 0,currentSelectedIndex.value==index?0.25:0),
-                            child: MessageBox(index: index, isPlayMode: false)
-                        ))),
-                    onLongPress: ()=>messageBoxHoldTap(index),
-                    onDoubleTap: ()=>onMessageBoxDoubleTap(index),
-                  );
-                },
-              ))
-      ),
-      //底部输入框和按钮
-      Row(
-        children: [
-          const SizedBox(width: 7,),
-          //expanded用于限制输入范围
-          Expanded(
-              child:TextField(
-                controller: input,
-                onTap: (){
-                  if(toolBarVisible.value){
-                    setState(() {
-                      toolBarVisible.value = false;
-                    });
-                  }
-                },
-                decoration: InputDecoration(
-                    icon:GestureDetector(
-                      child: Obx(()=>SizedBox(
-                          width: 40,
-                          child: getCicleStudentAvatar(
-                              currentStudent.id,
-                              skinIndex: currentStudentSkinIndex.value))),
-                      onTap: (){
-                        setState(() {
-                          toolBarVisible.value = !toolBarVisible.value;
-                        });
-                      },
-                      onDoubleTap: (){
-                        currentStudentSkinIndex.value++;
-                        if(currentStudentSkinIndex.value > currentStudent.skinList.length-1){
-                          currentStudentSkinIndex.value = 0;
-                        }
-                      },
-                    )
-                ),
-                style: const TextStyle(
-                    fontSize: 13
-                ),
-                maxLines: null,
-              )
-          ),
-          //点击“追加”按钮效果
-          ElevatedButton(
-              onPressed: disableAddtionButton?null:addtionButtonClick,
-              style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(Colors.purple)
-              ),
-              child:const Text("追加",style:TextStyle(color: Colors.white))),
-          //点击“发送”按钮效果
-          Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 3),
-              child:ElevatedButton(
-                  onPressed:sendButtonClick,
-                  child:Obx(()=>Text(currentSelectedIndex.value>-1?"插入":"发送")))),
-        ],
-      ),
-      Obx(()=>Container(
-        child: toolBarVisible.value?Column(
-          children: [
-            SizedBox(height:50,child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  IconButton(onPressed: emojiButtonClick, icon: const Icon(Icons.emoji_emotions)),
-                  IconButton(onPressed: imagePickerClick, icon: const Icon(Icons.image)),
-                  IconButton(onPressed: addUsualStudent, icon: const Icon(Icons.person_add)),
-                  IconButton(onPressed: (){}, icon: const Icon(Icons.shield)),
-                  IconButton(onPressed: playButtonClick, icon: const Icon(Icons.play_circle)),
-                  IconButton(onPressed: screenShotButton, icon: const Icon(Icons.screenshot_sharp)),
-                ])),
-            SizedBox(
-                height: 120,
-                child: GridView.builder(
-                    itemCount: StudentManager.instance.toolStudentDirctory.length+StudentManager.instance.usualStudents.length,
-                    gridDelegate:SliverGridDelegateWithFixedCrossAxisCount(
-                        mainAxisSpacing: 5,
-                        crossAxisCount: 12, //每行五列
-                        childAspectRatio: 1.0),//显示区域宽高相等
-                    itemBuilder: (context, index){
-                      int iconId = 0;
-                      int iconSkin = 0;
-                      int length = StudentManager.instance.toolStudentDirctory.length;
-                      if(index<length){
-                        iconId = index + 1;
-                      }else{
-                        List studentAndSkin = StudentManager.instance.usualStudents[index-length].split("||");
-                        iconId = int.parse(studentAndSkin[0]);
-                        iconSkin = int.parse(studentAndSkin[1]);
-                      }
-                      return GestureDetector(
-                        child:getCicleStudentAvatar(iconId,skinIndex: iconSkin),
-                        onTap: (){
-                          currentStudentSkinIndex.value = iconSkin;
-                          currentStudent = StudentManager.instance.getStudentById(iconId);
-                          setState(() {});
-                        },
-                        onLongPress: ()=>deleteUsualStudent(index),
-                      );
-                    })),
-          ],
-        ):const Row(),
-      ))
-    ],
-  );
-}
 
   //双击编辑消息框
   void onMessageBoxDoubleTap(int index)async{
@@ -282,6 +273,7 @@ class _messagePageState extends State<MessagePage>{
 
   //点击发送按钮时
   void sendButtonClick(){
+    if(input.text.isEmpty) return;
     String message = input.text;
     if(loadImgPath != ""){
       message = "$loadImgMethod:://$loadImgPath";
@@ -303,11 +295,16 @@ class _messagePageState extends State<MessagePage>{
     setState(() {
       input.text = "";
     });
-    if(currentSelectedIndex.value==-1) scrollToBottom();
+    if(currentSelectedIndex.value==-1) {
+      scrollToBottom();
+    }else{
+      currentSelectedIndex.value = -1;
+    }
   }
 
   //点击追加按钮时
   void addtionButtonClick(){
+    if(input.text.isEmpty) return;
     String message = input.text;
     if(loadImgPath != ""){
       message = "URL:://$loadImgPath";
@@ -321,7 +318,7 @@ class _messagePageState extends State<MessagePage>{
   }
 
   //保存消息按钮
-  void saveButtonClick()async{
+  Future saveButtonClick()async{
     var cancel = BotToast.showLoading();
     await MessageManager.instance.saveMessages();
     BotToast.showText(text: "消息记录保存成功(๑•ω•๑)");
@@ -396,6 +393,7 @@ class _messagePageState extends State<MessagePage>{
   void screenShotButton()async{
     var result = await Get.dialog(ScreenShotDialog());
     if(result == null) return;
+    await saveButtonClick();
     int x = 0;
     if(result["command"] == "every"){
       x = result["x"];
@@ -411,40 +409,59 @@ class _messagePageState extends State<MessagePage>{
       if(eP>MessageManager.instance.messages.length-1){
         eP = MessageManager.instance.messages.length-1;
       }
-      await Get.to(()=>ScreenShotPage(startPointer: sP, endPointer: eP));
+      if(AppLibrary.appLandscapeMode){
+        WindowHomeState.setRightPage(ScreenShotPage(startPointer: sP, endPointer: eP));
+      }else{
+        await Get.to(()=>ScreenShotPage(startPointer: sP, endPointer: eP));
+      }
       return;
     }else if(result["command"] == "whole"){
-      await Get.to(()=>ScreenShotPage(startPointer: 0, endPointer: MessageManager.instance.messages.length-1));
+      if(AppLibrary.appLandscapeMode){
+        WindowHomeState.setRightPage(ScreenShotPage(startPointer: 0, endPointer: MessageManager.instance.messages.length));
+      }else{
+        await Get.to(()=>ScreenShotPage(startPointer: 0, endPointer: MessageManager.instance.messages.length));
+      }
       return;
     }
     if(GetPlatform.isMobile){
       for(var i = 0;i<MessageManager.instance.messages.length;i=i+x){
         var endPointer = i+x;
-        if(endPointer > MessageManager.instance.messages.length){
-          endPointer = MessageManager.instance.messages.length - 1;
+        if(endPointer >= MessageManager.instance.messages.length){
+          endPointer = MessageManager.instance.messages.length;
         }
-        if(i == endPointer) endPointer=endPointer+1;
-        await Get.to(()=>ScreenShotPage(startPointer: i, endPointer: endPointer));
+        if(AppLibrary.appLandscapeMode){
+          WindowHomeState.setRightPage(ScreenShotPage(startPointer: i, endPointer: endPointer));
+        }else{
+          await Get.to(()=>ScreenShotPage(startPointer: i, endPointer: endPointer));
+        }
       }
     }
   }
 
   void playButtonClick()async{
-    await Get.to(()=>PlayPage(startPointer: 0, endPointer: MessageManager.instance.messages.length-1));
+    await saveButtonClick();
+    if(AppLibrary.appLandscapeMode){
+      WindowHomeState.setRightPage(PlayPage(startPointer: 0, endPointer: MessageManager.instance.messages.length-1));
+    }else{
+      await Get.to(()=>PlayPage(startPointer: 0, endPointer: MessageManager.instance.messages.length-1));
+    }
+
   }
 
  //选择常用学生的皮肤
  Widget skinIndexSelectDialog(List skinList){
     return AlertDialog(
-      content: ConstrainedBox(
-        constraints: const BoxConstraints(maxHeight: 200),
-        child: Column(
-          children: skinList.map<Widget>((element){
-            return ListTile(
-              title: Text(element["skin"]),
-              onTap: ()=>Get.back(result:skinList.indexOf(element)),
-            );
-          }).toList(),
+      content: SizedBox(
+        height: 200,
+        child: SingleChildScrollView(
+          child: Column(
+            children: skinList.map<Widget>((element){
+              return ListTile(
+                title: Text(element["skin"]==""?"普通":element["skin"]),
+                onTap: ()=>Get.back(result:skinList.indexOf(element)),
+              );
+            }).toList(),
+          ),
         ),
       ),
     );

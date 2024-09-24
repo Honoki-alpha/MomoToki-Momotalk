@@ -11,7 +11,7 @@ class StudentManager{
   Map<int,EStudent> studentDirctory = {};//学生列表
   Map<int,EStudent> diyStudentDirctory = {};//自定义学生列表
   Map<int,EStudent> toolStudentDirctory = {};//聊天工具列表
-  Map<int,String> studentNickName = {};//学生备注名
+  Map<String,dynamic> studentNickName = {};//学生备注名
   List<String> usualStudents = [];//常用学生(以"ID||skinIndex"形式存储)
   EStudent noneStudent = EStudent.simpleDIY(0, "", "学生丢失", "//gitee.com/honoki/momotoki/raw/master/assets/NoneAvatar.jpg");
 
@@ -38,22 +38,37 @@ class StudentManager{
 
   String getStudentName(int id,{int? skinIndex}){
     int skin = skinIndex??0;
+    //如果有备注直接返回
+    if(studentNickName.containsKey(id.toString()) && studentNickName[id.toString()]!.containsKey(skin.toString())){
+      return studentNickName[id.toString()]![skin.toString()];
+    }
+
+
+    //后缀名
     EStudent student = getStudentById(id);
-    String family = student.familyName["cn"];
-    String given = student.givenName["cn"];
+    String family = student.familyName[UserConfig.studentNameLanguage];
+    String given = student.givenName[UserConfig.studentNameLanguage];
+
+    //如果取不到的话返回normal名字
+    if(family==""||given==""){
+      family = student.familyName["nm"] ??"";
+      given = student.givenName["nm"]??"";
+    }
+
+    //后缀名
     String suffix = "";
+
     if(skin > 0 && skin < student.skinList.length){
       suffix = student.skinList[skin]["skin"];
     }
     String fullName = given;
+    String mildle = " ";
+    if(family == "") mildle = "";
     if(UserConfig.applyStudentFamilyName){
-      fullName = "$family$given";
+      fullName = "$family$mildle$given";
       if(UserConfig.applyNameReverse){
-        fullName = "$given$family";
+        fullName = "$given$mildle$family";
       }
-    }
-    if(studentNickName.containsKey(id)){
-      fullName = studentNickName[id]!;
     }
     if(suffix != ""){
       return "$fullName ($suffix)";
@@ -94,6 +109,30 @@ class StudentManager{
   Future saveDIYStudent()async{
     List dList = diyStudentDirctory.values.toList();
     await JsonFileManager.instance.saveJsonFile("Users", "DIY.json", json.encode(dList));
+  }
+
+  void addNickName(int id,int skinIndex,String name){
+    if(studentNickName.containsKey(id.toString())){
+      studentNickName[id.toString()]![skinIndex.toString()] = name;
+    }else{
+      studentNickName[id.toString()]= {
+        "$skinIndex":name
+      };
+    }
+    saveNickName();
+  }
+
+  void removeNickName(int id,int skinIndex){
+    var skins = studentNickName["$id"]!;
+    skins.remove("$skinIndex");
+    if(skins.isEmpty) studentNickName.remove("$id");
+    saveNickName();
+  }
+
+
+  Future saveNickName()async{
+    print(studentNickName);
+    await JsonFileManager.instance.saveJsonFile("Users", "NickName.json", json.encode(studentNickName));
   }
 
 }

@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.honoki" "\0"
-            VALUE "FileDescription", "motoki" "\0"
+            VALUE "FileDescription", "MomoToki" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "motoki" "\0"
+            VALUE "InternalName", "MomoToki" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2024 com.honoki. All rights reserved." "\0"
-            VALUE "OriginalFilename", "motoki.exe" "\0"
-            VALUE "ProductName", "motoki" "\0"
+            VALUE "OriginalFilename", "MomoToki.exe" "\0"
+            VALUE "ProductName", "MomoToki" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

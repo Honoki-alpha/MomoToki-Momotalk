@@ -24,7 +24,7 @@ class _messageBoxState extends State<MessageBox>{
   @override
   void initState() {
     super.initState();
-    messageBox =  EMessageBox.fromMap(widget.tempBox ?? MessageManager.instance.messages[widget.index]);
+    messageBox =  EMessageBox.fromMap(widget.tempBox??MessageManager.instance.messages[widget.index]);
     //如果不是播放模式或者全都播放过了
     Timer timer = Timer.periodic(const Duration(milliseconds: 1500), (t) {
       if(!mounted) return;
@@ -43,7 +43,7 @@ class _messageBoxState extends State<MessageBox>{
 
   @override
   Widget build(BuildContext context) {
-    messageBox =  EMessageBox.fromMap(MessageManager.instance.messages[widget.index]);
+    messageBox =  EMessageBox.fromMap(widget.tempBox??MessageManager.instance.messages[widget.index]);
     switch(messageBox.senderId){
       case 1:return senseiBox();
       case 2:return asideBox();
@@ -94,7 +94,9 @@ class _messageBoxState extends State<MessageBox>{
     //根据是否为播放页面从而实现播放效果
     Widget child = getBoxItemContent(mes,isImg);
     if(widget.isPlayMode && playedIndex <= index){
-      child = Image.asset("assets/images/chatres/load_student.gif",fit: BoxFit.fitHeight,height: 16,);
+      String fileName = "load_student.gif";
+      if(isImg) fileName = "load_img.gif";
+      child = Image.asset("assets/images/chatres/$fileName",fit: BoxFit.fitHeight,height: 16,);
     }else{
 
     }
@@ -194,7 +196,7 @@ class _messageBoxState extends State<MessageBox>{
         color: const Color.fromRGBO(220,230,230, 1),
         borderRadius: BorderRadius.circular(8)
       ),
-      child:Text(messageBox.messageContentList[0]),
+      child:Text(messageBox.messageContentList[0],style: const TextStyle(color: Colors.black),),
     );
   }
 

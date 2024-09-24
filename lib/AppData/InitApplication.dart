@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide Response;
 import 'package:hotkey_manager/hotkey_manager.dart';
+import 'package:motoki/Managers/ThemeManager.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:window_manager/window_manager.dart';
@@ -15,6 +16,7 @@ import '../Managers/StudentManager.dart';
 import 'AppLibrary.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'AppResource.dart';
 import 'UserConfig.dart';
 
 
@@ -26,7 +28,11 @@ Future initApplication()async{
   await loadStudentInfoFromNet();//获取学生信息
   await loadJsonFiles();//获取本地聊天记录
   await loadDIYJson();//获取DIY学生
+  await loadStudentNickName();//获取学生备注
   await UserConfig().initUserConfig();//初始化用户配置
+  await loadCustomFont();//初始化字体
+  ThemeManager.initTheme();//初始化主题
+  loadStudentAvatar();//初始化学生资源
 }
 
 //设置软件路径
@@ -80,7 +86,37 @@ Future loadStudentInfoFromNet()async{
     StudentManager.instance.toolStudentDirctory[tool["id"]] = EStudent.fromMap(tool);
   }
   StudentManager.instance.noneStudent.release = 0;
+
 }
+
+Future loadStudentAvatar()async{
+  StudentManager.instance.studentDirctory.forEach((id,student){
+    loadStudentAvatarResource(student);
+  });
+  StudentManager.instance.toolStudentDirctory.forEach((id,student){
+    print(student.toString());
+    loadStudentAvatarResource(student);
+  });
+  loadStudentAvatarResource(StudentManager.instance.noneStudent);
+}
+void loadStudentAvatarResource(EStudent student){
+  int id = student.id;
+  String path = "";
+  if(student.release != 2){
+    path = "https:${student.avatar}";
+    AppResource.addImage(id,"net",path);
+  }
+  for(int i =1;i<student.skinList.length;i++){
+    if(student.release == 2){
+      path = student.avatar;
+      AppResource.addImage(id, "file",path);
+    }else{
+      path = "https:${student.skinList[i]["avatar"]}";
+      AppResource.addImage(id, "net",path);
+    }
+  }
+}
+
 
 //读取本地json聊天块列表记录
 Future loadJsonFiles()async{
@@ -109,10 +145,10 @@ Future initWindowsConfig()async{
   if(!GetPlatform.isWindows) return;
   await windowManager.ensureInitialized();
   WindowOptions windowOptions = const WindowOptions(
-    minimumSize: Size(1400, 740),//设置窗口的最小尺寸
-    maximumSize: Size(1400, 740),//设置窗口的最大尺寸
+    minimumSize: Size(921, 486),//设置窗口的最小尺寸
+    maximumSize: Size(1535, 810),//设置窗口的最大尺寸
     //window 设置窗口的初始尺寸
-    size: Size(1400, 740),
+    size: Size(1228, 648),
     //窗口是否居中
     center: true,
     //true 表示在状态栏不显示程序：就是windows最底部的状态
@@ -121,14 +157,16 @@ Future initWindowsConfig()async{
     alwaysOnTop: false,
     //hidden 表示隐藏标题栏 normal 窗体标题栏
     titleBarStyle: TitleBarStyle.hidden,
-    title: "Momotalk Creator",
+    title: "MomoToki - Momotalk Creator",
   );
   windowManager.waitUntilReadyToShow(windowOptions, () async {
     await windowManager.setBackgroundColor(Colors.transparent);
     await windowManager.focus();
     await windowManager.setAsFrameless();
+    await windowManager.setResizable(true);
     await windowManager.show();
   });
+
 
   //注册windows端快捷键
   await hotKeyManager.unregisterAll();
@@ -136,6 +174,35 @@ Future initWindowsConfig()async{
     HotKey(KeyCode.escape,scope: HotKeyScope.inapp),
     keyDownHandler: (hotKey)=>Get.back(),
   );
+}
+
+Future loadCustomFont()async{
+  if(UserConfig.customFont == "") return;
+  if(!File(UserConfig.customFont).existsSync()){
+    UserConfig.sp.setString("customFont", "");
+    UserConfig.customFont = "";
+    return;
+  }
+  FontLoader fontLoader = FontLoader('CustomFont');
+  fontLoader.addFont(readFont());
+  AppLibrary.appFontSource = "CustomFont";
+  await fontLoader.load();
+}
+Future<ByteData> readFont() async {
+  ByteData fontData = (await File(UserConfig.customFont).readAsBytes()).buffer.asByteData();
+  return fontData;
+}
+
+Future loadStudentNickName()async{
+  File studentNickName = File(join(AppLibrary.applicationPath,"Users","NickName.json"));
+  if(!studentNickName.existsSync()) {
+   await studentNickName.create();
+  }
+  try{
+    StudentManager.instance.studentNickName = json.decode(studentNickName.readAsStringSync());
+  }catch(e){
+    StudentManager.instance.studentNickName = {};
+  }
 }
 
 //权限申请

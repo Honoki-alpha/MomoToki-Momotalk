@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:bot_toast/bot_toast.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
+import 'package:motoki/AppData/UserConfig.dart';
 import 'package:motoki/Utils/CommonComponents.dart';
 import 'package:motoki/Entity/EChatTileGroup.dart';
+import 'package:motoki/Views/Home/WindowHome.dart';
 import 'package:path/path.dart';
 import '../../Entity/EChatTile.dart';
 import '../../Managers/ChatGroupManager.dart';
@@ -19,13 +20,11 @@ import 'MessagePage.dart';
 class Chat extends StatefulWidget{
   const Chat({super.key});
   @override
-  State<StatefulWidget> createState() => _chatState();
+  State<StatefulWidget> createState() => _ChatState();
 }
 
-class _chatState extends State<Chat>{
-  //对话框
-  TextEditingController unreadC = TextEditingController();
-  TextEditingController asnameC = TextEditingController();
+class _ChatState extends State<Chat>{
+
   int host = 1;
 
   @override
@@ -62,17 +61,21 @@ class _chatState extends State<Chat>{
           isExpanded: group.display,
           headerBuilder: (context,open){
             return ListTile(
+              leading: IconButton(
+                icon: const Icon(Icons.menu_outlined),
+                onPressed: ()=>groupEditClick(groupIndex),
+              ),
               title: Text(group.groupName),
-              onLongPress: ()=>groupholdPress(groupIndex),
             );
           },
-          body: SizedBox(
-            height: 500,
-            child: ListView.builder(
-                itemCount: group.chatTiles.length,
-                itemBuilder: (builder,index){
-                  return chatTile(group,index);
-                }),))],
+          body: ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: group.chatTiles.length,
+              itemBuilder: (builder,index){
+                return chatTile(group,index);
+              })
+      )],
     );
   }
 
@@ -101,7 +104,8 @@ class _chatState extends State<Chat>{
   }
 
   TextEditingController groupName = TextEditingController();
-  Widget groupEditDialog(){
+  Widget groupEditDialog(int index){
+    groupName.text = ChatGroupManager.instance.chatTileGroups[index].groupName;
     return AlertDialog(
       title: const Text("编辑/删除"),
       content: TextField(
@@ -120,13 +124,19 @@ class _chatState extends State<Chat>{
     );
   }
 
-  Widget tileEidtDialog(){
+  //对话框
+  TextEditingController unreadC = TextEditingController();
+  TextEditingController asnameC = TextEditingController();
+  Widget tileEidtDialog(EChatTileGroup group,int tileIndex){
+    unreadC.text = group.chatTiles[tileIndex].unreadNum.toString();
+    asnameC.text = group.chatTiles[tileIndex].tileTitle;
     return AlertDialog(
       title: const Text("编辑/删除"),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
+            keyboardType: TextInputType.number,
             decoration:const InputDecoration(
               hintText: "未读消息数",
             ),
@@ -162,13 +172,17 @@ class _chatState extends State<Chat>{
     );
   }
 
-  void deleteChatTile(EChatTileGroup group,int index){
-
-  }
-
   void visitChatTile(EChatTileGroup group,int index)async{
     //加一个读取等待对话框
     var cancel = BotToast.showLoading();
+    if(AppLibrary.appLandscapeMode && MessageManager.instance.messages.isNotEmpty){
+      await MessageManager.instance.saveMessages();
+      MessageManager.instance.messages = [];
+    }
+    if(AppLibrary.appLandscapeMode && MessageManager.instance.aiMessages.isNotEmpty){
+      await MessageManager.instance.saveAIMessages();
+      MessageManager.instance.aiMessages = [];
+    }
     EChatTile tile = group.chatTiles[index];
     File file = File(join(AppLibrary.applicationPath,"Messages","${tile.chatTileUID}.json"));
     String fileStr = await file.readAsString();
@@ -185,8 +199,10 @@ class _chatState extends State<Chat>{
 
     cancel();
     BotToast.showText(text: "成功获取消息记录(*^_^*)");
-    if(GetPlatform.isMobile){
+    if(!AppLibrary.appLandscapeMode){
       Get.to(()=>MessagePage(chatTileUID: tile.chatTileUID),transition: Transition.rightToLeftWithFade);
+    }else{
+      WindowHomeState.setRightPage(MessagePage(chatTileUID: tile.chatTileUID));
     }
     setState(() {
       tile.unreadNum = 0;
@@ -194,8 +210,8 @@ class _chatState extends State<Chat>{
     ChatGroupManager.instance.saveAsJson();
   }
 
-  void groupholdPress(int groupIndex)async{
-    var result = await Get.dialog(groupEditDialog());
+  void groupEditClick(int groupIndex)async{
+    var result = await Get.dialog(groupEditDialog(groupIndex));
     if(result == null) return;
     if(result["command"] == "edit"){
       ChatGroupManager.instance.alterChatTileGroup(groupIndex, groupName.text);
@@ -206,14 +222,10 @@ class _chatState extends State<Chat>{
   }
 
   void holdTilePress(EChatTileGroup group,int index)async{
-    Map? result = await Get.dialog(tileEidtDialog());
+    Map? result = await Get.dialog(tileEidtDialog(group,index));
     if(result == null) return;
     if(result["command"] == "delete"){
-      var cancel = BotToast.showLoading();
-      await ChatGroupManager.instance.removeChatTile(group, index, true);
-      cancel();
-      setState(() {
-      });
+      await deleteChatTile(group, index);
     }
     else if(result["command"] == "edit"){
       setState(() {
@@ -224,9 +236,31 @@ class _chatState extends State<Chat>{
       });
     }
     else if(result["command"] == "AI"){
+      if(UserConfig.aiChatKey == null){
+        BotToast.showText(text: "未配置AI API KEY,可前往关于软件中查看教程");
+        return;
+      }
       visitAIPage(group,index);
     }
     ChatGroupManager.instance.saveAsJson();
+  }
+
+  Future deleteChatTile(EChatTileGroup group,int index)async{
+    var cancel = BotToast.showLoading();
+    String uid = group.chatTiles[index].chatTileUID;
+    await ChatGroupManager.instance.removeChatTile(group, index, true);
+    String path = join(AppLibrary.applicationPath,"PictureCache","Messages",uid);
+    Directory directory = Directory(path);
+    if(directory.existsSync()){
+      BotToast.showText(text: "正在删除该聊天记录下的所有图片");
+      for(var file in directory.listSync()){
+        await file.delete(recursive: true);
+      }
+    }
+    cancel();
+    setState(() {
+
+    });
   }
 
   void visitAIPage(EChatTileGroup group,int index)async{

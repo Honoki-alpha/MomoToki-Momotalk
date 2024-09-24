@@ -8,13 +8,14 @@ import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/Entity/EStudent.dart';
 import 'package:motoki/Managers/ChatGroupManager.dart';
+import 'package:motoki/Managers/ThemeManager.dart';
 import '../../AppData/AppConstant.dart';
 import '../Secondary/SelectPage.dart';
 import '../MessagePage/Chat.dart';
 import '../SettingPage/Configure.dart';
 
 class AndroidHome extends StatefulWidget{
-  AndroidHome({super.key});
+  const AndroidHome({super.key});
 
   @override
   State<StatefulWidget> createState() => _homeState();
@@ -29,7 +30,13 @@ class _homeState extends State<AndroidHome>{
   void initState() {
     // TODO: implement initState
     super.initState();
+    AppLibrary.appLandscapeMode = false;
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top,SystemUiOverlay.bottom]);
+    kawaiNotification();
+  }
+
+  //弹出两个小可爱的问候
+  void kawaiNotification(){
     var chara = AppLibrary.randGetFromList(AppConstant.kawaiName);
     BotToast.showCustomNotification(toastBuilder: (b){
       return Material(color: Colors.transparent,child: Container(
@@ -57,7 +64,7 @@ class _homeState extends State<AndroidHome>{
     return PopScope(
         onPopInvoked: onWillPopHappend,
         child: Scaffold(
-          appBar: AppBar(title: const Text("MomoTalk"),leading: Image.asset("assets/images/icon/momo.png",),),
+          appBar:navigationCurrentPage==0?AppBar(title: const Text("MomoTalk"),leading: Image.asset("assets/images/icon/momo.png")):null,
           body:navigationPageList[navigationCurrentPage],
           bottomNavigationBar: BottomAppBar(
             height: 60,
@@ -66,19 +73,27 @@ class _homeState extends State<AndroidHome>{
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(child: IconButton(onPressed: (){
+                Expanded(
+                    child: IconButton(
+                      onPressed: (){
                   setState(() {
                     navigationCurrentPage = 0;
                   });
-                }, icon: const Icon(Icons.message),
-                color: navigationCurrentPage==0?Colors.pinkAccent:Colors.black45,)),
-                Expanded(child: IconButton(
-                  tooltip: "Hello",
-                  onPressed: (){
-                  setState(() {
-                    navigationCurrentPage = 1;
-                  });
-                }, icon: const Icon(Icons.more_horiz),color: navigationCurrentPage==1?Colors.pinkAccent:Colors.black45,)),
+                },
+                      icon: const Icon(Icons.message),
+                      color: navigationCurrentPage==0?ThemeManager.currentTheme.highlightColor:Colors.black45,)
+                ),
+                Expanded(
+                    child: IconButton(
+                      tooltip: "Hello",
+                      onPressed: (){
+                        setState(() {
+                          navigationCurrentPage = 1;
+                        });
+                      },
+                      icon: const Icon(Icons.more_horiz),
+                      color: navigationCurrentPage==1?ThemeManager.currentTheme.highlightColor:Colors.black45,)
+                ),
               ],
             ),
             ),
@@ -95,7 +110,7 @@ class _homeState extends State<AndroidHome>{
         ));
   }
 
-  Future<bool> onWillPopHappend(bool invoked)async{
+  Future<bool> onWillPopHappend(bool didPop)async{
     popTimes++;
     if(popTimes == 2){
       return true;
@@ -107,11 +122,6 @@ class _homeState extends State<AndroidHome>{
     }
   }
 
-  void floatingButtonClick(){
-    setState(() {
-      floatingButtonVisable = false;
-    });
-  }
 
   void addChatStudent() async{
     EStudent? student = await Get.to(()=>const SelectPage());
@@ -119,7 +129,6 @@ class _homeState extends State<AndroidHome>{
     setState(() {
       ChatGroupManager.instance.addChatTile(student);
     });
-
   }
 
   void addGroupDialog()async{

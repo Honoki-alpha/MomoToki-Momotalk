@@ -1,30 +1,27 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:motoki/AppData/AppLibrary.dart';
+import 'package:motoki/AppData/UserConfig.dart';
+import 'package:motoki/Managers/ThemeManager.dart';
+import 'package:motoki/Views/Home/AnimationPage.dart';
+import 'package:motoki/Views/Home/WindowHome.dart';
 import 'package:motoki/views/Home/AndroidHome.dart';
 import 'package:get/get.dart';
 import 'AppData/InitApplication.dart';
 
 
 void main() async {
+
+  int times = 0;
+
   WidgetsFlutterBinding.ensureInitialized();
   await initApplication();
-
   runApp(ClipRRect(
     borderRadius: GetPlatform.isDesktop?BorderRadius.circular(12):BorderRadius.circular(0),
     clipBehavior: Clip.antiAlias,
     child: GetMaterialApp(
-        home:OrientationBuilder(builder: (context,orientation){
-          // if((GetPlatform.isDesktop || orientation == Orientation.landscape)){
-          //   AppLibrary.appLandscapeMode = true;
-          //   //return const WindowsHome();
-          // }else{
-          //
-          // }
-          AppLibrary.appLandscapeMode = false;
-          return AndroidHome();
-        },),
+        darkTheme: ThemeManager.darkTheme,
+        home:const AnimationPage(),
         debugShowCheckedModeBanner: false,
         title: "MomoTalk",
         builder: BotToastInit(),
@@ -38,14 +35,7 @@ void main() async {
           Locale('zh', 'CN'),
           Locale('en', 'US'),
         ],
-        theme: ThemeData(
-          //颜色色调
-            brightness: Brightness.light,
-            fontFamily: "ResourceHanCN",
-            useMaterial3: true,
-            colorSchemeSeed: const Color(0xFFF48FB1),
-            appBarTheme: const AppBarTheme(color: const Color(0xFFF48FB1),titleTextStyle: const TextStyle(fontSize: 20,color: Colors.white,fontFamily:"ResourceHanCN"))
-        )),
+        theme: ThemeManager.getThemeData(UserConfig.themeIndex)),
   ));
 }
 

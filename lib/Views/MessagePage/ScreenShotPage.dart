@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
@@ -9,6 +10,7 @@ import 'package:path/path.dart';
 import '../../AppData/AppLibrary.dart';
 import '../../Components/MessageBox.dart';
 import '../../Managers/MessageManager.dart';
+import '../../Managers/ThemeManager.dart';
 
 class ScreenShotPage extends StatefulWidget{
   const ScreenShotPage({super.key, required this.startPointer, required this.endPointer});
@@ -49,7 +51,7 @@ class _screenShotPageState extends State<ScreenShotPage>{
               child: Screenshot(
                 controller: screenshotController,
                 child: Container(
-                  color: Colors.white,
+                  color: ThemeManager.currentTheme.cardColor,
                   child: ListView(
                     physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
@@ -73,15 +75,19 @@ class _screenShotPageState extends State<ScreenShotPage>{
   }
 
   void shotSave()async{
-    var result = await screenshotController.capture();
+    var result = await screenshotController.capture(pixelRatio: AppLibrary.appLandscapeMode?3.0:null);
     if(result == null)return;
     if(Platform.isWindows){
       File file = File(join(AppLibrary.applicationPath,"MessageCature","Momo_${DateTime.now().millisecond}${DateTime.now().microsecond}.png"));
+      var cancel = BotToast.showLoading();
       await file.writeAsBytes(result);
+      cancel();
     }else{
+      var cancel = BotToast.showLoading();
       await ImageGallerySaver.saveImage(result,quality: 100);
+      cancel();
     }
-    Get.back();
+    if(!AppLibrary.appLandscapeMode) Get.back();
   }
 
 

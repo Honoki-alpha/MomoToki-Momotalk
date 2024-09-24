@@ -4,6 +4,7 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:motoki/AppData/AppResource.dart';
 import 'package:path/path.dart';
 
 import '../../AppData/AppLibrary.dart';
@@ -33,10 +34,8 @@ class _DIYSeitoState extends State<DIYStudentSetting>{
   Widget build(BuildContext context) {
     //每次重置界面都要刷新下列表
     diyList = StudentManager.instance.diyStudentDirctory.values.toList();
-
-
     return Scaffold(
-      appBar: AppBar(title: const Text("自定义学生列表")),
+      appBar: getPlatformAppBar(const Text("自定义学生列表")),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -82,6 +81,7 @@ class _DIYSeitoState extends State<DIYStudentSetting>{
     }
     EStudent newStudent = EStudent.simpleDIY(
         id, fn, gn, result["avatar"]);
+    AppResource.addImage(id, "file",result["avatar"]);
     setState(() {
       StudentManager.instance.addDIYStudent(newStudent);
     });
@@ -159,6 +159,7 @@ class _DIYSeitoState extends State<DIYStudentSetting>{
       gn = names[1];
     }
     EStudent newStudent = EStudent.simpleDIY(int.parse(result["id"]),fn, gn, result["avatar"]);
+    AppResource.alterImage(int.parse(result["id"]), result["avatar"]);
     setState(() {
       StudentManager.instance.alterDIYStudent(originId,newStudent);
     });

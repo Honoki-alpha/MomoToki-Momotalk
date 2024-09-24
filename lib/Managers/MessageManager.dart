@@ -21,6 +21,11 @@ class MessageManager{
     messageHasEdit = true;
   }
 
+  void addAIMessageBox(EMessageBox mb){
+    aiMessages.add(mb.toMap());
+    messageHasEdit = true;
+  }
+
   void addMessage(String mes){
     messages.last["messageContentList"].add(mes);
     messageHasEdit = true;
@@ -52,6 +57,7 @@ class MessageManager{
   }
 
   Future saveMessages()async{
+    messageHasEdit = messageHasEdit && messages.isNotEmpty;
     if(messageHasEdit){
       Map lastMessage = messages.last;
       String mes = lastMessage["messageContentList"].last;
@@ -69,8 +75,9 @@ class MessageManager{
   }
 
   Future saveAIMessages()async{
+    messageHasEdit = messageHasEdit && aiMessages.isNotEmpty;
     if(messageHasEdit){
-      await JsonFileManager.instance.saveJsonFile("AIChat", "$currentPage.json", json.encode(messages));
+      await JsonFileManager.instance.saveJsonFile("AIChat", "$currentPage.json", json.encode(aiMessages));
       messageHasEdit = false;
     }
   }

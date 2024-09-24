@@ -1,0 +1,62 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:motoki/AppData/UserConfig.dart';
+import 'package:motoki/Managers/ThemeManager.dart';
+import 'package:motoki/Views/Home/AndroidHome.dart';
+import 'package:motoki/Views/Home/WindowHome.dart';
+
+class AnimationPage extends StatefulWidget{
+  const AnimationPage({super.key});
+
+  @override
+  State<StatefulWidget> createState() => _AnimationPageState();
+
+}
+
+class _AnimationPageState extends State<AnimationPage> with TickerProviderStateMixin{
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    Timer(const Duration(milliseconds: 300), enterHomePage);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.white,
+      child: Container(
+        color: ThemeManager.currentTheme.appBarTheme.backgroundColor,
+        alignment: Alignment.center,
+        child:SizedBox(
+          height: 300,
+          width: 300,
+          child: Image.asset("assets/images/icon/start_logo.png"),),
+      ),
+    );
+  }
+
+
+  void enterHomePage(){
+    Get.off(
+        ()=>getHome(),
+        transition: Transition.downToUp,
+        duration: const Duration(milliseconds: 1200),
+        curve: Curves.ease
+    );
+  }
+
+  Widget getHome(){
+    return OrientationBuilder(builder: (context,orientation){
+      if( ( orientation == Orientation.landscape || GetPlatform.isDesktop ) &&
+        UserConfig.applyLandscape){
+        return const WindowHome();
+      }else{
+        return const AndroidHome();
+      }
+    });
+  }
+}

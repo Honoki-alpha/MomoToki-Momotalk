@@ -33,7 +33,7 @@ class StudentEmojiDialog extends StatelessWidget{
           child: GridView(
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             mainAxisSpacing: 10,
-            crossAxisCount: AppLibrary.appLandscapeMode?12:4,
+            crossAxisCount: AppLibrary.appLandscapeMode?5:4,
             childAspectRatio: 1.0, //显示区域宽高相等
           ),
           children: item["images"].map<Widget>((url){

@@ -5,9 +5,10 @@ import 'package:get/get.dart';
 
 import '../../Components/MessageBox.dart';
 import '../../Managers/MessageManager.dart';
+import '../../Managers/ThemeManager.dart';
 
 class PlayPage extends StatefulWidget{
-  PlayPage({super.key, required this.startPointer, required this.endPointer});
+  const PlayPage({super.key, required this.startPointer, required this.endPointer});
   final int startPointer;
   final int endPointer;
 
@@ -34,32 +35,24 @@ class _playPageState extends State<PlayPage>{
   @override
   Widget build(BuildContext context) {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-    if(GetPlatform.isDesktop){
-      return getPlayBody();
-    }
     return Scaffold(
-      body: getPlayBody(),
-    );
-  }
-
-  Widget getPlayBody(){
-    return Column(
-      children: [
-        Container(height: 10,color: Colors.white,),//顶部空格
-        Expanded(child: Container(
-          color: Colors.white,
-          alignment: Alignment.topCenter,
-          child: ListView.builder(
-            //reverse: true,
-            controller: sc,
-            shrinkWrap: true,
-            itemCount: waitToPlayList.length,
-            itemBuilder: (BuildContext context,int index){
-              return MessageBox(index: index, isPlayMode: true,tempBox: waitToPlayList[index]);
-            },
-          ),)),
-        const SizedBox(height: 40)
-      ],
+      body: Column(
+        children: [
+          Expanded(child: Container(
+            color: ThemeManager.currentTheme.cardColor,
+            alignment: Alignment.topCenter,
+            child: ListView.builder(
+              //reverse: true,
+              controller: sc,
+              shrinkWrap: true,
+              itemCount: waitToPlayList.length,
+              itemBuilder: (BuildContext context,int index){
+                return MessageBox(index: index, isPlayMode: true,tempBox: waitToPlayList[index]);
+              },
+            ),)),
+          const SizedBox(height: 40)
+        ],
+      ),
     );
   }
 

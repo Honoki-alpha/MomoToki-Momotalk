@@ -49,7 +49,7 @@ class _messageEditPage extends State<MessageEditPage>{
       canPop: false,
       onPopInvoked: saveRequest,
       child: Scaffold(
-      appBar: AppBar(title:const Text("消息编辑"),),
+      appBar: getPlatformAppBar(const Text("消息编辑")),
       body: Container(
         padding: const EdgeInsets.symmetric(vertical: 10,horizontal: 15),
         child: SingleChildScrollView(

@@ -39,8 +39,8 @@ class _selectPageState extends State<SelectPage> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(title: const Text("请选择学生"),centerTitle: true,bottom:TabBar(
-          controller: tbc,
-          tabs: const [Tab(text: "内置"),Tab(text: "自定义")]),),
+            controller: tbc,
+            tabs: const [Tab(text: "内置"),Tab(text: "自定义")])),
         body: Column(
           children: [
             Row(children: [

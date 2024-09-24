@@ -24,7 +24,7 @@ class ChatGroupManager{
     //生成唯一UID
     String uid = AppLibrary.generateUID();
     //新建消息列表块
-    EChatTile chatTile = EChatTile(student.id,uid, student.givenName["cn"], student.givenName["cn"], "老师好", 1, {});
+    EChatTile chatTile = EChatTile(student.id,uid, student.givenName["nm"], student.givenName["nm"], "老师好", 1, {});
     chatTileGroups[selectedGroupIndex].chatTiles.add(chatTile);
 
     AppLibrary.globalEvent.fire(PageRefresh());
