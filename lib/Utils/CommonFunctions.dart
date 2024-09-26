@@ -29,7 +29,11 @@ void getLastVersion()async{
   if(response.data["tag_name"] == AppLibrary.appVersion){
     BotToast.showText(text: "已是最新版本");
   }else{
-    var result = (await Get.dialog(Inquiredialog(title:"发现最新版本",content: "发现最新版本${response.data["tag_name"]}，是否前往下载？")))??false;
+    var upAnnonce = await dio.get("https://gitee.com/honoki/momotoki/raw/master/public/announce.txt");
+    if(upAnnonce.statusCode != 200){
+      BotToast.showText(text: "网络链接错误");
+    }
+    var result = (await Get.dialog(Inquiredialog(title:"发现最新版本${response.data["tag_name"]}",content: upAnnonce.data)))??false;
     if(!result) return;
     //初始化最新版的网页，如果获取不到就去最新版的网页
     String path = "https://gitee.com/honoki/momotoki/releases/latest";

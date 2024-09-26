@@ -283,7 +283,7 @@ class _messagePageState extends State<MessagePage>{
         currentStudent.id,
         currentStudentSkinIndex.value,
         0,
-        currentStudent.givenName["cn"],
+        currentStudent.givenName["nm"],
         [message],
         false,
         {});
@@ -318,10 +318,10 @@ class _messagePageState extends State<MessagePage>{
   }
 
   //保存消息按钮
-  Future saveButtonClick()async{
+  Future saveButtonClick({bool? noneDialog})async{
     var cancel = BotToast.showLoading();
     await MessageManager.instance.saveMessages();
-    BotToast.showText(text: "消息记录保存成功(๑•ω•๑)");
+    if(noneDialog != true) BotToast.showText(text: "消息记录保存成功(๑•ω•๑)");
     cancel();
   }
 
@@ -406,8 +406,8 @@ class _messagePageState extends State<MessagePage>{
       }
       int sP = currentSelectedIndex.value;
       int eP = sP + result["x"] as int;
-      if(eP>MessageManager.instance.messages.length-1){
-        eP = MessageManager.instance.messages.length-1;
+      if(eP>=MessageManager.instance.messages.length){
+        eP = MessageManager.instance.messages.length;
       }
       if(AppLibrary.appLandscapeMode){
         WindowHomeState.setRightPage(ScreenShotPage(startPointer: sP, endPointer: eP));
@@ -439,7 +439,7 @@ class _messagePageState extends State<MessagePage>{
   }
 
   void playButtonClick()async{
-    await saveButtonClick();
+    await saveButtonClick(noneDialog: true);
     if(AppLibrary.appLandscapeMode){
       WindowHomeState.setRightPage(PlayPage(startPointer: 0, endPointer: MessageManager.instance.messages.length-1));
     }else{

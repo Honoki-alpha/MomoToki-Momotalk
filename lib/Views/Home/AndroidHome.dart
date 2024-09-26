@@ -9,6 +9,7 @@ import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/Entity/EStudent.dart';
 import 'package:motoki/Managers/ChatGroupManager.dart';
 import 'package:motoki/Managers/ThemeManager.dart';
+import 'package:motoki/Utils/CommonFunctions.dart';
 import '../../AppData/AppConstant.dart';
 import '../Secondary/SelectPage.dart';
 import '../MessagePage/Chat.dart';
@@ -33,6 +34,7 @@ class _homeState extends State<AndroidHome>{
     AppLibrary.appLandscapeMode = false;
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top,SystemUiOverlay.bottom]);
     kawaiNotification();
+    getLastVersion();
   }
 
   //弹出两个小可爱的问候

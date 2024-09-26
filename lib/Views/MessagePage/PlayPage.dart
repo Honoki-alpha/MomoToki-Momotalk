@@ -33,6 +33,12 @@ class _playPageState extends State<PlayPage>{
   }
 
   @override
+  void deactivate(){
+    super.deactivate();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top,SystemUiOverlay.bottom]);
+  }
+
+  @override
   Widget build(BuildContext context) {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
     return Scaffold(

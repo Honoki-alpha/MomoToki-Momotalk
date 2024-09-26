@@ -97,8 +97,6 @@ class _messageBoxState extends State<MessageBox>{
       String fileName = "load_student.gif";
       if(isImg) fileName = "load_img.gif";
       child = Image.asset("assets/images/chatres/$fileName",fit: BoxFit.fitHeight,height: 16,);
-    }else{
-
     }
     return Row(
       textDirection: isRight?TextDirection.rtl:TextDirection.ltr,
@@ -189,26 +187,24 @@ class _messageBoxState extends State<MessageBox>{
   //旁白
   Widget asideBox(){
     return Container(
-      height: 25,
       alignment: Alignment.center,
-      margin:const EdgeInsets.fromLTRB(10, 10, 10, 10),
+      margin:const EdgeInsets.fromLTRB(20, 10, 20, 10),
       decoration: BoxDecoration(
         color: const Color.fromRGBO(220,230,230, 1),
         borderRadius: BorderRadius.circular(8)
       ),
-      child:Text(messageBox.messageContentList[0],style: const TextStyle(color: Colors.black),),
+      child:Text(
+        textAlign: TextAlign.center,
+        messageBox.messageContentList[0],style: const TextStyle(color: Colors.black)),
     );
   }
 
   Widget asidetransBox(){
     return Container(
-      height: 25,
       alignment: Alignment.center,
-      margin:const EdgeInsets.fromLTRB(10, 10, 10, 10),
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8)
-      ),
-      child:Text(messageBox.messageContentList[0]),
+      margin:const EdgeInsets.fromLTRB(20, 10, 20, 10),
+      child:Text(
+        textAlign: TextAlign.center, messageBox.messageContentList[0]),
     );
   }
 

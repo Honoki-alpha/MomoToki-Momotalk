@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:io';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:path/path.dart';
-
 import '../../AppData/AppLibrary.dart';
 import '../../Components/MessageBox.dart';
 import '../../Managers/MessageManager.dart';
@@ -41,8 +41,13 @@ class _screenShotPageState extends State<ScreenShotPage>{
   }
 
   @override
+  void deactivate(){
+    super.deactivate();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top,SystemUiOverlay.bottom]);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    pixelRatio = MediaQuery.of(context).devicePixelRatio;
     return Scaffold(
       body: Column(
         children: [
@@ -75,7 +80,7 @@ class _screenShotPageState extends State<ScreenShotPage>{
   }
 
   void shotSave()async{
-    var result = await screenshotController.capture(pixelRatio: AppLibrary.appLandscapeMode?3.0:null);
+    var result = await screenshotController.capture(pixelRatio: 4.0);
     if(result == null)return;
     if(Platform.isWindows){
       File file = File(join(AppLibrary.applicationPath,"MessageCature","Momo_${DateTime.now().millisecond}${DateTime.now().microsecond}.png"));

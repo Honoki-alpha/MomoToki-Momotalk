@@ -18,7 +18,7 @@ class EStudent{
      this.school,this.weaponType,this.characterData,this.mosign,this.gallery,this.birthday,this.release);
 
   factory EStudent.simpleDIY(int id,String fName,String gName,String avatar){
-    return EStudent(id, 0, [], {"cn":fName}, {"cn":gName}, avatar,
+    return EStudent(id, 0, [], {"nm":fName}, {"nm":gName}, avatar,
         "DIY学生", 0, "weaponType", {}, [], [],
         {"month":0,"day":0}, 2);
   }

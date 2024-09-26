@@ -46,8 +46,8 @@ class StudentManager{
 
     //后缀名
     EStudent student = getStudentById(id);
-    String family = student.familyName[UserConfig.studentNameLanguage];
-    String given = student.givenName[UserConfig.studentNameLanguage];
+    String family = student.familyName[UserConfig.studentNameLanguage] ?? student.familyName["nm"];
+    String given = student.givenName[UserConfig.studentNameLanguage] ?? student.givenName["nm"];
 
     //如果取不到的话返回normal名字
     if(family==""||given==""){

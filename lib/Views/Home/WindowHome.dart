@@ -10,6 +10,7 @@ import 'package:window_manager/window_manager.dart';
 
 import '../../Entity/EStudent.dart';
 import '../../Managers/ChatGroupManager.dart';
+import '../../Utils/CommonFunctions.dart';
 import '../Secondary/SelectPage.dart';
 
 class WindowHome extends StatefulWidget{
@@ -35,6 +36,7 @@ class WindowHomeState extends State<WindowHome>{
     setLeftPage(const Chat());
     tabBarShow = true;
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
+    getLastVersion();
   }
 
   @override

@@ -94,7 +94,10 @@ Future loadStudentAvatar()async{
     loadStudentAvatarResource(student);
   });
   StudentManager.instance.toolStudentDirctory.forEach((id,student){
-    print(student.toString());
+    loadStudentAvatarResource(student);
+  });
+  StudentManager.instance.diyStudentDirctory.forEach((id,student){
+    print(student);
     loadStudentAvatarResource(student);
   });
   loadStudentAvatarResource(StudentManager.instance.noneStudent);
@@ -105,15 +108,13 @@ void loadStudentAvatarResource(EStudent student){
   if(student.release != 2){
     path = "https:${student.avatar}";
     AppResource.addImage(id,"net",path);
-  }
-  for(int i =1;i<student.skinList.length;i++){
-    if(student.release == 2){
-      path = student.avatar;
-      AppResource.addImage(id, "file",path);
-    }else{
+    for(int i =1;i<student.skinList.length;i++){
       path = "https:${student.skinList[i]["avatar"]}";
       AppResource.addImage(id, "net",path);
     }
+  }else {
+    path = student.avatar;
+    AppResource.addImage(id, "file", path);
   }
 }
 
