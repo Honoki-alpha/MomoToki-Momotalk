@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/AppData/UserConfig.dart';
+import 'package:universal_html/html.dart';
 import 'package:motoki/Managers/ThemeManager.dart';
 import 'package:motoki/Views/Home/AndroidHome.dart';
 import 'package:motoki/Views/Home/WindowHome.dart';
@@ -51,10 +53,13 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
 
   Widget getHome(){
     return OrientationBuilder(builder: (context,orientation){
-      if( ( orientation == Orientation.landscape || GetPlatform.isDesktop ) &&
-        UserConfig.applyLandscape){
+      bool isWebPC = GetPlatform.isWeb && window.navigator.platform.toString().contains("Win");
+      if( ( ( orientation == Orientation.landscape || GetPlatform.isDesktop ) &&
+        UserConfig.applyLandscape ) || isWebPC){
+        AppLibrary.appLandscapeMode = true;
         return const WindowHome();
       }else{
+        AppLibrary.appLandscapeMode = false;
         return const AndroidHome();
       }
     });

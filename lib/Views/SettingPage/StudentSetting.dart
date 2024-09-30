@@ -1,10 +1,18 @@
+import 'package:bot_toast/bot_toast.dart';
+import 'package:dio/dio.dart';
 import 'package:get/get.dart';
+import 'package:get/get_rx/get_rx.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/AppData/UserConfig.dart';
 import 'package:flutter/material.dart';
+import 'package:motoki/Dialog/InquireDialog.dart';
+import 'package:motoki/Entity/EStudent.dart';
+import 'package:motoki/Managers/StudentManager.dart';
 import 'package:motoki/Utils/CommonComponents.dart';
 import 'package:motoki/Views/Home/WindowHome.dart';
+import 'package:motoki/Views/Secondary/SelectPage.dart';
 import 'package:motoki/Views/SettingPage/StudentNickNameSetting.dart';
+import 'package:path/path.dart';
 
 class StudentSetting extends StatefulWidget{
   const StudentSetting({super.key});
@@ -84,9 +92,119 @@ class _seitoSet extends State<StudentSetting>{
                   }
                 },
               ),
+            ]),
+            getSettingBorderBox([
+              ListTile(
+                title: const Text("头像资源下载"),
+                trailing: const Icon(Icons.arrow_forward_ios_sharp),
+                onTap: downloadAvatar,
+              ),
+              ListTile(
+                title: const Text("下载学生差分"),
+                trailing: const Icon(Icons.arrow_forward_ios_sharp),
+                onTap: downloadSingle,
+              ),
+              ListTile(
+                title: const Text("下载全部差分"),
+                trailing: const Icon(Icons.arrow_forward_ios_sharp),
+                onTap: downloadEmotion,
+              ),
             ])
           ],
         )
+    );
+  }
+
+  void downloadAvatar()async{
+    var request = await Get.dialog(const Inquiredialog(title: "警告", content: "下载本地会使软件占用空间增大，是否继续？"));
+    if(request != true) return;
+    var cencel = BotToast.showCustomLoading(toastBuilder: (b)=>defaultDialog());
+    var dio = Dio();
+    int i = 0;
+    int length = StudentManager.instance.studentDirctory.length;
+    for(var item in StudentManager.instance.toolStudentDirctory.entries){
+      EStudent student = item.value;
+      await dio.download("https:${student.avatar}", join(AppLibrary.applicationPath,"Resouces","Avatars","${student.id}_0.png"));
+    }
+    for(var item in StudentManager.instance.studentDirctory.entries){
+      EStudent student = item.value;
+      var skinIndex = 0;
+      for(var skin in student.skinList){
+        if(!mounted) return;
+        await dio.download("https:${skin["avatar"]}", join(AppLibrary.applicationPath,"Resouces","Avatars","${student.id}_$skinIndex.png"));
+        skinIndex++;
+        await Future.delayed(const Duration(milliseconds: 200));
+      }
+      progroessValue.value = i.toDouble()/length;
+      i++;
+    }
+    cencel();
+    progroessValue.value = 0.0;
+    BotToast.showText(text: "下载完成");
+  }
+
+  void downloadSingle()async{
+    EStudent? student = await Get.to(()=>const SelectPage(),transition: Transition.rightToLeftWithFade);
+    if(student == null) return;
+    var cancel = BotToast.showLoading();
+    await downloadSingleEmotion(student);
+    cancel();
+    BotToast.showText(text: "下载完成");
+  }
+
+  Future downloadSingleEmotion(EStudent student)async{
+    var dio = Dio();
+    int fileIndex = 0;
+    for(var gal in student.gallery){
+      if(!mounted) return;
+      for(var img in gal["images"]){
+        await dio.download("https:$img", join(AppLibrary.applicationPath,"Resouces","Emotions","${student.id}","$fileIndex.png"));
+        fileIndex++;
+      }
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+
+  }
+
+  void downloadEmotion()async{
+    var request = await Get.dialog(const Inquiredialog(title: "警告", content: "下载本地会使软件占用空间增大，是否继续？"));
+    if(request != true) return;
+    var cencel = BotToast.showCustomLoading(toastBuilder: (b)=>defaultDialog());
+    BotToast.showText(text: "若出现进度条卡顿，请使用单个学生下载");
+    int i = 0;
+    int length = StudentManager.instance.studentDirctory.length;
+    for(var item in StudentManager.instance.studentDirctory.entries){
+      EStudent student = item.value;
+      await downloadSingleEmotion(student);
+      progroessValue.value = i.toDouble()/length;
+      i++;
+    }
+    cencel();
+    progroessValue.value = 0.0;
+    BotToast.showText(text: "下载完成");
+  }
+
+  RxDouble progroessValue = 0.0.obs;
+  Widget defaultDialog(){
+    return Container(
+      height: 200,
+      width: 240,
+      color: Colors.white,
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            height: 130,
+            width: 130,
+            child: Obx(()=>CircularProgressIndicator(
+              strokeWidth:8,
+              value: progroessValue.value,
+            )),
+          ),
+          const Text("\n正在下载资源，请勿退出该界面...")
+        ],
+      ),
     );
   }
 }

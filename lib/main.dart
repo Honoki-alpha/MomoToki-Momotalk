@@ -4,8 +4,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:motoki/AppData/UserConfig.dart';
 import 'package:motoki/Managers/ThemeManager.dart';
 import 'package:motoki/Views/Home/AnimationPage.dart';
-import 'package:motoki/Views/Home/WindowHome.dart';
-import 'package:motoki/views/Home/AndroidHome.dart';
 import 'package:get/get.dart';
 import 'AppData/InitApplication.dart';
 
@@ -25,6 +23,7 @@ void main() async {
         debugShowCheckedModeBanner: false,
         title: "MomoTalk",
         builder: BotToastInit(),
+        initialRoute: "/",
         navigatorObservers: [BotToastNavigatorObserver()],
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,

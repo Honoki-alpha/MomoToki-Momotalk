@@ -336,7 +336,7 @@ class _messagePageState extends State<MessagePage>{
 
   //表情差分按钮
   void emojiButtonClick()async{
-    if(currentStudent.release < 2){
+    if(currentStudent.release != 2 && !UserConfig.applyOfflineMode){
       var result = await Get.dialog(StudentEmojiDialog(studentID: currentStudent.id));
       if(result == null) return;
       input.text = "[图片已加载]";
@@ -344,8 +344,11 @@ class _messagePageState extends State<MessagePage>{
       loadImgPath = result["url"];
     }else{
       Directory dir = Directory(join(AppLibrary.applicationPath,"DIYemotion",currentStudent.id.toString()));
+      if(currentStudent.release != 2){
+        dir = Directory(join(AppLibrary.applicationPath,"Resouces","Emotions","${currentStudent.id}"));
+      }
       if(!dir.existsSync()){
-        BotToast.showText(text: "未导入该自定义学生的差分");
+        BotToast.showText(text: "未找到该学生差分！");
         return;
       }
       var cancel = BotToast.showLoading();

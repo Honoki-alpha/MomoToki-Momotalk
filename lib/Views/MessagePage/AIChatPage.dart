@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart';
 
@@ -71,73 +72,77 @@ class _AiChatPage extends State<AIChatPage>{
         actions: [
           IconButton(onPressed: saveButtonClick, icon: const Icon(Icons.save))
         ],),
-      body:getPageBody(),
+      body:Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(child: Container(
+            color: Colors.white,
+            child: ListView.builder(
+                shrinkWrap: true,
+                controller: sc,
+                itemCount: MessageManager.instance.aiMessages.length,
+                itemBuilder: (context,index){
+                  return GestureDetector(
+                    child: MessageBox(index:index, isPlayMode: true,tempBox: MessageManager.instance.aiMessages[index],),
+                    onDoubleTap: (){
+                      String mes = MessageManager.instance.aiMessages[index]["messageContentList"][0];
+                      Clipboard.setData(ClipboardData(text: mes));
+                      BotToast.showText(text: "复制文字成功");
+                    },
+                  );
+                }),
+          )),
+          Obx(()=>Container(child: isWating.value?const Text("获取消息中..."):null,)),
+          Row(
+            children: [
+              //expanded用于限制输入范围
+              const SizedBox(width: 10,),
+              Expanded(
+                child: TextField(
+                  decoration: InputDecoration(
+                      icon:GestureDetector(
+                        child: getCicleStudentAvatar(MessageManager.instance.currentStudentId,skinIndex: currentStudentSkinIndex.value),
+                        onTap: (){
+                          usualVisable.value = !usualVisable.value;
+                        },)
+                  ),
+                  controller: input,
+                  maxLines: null,
+                ),
+              ),
+              //点击“发送”按钮效果
+              ElevatedButton(onPressed: sendButtonClick, child:const Text("发送")),
+            ],
+          ),
+          const SizedBox(height: 5,),
+          Obx(()=>SizedBox(
+              child: usualVisable.value?SizedBox(
+                  height: 120,
+                  child: GridView.builder(
+                      itemCount: StudentManager.instance.usualStudents.length,
+                      gridDelegate:const SliverGridDelegateWithFixedCrossAxisCount(
+                        mainAxisSpacing: 5,
+                        crossAxisCount: 7, //每行五列
+                        childAspectRatio: 1.0, //显示区域宽高相等
+                      ), itemBuilder: (context, index){
+                    List studentAndSkin = StudentManager.instance.usualStudents[index].split("||");
+                    var iconId = int.parse(studentAndSkin[0]);
+                    var iconSkin = int.parse(studentAndSkin[1]);
+                    return GestureDetector(
+                      child:getCicleStudentAvatar(iconId,skinIndex: iconSkin),
+                      onTap: (){
+                        currentStudentSkinIndex.value = iconSkin;
+                        currentStudent = StudentManager.instance.getStudentById(iconId);
+                        setState(() {});
+                      },
+                    );
+                  })):const SizedBox()
+          ))
+        ],
+      ),
     );
   }
 
-  Widget getPageBody(){
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Expanded(child: Container(
-          color: Colors.white,
-          child: ListView.builder(
-              shrinkWrap: true,
-              controller: sc,
-              itemCount: MessageManager.instance.aiMessages.length,
-              itemBuilder: (context,index){
-                return MessageBox(index:index, isPlayMode: true,tempBox: MessageManager.instance.aiMessages[index],);
-              }),
-        )),
-        Obx(()=>Container(child: isWating.value?const Text("获取消息中..."):null,)),
-        Row(
-          children: [
-            //expanded用于限制输入范围
-            const SizedBox(width: 10,),
-            Expanded(
-              child: TextField(
-                decoration: InputDecoration(
-                    icon:GestureDetector(
-                      child: getCicleStudentAvatar(MessageManager.instance.currentStudentId,skinIndex: currentStudentSkinIndex.value),
-                      onTap: (){
-                      usualVisable.value = !usualVisable.value;
-                    },)
-                ),
-                controller: input,
-                maxLines: null,
-              ),
-            ),
-            //点击“发送”按钮效果
-            ElevatedButton(onPressed: sendButtonClick, child:const Text("发送")),
-          ],
-        ),
-        const SizedBox(height: 5,),
-        Obx(()=>SizedBox(
-          child: usualVisable.value?SizedBox(
-              height: 120,
-              child: GridView.builder(
-                  itemCount: StudentManager.instance.usualStudents.length,
-                  gridDelegate:const SliverGridDelegateWithFixedCrossAxisCount(
-                    mainAxisSpacing: 5,
-                    crossAxisCount: 7, //每行五列
-                    childAspectRatio: 1.0, //显示区域宽高相等
-                  ), itemBuilder: (context, index){
-                      List studentAndSkin = StudentManager.instance.usualStudents[index].split("||");
-                      var iconId = int.parse(studentAndSkin[0]);
-                      var iconSkin = int.parse(studentAndSkin[1]);
-                      return GestureDetector(
-                        child:getCicleStudentAvatar(iconId,skinIndex: iconSkin),
-                        onTap: (){
-                          currentStudentSkinIndex.value = iconSkin;
-                          currentStudent = StudentManager.instance.getStudentById(iconId);
-                          setState(() {});
-                        },
-                      );
-                  })):const SizedBox()
-        ))
-      ],
-    );
-  }
 
   void saveButtonClick()async{
     var cancel = BotToast.showLoading();

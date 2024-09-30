@@ -126,10 +126,15 @@ class _homeState extends State<AndroidHome>{
 
 
   void addChatStudent() async{
+    if(ChatGroupManager.instance.selectedGroupIndex < 0){
+      BotToast.showText(text: "未选择分组，请展开任意分组");
+      return;
+    }
     EStudent? student = await Get.to(()=>const SelectPage());
     if(student == null) return;
+    ChatGroupManager.instance.addChatTile(student);
     setState(() {
-      ChatGroupManager.instance.addChatTile(student);
+
     });
   }
 

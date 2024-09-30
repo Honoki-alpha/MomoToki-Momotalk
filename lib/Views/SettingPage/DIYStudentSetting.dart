@@ -81,7 +81,7 @@ class _DIYSeitoState extends State<DIYStudentSetting>{
     }
     EStudent newStudent = EStudent.simpleDIY(
         id, fn, gn, result["avatar"]);
-    AppResource.addImage(id, "file",result["avatar"]);
+    AppResource.addDIYAvatar(id,result["avatar"]);
     setState(() {
       StudentManager.instance.addDIYStudent(newStudent);
     });
@@ -159,7 +159,7 @@ class _DIYSeitoState extends State<DIYStudentSetting>{
       gn = names[1];
     }
     EStudent newStudent = EStudent.simpleDIY(int.parse(result["id"]),fn, gn, result["avatar"]);
-    AppResource.alterImage(int.parse(result["id"]), result["avatar"]);
+    AppResource.addDIYAvatar(int.parse(result["id"]), result["avatar"]);
     setState(() {
       StudentManager.instance.alterDIYStudent(originId,newStudent);
     });

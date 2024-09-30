@@ -2,11 +2,9 @@ import 'dart:io';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:get/get.dart';
-import 'package:get/get_rx/get_rx.dart';
 import 'package:motoki/AppData/UserConfig.dart';
 import 'package:motoki/Dialog/InquireDialog.dart';
 import 'package:motoki/Managers/ThemeManager.dart';
@@ -66,6 +64,19 @@ class _SettingState extends State<AppSetting>{
                           });
                         },
                       ),
+                    ),
+                    ListTile(
+                      title:const Text("离线模式"),
+                      trailing: Switch(
+                        value: UserConfig.applyOfflineMode,
+                        onChanged: (value){
+                          UserConfig.sp.setBool("applyOfflineMode", value);
+                          setState(() {
+                            UserConfig.applyOfflineMode = value;
+                            if(value) BotToast.showText(text: "离线模式需前往【学生设置】下载资源");
+                          });
+                        },
+                      ),
                     ),]),
                   getSettingBorderBox([
                     ListTile(title: const Text("背景跟随主题"),trailing:Switch(
@@ -112,8 +123,8 @@ class _SettingState extends State<AppSetting>{
     if(UserConfig.customFont == ""){
       final FilePickerResult? result = await FilePicker.platform.pickFiles(
         withData: true,
-        type: FileType.custom,
-        allowedExtensions: ['ttf']
+        //type: FileType.custom,
+        //allowedExtensions: ['ttf']
       );
       if(result == null) return;
       File file = File(join(AppLibrary.applicationPath,"Users","CustomFont.ttf"));

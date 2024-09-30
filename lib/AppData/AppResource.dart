@@ -1,46 +1,28 @@
-
 import 'dart:io';
-
-import 'package:flutter/material.dart';
+import 'package:motoki/AppData/AppLibrary.dart';
+import 'package:path/path.dart';
 
 class AppResource{
-  static Map<int,List<Image>> studentAvatars = {};
+  static Map<String,File> studentAvatars = {};
+  static Map<int,File> diyStudentAvatars = {};
 
-  static void addImage(int id,String type,String path){
-    Image img = Image.network(
-      path,
-      scale: 30,
-      filterQuality: FilterQuality.low,
-      fit: BoxFit.cover,
-      loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress){
-        if(loadingProgress == null){
-          return child;
-        }else{
-          return Center(
-            child: CircularProgressIndicator(
-              value: loadingProgress.expectedTotalBytes != null
-                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                  : null,
-            ),
-          );
-        }
-      },
-    );
-    if(type == "file"){
-      img = Image.file(File(path),errorBuilder: (b,o,t){
-        return Image.asset("assets/images/icon/IMAGELOST.png",fit: BoxFit.fitWidth,);
-      });
-    }
-    if(studentAvatars.containsKey(id)){
-      studentAvatars[id]!.add(img);
-    }else{
-      studentAvatars[id] = [img];
-    }
+  static void addDIYAvatar(int id,String path){
+    diyStudentAvatars[id] = File(path);
   }
 
-  static void alterImage(int id,String path){
-    studentAvatars[id] = [Image.file(File(path),errorBuilder: (b,o,t){
-      return Image.asset("assets/images/icon/IMAGELOST.png",fit: BoxFit.fitWidth,);
-    })];
+  static void addReleaseAvatar(int id,int skinIndex){
+    studentAvatars["$id-$skinIndex"] = File(getReleaseStudentPath(id,skinIndex));
   }
+
+  static File? getStudentAvatarFile(int id,int skinIndex,int release){
+    if(release == 2){
+      return diyStudentAvatars[id];
+    }
+    return studentAvatars["$id-$skinIndex"];
+  }
+
+  static String getReleaseStudentPath(int id,int skinIndex){
+    return join(AppLibrary.applicationPath,"Resouces","Avatars","${id}_$skinIndex.png");
+  }
+
 }

@@ -1,10 +1,14 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/AppData/InitApplication.dart';
 import 'package:motoki/Utils/CommonComponents.dart';
+import 'package:path/path.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../Managers/StudentManager.dart';
 import '../../Utils/CommonFunctions.dart';
 
 class AboutAppPage extends StatelessWidget{
@@ -25,13 +29,11 @@ class AboutAppPage extends StatelessWidget{
             },),
             ListTile(title: const Text("当前版本"),trailing: Text(AppLibrary.appVersion),),
             const ListTile(title: Text("检查更新"),trailing: Icon(Icons.arrow_forward_ios),onTap: getLastVersion),
-            ListTile(title: const Text("重载资源文件"),trailing: const Icon(Icons.arrow_forward_ios),onTap: ()async{
-              await loadStudentInfoFromNet();
-            }),
-          ])
+          ]),
         ],
       ),
     );
   }
+
 
 }

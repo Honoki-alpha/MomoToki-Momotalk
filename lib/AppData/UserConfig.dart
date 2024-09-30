@@ -22,6 +22,8 @@ class UserConfig{
   static bool applyNameReverse = false;
   //软件尺寸
   static double appDesktopSize = 1.0;
+  //离线模式
+  static bool applyOfflineMode = false;
 
   Future initUserConfig()async{
     sp = await SharedPreferences.getInstance();
@@ -33,6 +35,7 @@ class UserConfig{
     themeIndex = sp.getInt("themeIndex") ?? 0;
     aiChatKey = sp.getString("aiChatKey");
     denpendTheme = sp.getBool("denpendTheme")??true;
+    applyOfflineMode = sp.getBool("applyOfflineMode")??false;
     appDesktopSize = sp.getDouble("appDesktopSize") ?? 1.0;
     List<String> colors = sp.getStringList("chatBackGroundColor") ?? ["255","255","255"];
     chatBackGroundColor = Color.fromRGBO(int.parse(colors[0]), int.parse(colors[1]), int.parse(colors[2]), 1);

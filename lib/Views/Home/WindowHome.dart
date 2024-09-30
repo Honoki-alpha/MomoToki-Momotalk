@@ -127,6 +127,10 @@ class WindowHomeState extends State<WindowHome>{
   }
 
   void addChatStudent() async{
+    if(ChatGroupManager.instance.selectedGroupIndex < 0){
+      BotToast.showText(text: "未选择分组，请展开任意分组");
+      return;
+    }
     EStudent? student = await Get.to(()=>const SelectPage());
     if(student == null) return;
     setState(() {

@@ -131,7 +131,6 @@ class StudentManager{
 
 
   Future saveNickName()async{
-    print(studentNickName);
     await JsonFileManager.instance.saveJsonFile("Users", "NickName.json", json.encode(studentNickName));
   }
 

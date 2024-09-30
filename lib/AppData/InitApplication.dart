@@ -30,6 +30,7 @@ Future initApplication()async{
   await loadDIYJson();//获取DIY学生
   await loadStudentNickName();//获取学生备注
   await UserConfig().initUserConfig();//初始化用户配置
+  await loadUsualJson();//添加常用学生
   await loadCustomFont();//初始化字体
   ThemeManager.initTheme();//初始化主题
   loadStudentAvatar();//初始化学生资源
@@ -52,7 +53,7 @@ Future createNecessaryDirctory()async{
   Message：所有消息记录
   User：用于存储DIY.json和Usually.json
   * */
-  List dirs = ["ChatTiles","Messages","Users","AIChat","PictureCache","DIYemotion","MessageCature"];
+  List dirs = ["ChatTiles","Messages","Users","AIChat","PictureCache","DIYemotion","MessageCature","Resouces"];
   for (var dir in dirs) {
     Directory d = Directory(join(AppLibrary.applicationPath,dir));
     if(!d.existsSync()){
@@ -69,6 +70,9 @@ Future createNecessaryDirctory()async{
         File usualJson = File(join(d.path,"Usually.json"));
         usualJson.create();
         usualJson.writeAsString("[]");
+      }else if(dir=="Resouces"){
+        Directory(join(dir,"Avatars")).create(recursive: true);
+        Directory(join(dir,"Emotions")).create(recursive: true);
       }
     }
   }
@@ -89,6 +93,7 @@ Future loadStudentInfoFromNet()async{
 
 }
 
+//这个会用到的
 Future loadStudentAvatar()async{
   StudentManager.instance.studentDirctory.forEach((id,student){
     loadStudentAvatarResource(student);
@@ -97,24 +102,24 @@ Future loadStudentAvatar()async{
     loadStudentAvatarResource(student);
   });
   StudentManager.instance.diyStudentDirctory.forEach((id,student){
-    print(student);
     loadStudentAvatarResource(student);
   });
   loadStudentAvatarResource(StudentManager.instance.noneStudent);
 }
 void loadStudentAvatarResource(EStudent student){
   int id = student.id;
-  String path = "";
-  if(student.release != 2){
-    path = "https:${student.avatar}";
-    AppResource.addImage(id,"net",path);
-    for(int i =1;i<student.skinList.length;i++){
-      path = "https:${student.skinList[i]["avatar"]}";
-      AppResource.addImage(id, "net",path);
+  if(student.release == 2){
+    AppResource.addDIYAvatar(id, student.avatar);
+  }else{
+    int length = student.skinList.length;
+    if(length <= 0){
+      AppResource.addReleaseAvatar(id, 0);
+    }else{
+      for(var i = 0;i<length;i++){
+        AppResource.addReleaseAvatar(id, i);
+      }
     }
-  }else {
-    path = student.avatar;
-    AppResource.addImage(id, "file", path);
+
   }
 }
 
@@ -138,7 +143,9 @@ Future loadDIYJson()async{
 
 Future loadUsualJson()async{
   File usualStudent = File(join(AppLibrary.applicationPath,"Users","Usually.json"));
-  StudentManager.instance.usualStudents = json.decode(usualStudent.readAsStringSync());
+  for(var usual in json.decode(usualStudent.readAsStringSync())){
+    StudentManager.instance.usualStudents.add(usual);
+  }
 }
 
 //初始化windows端的窗口信息
@@ -193,7 +200,6 @@ Future<ByteData> readFont() async {
   ByteData fontData = (await File(UserConfig.customFont).readAsBytes()).buffer.asByteData();
   return fontData;
 }
-
 Future loadStudentNickName()async{
   File studentNickName = File(join(AppLibrary.applicationPath,"Users","NickName.json"));
   if(!studentNickName.existsSync()) {

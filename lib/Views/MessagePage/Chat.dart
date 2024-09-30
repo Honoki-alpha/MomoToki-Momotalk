@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/AppData/UserConfig.dart';
@@ -51,14 +52,18 @@ class _ChatState extends State<Chat>{
   Widget chatTileGroup(EChatTileGroup group,int groupIndex){
     return ExpansionPanelList(
       expansionCallback: (index,isOpen){
-        ChatGroupManager.instance.selectedGroupIndex = groupIndex;
+        if(ChatGroupManager.instance.selectedGroupIndex==groupIndex){
+          ChatGroupManager.instance.selectedGroupIndex = -1;
+        }else{
+          ChatGroupManager.instance.selectedGroupIndex = groupIndex;
+        }
         setState(() {
           group.display = !group.display;
         });
       },
       children: [ExpansionPanel(
           canTapOnHeader: true,
-          isExpanded: group.display,
+          isExpanded: ChatGroupManager.instance.selectedGroupIndex==groupIndex,
           headerBuilder: (context,open){
             return ListTile(
               leading: IconButton(
@@ -146,16 +151,6 @@ class _ChatState extends State<Chat>{
               hintText: "故事名",
             ),
             controller: asnameC,),
-          ListTile(title: const Text("AI代理"),trailing: Text("${host==3?"(国外)":"(国内)"}Host $host"),onTap: (){
-            if(host == 3){
-              host = 1;
-            }else{
-              host++;
-            }
-            setState(() {
-
-            });
-          },)
         ],
       ),
       actions: [
@@ -184,19 +179,24 @@ class _ChatState extends State<Chat>{
       MessageManager.instance.aiMessages = [];
     }
     EChatTile tile = group.chatTiles[index];
-    File file = File(join(AppLibrary.applicationPath,"Messages","${tile.chatTileUID}.json"));
-    String fileStr = await file.readAsString();
-
+    List message = [];
+    try{
+      File file = File(join(AppLibrary.applicationPath,"Messages","${tile.chatTileUID}.json"));
+      String fileStr = await file.readAsString();
+      message = json.decode(fileStr);
+    }catch(e){
+      Clipboard.setData(ClipboardData(text: e.toString()));
+      BotToast.showText(text: "发生错误，错误信息已粘贴，请发送给作者");
+      return;
+    }
     //Tile信息
     ChatGroupManager.instance.selectedTileIndex = index;
 
     //Message信息
     MessageManager.instance.currentStudentId = tile.senderId;
     MessageManager.instance.currentPage = tile.chatTileUID;
-    MessageManager.instance.messages = json.decode(fileStr);
+    MessageManager.instance.messages = message;
     MessageManager.instance.messageHasEdit = false;
-
-
     cancel();
     BotToast.showText(text: "成功获取消息记录(*^_^*)");
     if(!AppLibrary.appLandscapeMode){
@@ -270,12 +270,21 @@ class _ChatState extends State<Chat>{
     //加一个读取等待对话框
     var cancel = BotToast.showLoading();
     EChatTile tile = group.chatTiles[index];
-    File file = File(join(AppLibrary.applicationPath,"AIChat","${tile.chatTileUID}.json"));
-    String fileStr = await file.readAsString();
+    List mes = [];
+    try{
+      File file = File(join(
+          AppLibrary.applicationPath, "AIChat", "${tile.chatTileUID}.json"));
+      String fileStr = await file.readAsString();
+      mes = json.decode(fileStr);
+    }catch(e){
+      Clipboard.setData(ClipboardData(text: e.toString()));
+      BotToast.showText(text: "发生错误，错误信息已粘贴，请发送给作者");
+      return;
+    }
 
     MessageManager.instance.currentStudentId = tile.senderId;
     MessageManager.instance.currentPage = tile.chatTileUID;
-    MessageManager.instance.aiMessages = json.decode(fileStr);
+    MessageManager.instance.aiMessages = mes;
     MessageManager.instance.messageHasEdit = false;
 
     cancel();

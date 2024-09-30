@@ -16,35 +16,33 @@ class ChatGroupManager{
   ChatGroupManager._(); // 私有构造函数
 
 
-  int selectedGroupIndex = 0; //当前选中的分组
+  int selectedGroupIndex = -1; //当前选中的分组
   int selectedTileIndex = 0;
   List<EChatTileGroup> chatTileGroups = [];//消息分组
 
-  void addChatTile(EStudent student){
+  Future addChatTile(EStudent student)async{
     //生成唯一UID
     String uid = AppLibrary.generateUID();
     //新建消息列表块
     EChatTile chatTile = EChatTile(student.id,uid, student.givenName["nm"], student.givenName["nm"], "老师好", 1, {});
     chatTileGroups[selectedGroupIndex].chatTiles.add(chatTile);
-
     AppLibrary.globalEvent.fire(PageRefresh());
     //新建聊天文件
     File(join(AppLibrary.applicationPath,"Messages","$uid.json")).writeAsString("[]");
     File(join(AppLibrary.applicationPath,"AIChat","$uid.json")).writeAsString("[]");
-
     //开启线程保存json
     saveAsJson();
   }
 
-  void addChatTileGroup(String _groupName){
+  void addChatTileGroup(String groupName){
     for(var group in chatTileGroups){
-      if(group.groupName == _groupName){
+      if(group.groupName == groupName){
         BotToast.showText(text: "该组名已存在");
         return;
       }
     }
     //添加组
-    chatTileGroups.add(EChatTileGroup(_groupName, false, []));
+    chatTileGroups.add(EChatTileGroup(groupName, false, []));
     AppLibrary.globalEvent.fire(PageRefresh());
     //开启线程保存json
     saveAsJson();
@@ -63,7 +61,6 @@ class ChatGroupManager{
 
   void alterChatTileSubtitle(String subtitle){
     chatTileGroups[selectedGroupIndex].chatTiles[selectedTileIndex].tileSubtitle = subtitle;
-    print(chatTileGroups[selectedGroupIndex]);
     saveAsJson();
   }
 
@@ -90,5 +87,4 @@ class ChatGroupManager{
     }
     JsonFileManager.instance.saveJsonFile("ChatTiles", "ChatTilesGroups.json", json.encode(maps));
   }
-
 }

@@ -126,9 +126,9 @@ class _messageBoxState extends State<MessageBox>{
   }
   //返回本地/网络图片或者文本类型
   Widget getBoxItemContent(String mes,bool isImg){
-    final double fz = 15;//double.parse("${(LocalConfig.fontSize-2)*2+15}");
+    const double fz = 15;//double.parse("${(LocalConfig.fontSize-2)*2+15}");
     Widget origin;
-    origin = Text(mes,style: TextStyle(color: Colors.white,fontSize: fz,height: 1.1,wordSpacing: -0.6,letterSpacing: -0.6));
+    origin = Text(mes,style: const TextStyle(color: Colors.white,fontSize: fz,height: 1.1,wordSpacing: -0.6,letterSpacing: -0.6));
     if(mes.length > 7 && mes.substring(3,7) == ":://"){
       if(mes.substring(0,7) == "IMG:://"){
         File f = File(mes.substring(7));
