@@ -1,6 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:motoki/AppData/AppLibrary.dart';
+import 'package:motoki/Entity/EMessageBox.dart';
+import 'package:motoki/Utils/EventBus.dart';
 
 import '../../Components/MessageBox.dart';
 import '../../Managers/MessageManager.dart';
@@ -17,18 +22,37 @@ class PlayPage extends StatefulWidget{
 }
 
 class _playPageState extends State<PlayPage>{
-  List messageList = [];//消息盒子全部
+  late List messageList = [];//消息盒子全部
   List waitToPlayList = [];//正在播放的消息盒子
   ScrollController sc = ScrollController();
+  StreamSubscription? stream;
+  bool isHappend = false;
+  ReplyClick lastReplyClick = ReplyClick("error");
 
-
+  Completer completer = Completer();
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    messageList = List.of(MessageManager.instance.messages.sublist(widget.startPointer,widget.endPointer+1));
+    messageList.clear();
+
+    //深拷贝一个数组
+    String old = json.encode(MessageManager.instance.messages.sublist(widget.startPointer,widget.endPointer+1));
+    messageList = jsonDecode(old);
+
+    stream ??= AppLibrary.globalEvent.on<ReplyClick>().listen((item){
+      replyButtonClick(item);
+      });
     startPlay();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    waitToPlayList.clear();
+    stream?.cancel();
   }
 
   @override
@@ -63,7 +87,24 @@ class _playPageState extends State<PlayPage>{
 
   void startPlay()async{
     for(var mesBox in messageList){
+      if(!mounted) return;
       List mbList = List.from(mesBox["messageContentList"].toList());
+      //如果是回复，则直接把整个都添加上
+      if(mesBox["senderId"] == 4){
+        if(mounted){
+          setState(() {
+            waitToPlayList.add(mesBox);
+          });
+        }
+        //如果上一个已完成过，那么初始化一个新的，令其为未完成的状态
+        if(completer.isCompleted){
+          completer = Completer();
+        }
+        await completer.future;
+        await Future.delayed(Duration(milliseconds: AppLibrary.perMessageTime));
+        continue;
+      }
+      //不是回复就正常添加
       mesBox["messageContentList"] = mesBox["messageContentList"].sublist(0,1);
       if(mounted){
         setState(() {
@@ -71,7 +112,7 @@ class _playPageState extends State<PlayPage>{
         });
       }
       int frequency = 0;
-      await Future.delayed(const Duration(milliseconds: 2000));
+      await Future.delayed(Duration(milliseconds: AppLibrary.perMessageTime));
       for(var mes in mbList){
         if(frequency == 0) {
           frequency++;
@@ -83,7 +124,7 @@ class _playPageState extends State<PlayPage>{
           });
         }
         toBottom();
-        await Future.delayed(const Duration(milliseconds: 2000));
+        await Future.delayed(Duration(milliseconds: AppLibrary.perMessageTime));
       }
       toBottom();
     }
@@ -95,5 +136,22 @@ class _playPageState extends State<PlayPage>{
         sc.jumpTo(sc.position.maxScrollExtent);
       }
     });
+  }
+
+  void replyButtonClick(ReplyClick item)async{
+    try{
+      waitToPlayList.last["senderId"] = 1;
+      waitToPlayList.last["senderSkinIndex"] = 0;
+      waitToPlayList.last["messageContentList"] = [item.content];
+      waitToPlayList.last["boxAlign"] = false;
+      waitToPlayList.last["storageInfo"] = {};
+    }catch(e){
+      print("报错了");
+      return;
+    }
+    if(!completer.isCompleted){
+      if(mounted){setState(() {});}
+      completer.complete();
+    }
   }
 }

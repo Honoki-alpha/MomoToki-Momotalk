@@ -14,6 +14,10 @@ class ThemeManager{
 
   static initTheme(){
     momoTheme = ThemeData(
+      textTheme: UserConfig.appFontSize<5.0?null:TextTheme(
+        bodyLarge: TextStyle(fontSize: UserConfig.appFontSize),
+        bodyMedium: TextStyle(fontSize: UserConfig.appFontSize -2),
+      ),
       brightness: Brightness.light,
       fontFamily: AppLibrary.appFontSource,
       useMaterial3: true,
@@ -27,11 +31,15 @@ class ThemeManager{
       )
     );
     darkTheme = ThemeData(
+        textTheme: UserConfig.appFontSize<5.0?null:TextTheme(
+          bodyLarge: TextStyle(fontSize: UserConfig.appFontSize),
+          bodyMedium: TextStyle(fontSize: UserConfig.appFontSize -2),
+        ),
         brightness: Brightness.dark,
         fontFamily: AppLibrary.appFontSource,
         useMaterial3: true,
         cardColor: Colors.black12,
-        colorSchemeSeed: Colors.black12,
+        colorSchemeSeed: const Color.fromRGBO(79, 79, 79, 1),
         highlightColor: Colors.white38,
         canvasColor: Colors.grey,
         appBarTheme: const AppBarTheme(
@@ -40,6 +48,10 @@ class ThemeManager{
         )
     );
     blueTheme = ThemeData(
+        textTheme: UserConfig.appFontSize<5.0?null:TextTheme(
+          bodyLarge: TextStyle(fontSize: UserConfig.appFontSize),
+          bodyMedium: TextStyle(fontSize: UserConfig.appFontSize -2),
+        ),
         brightness: Brightness.light,
         fontFamily: AppLibrary.appFontSource,
         useMaterial3: true,

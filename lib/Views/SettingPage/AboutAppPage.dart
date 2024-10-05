@@ -1,14 +1,8 @@
 import 'package:bot_toast/bot_toast.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
-import 'package:motoki/AppData/InitApplication.dart';
 import 'package:motoki/Utils/CommonComponents.dart';
-import 'package:path/path.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import '../../Managers/StudentManager.dart';
 import '../../Utils/CommonFunctions.dart';
 
 class AboutAppPage extends StatelessWidget{

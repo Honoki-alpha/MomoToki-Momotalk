@@ -24,6 +24,9 @@ class UserConfig{
   static double appDesktopSize = 1.0;
   //离线模式
   static bool applyOfflineMode = false;
+  //字体大小
+  static double appFontSize = 0.0;
+
 
   Future initUserConfig()async{
     sp = await SharedPreferences.getInstance();
@@ -37,6 +40,7 @@ class UserConfig{
     denpendTheme = sp.getBool("denpendTheme")??true;
     applyOfflineMode = sp.getBool("applyOfflineMode")??false;
     appDesktopSize = sp.getDouble("appDesktopSize") ?? 1.0;
+    appFontSize = sp.getDouble("appFontSize") ?? 0.0;
     List<String> colors = sp.getStringList("chatBackGroundColor") ?? ["255","255","255"];
     chatBackGroundColor = Color.fromRGBO(int.parse(colors[0]), int.parse(colors[1]), int.parse(colors[2]), 1);
   }

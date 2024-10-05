@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:motoki/AppData/AppLibrary.dart';
+import 'package:motoki/Utils/EventBus.dart';
 
 import '../Entity/EMessageBox.dart';
 import '../Managers/MessageManager.dart';
@@ -19,6 +22,7 @@ class MessageBox extends StatefulWidget{
 
 class _messageBoxState extends State<MessageBox>{
   late EMessageBox messageBox;
+  List<double> scaleValue = [];//缩放数
   int playedIndex = 0;//播放过消息的条数
   //bool isPlayed = false;//是否是播放过的
   @override
@@ -26,17 +30,17 @@ class _messageBoxState extends State<MessageBox>{
     super.initState();
     messageBox =  EMessageBox.fromMap(widget.tempBox??MessageManager.instance.messages[widget.index]);
     //如果不是播放模式或者全都播放过了
-    Timer timer = Timer.periodic(const Duration(milliseconds: 1500), (t) {
+    Timer timer = Timer.periodic(Duration(milliseconds: AppLibrary.ellipsisTime), (t) {
       if(!mounted) return;
       setState(() {
         playedIndex++;
       });
     });
-    if(widget.isPlayMode && playedIndex < messageBox.messageContentList.length){
-
-    }else{
+    if(!( widget.isPlayMode && playedIndex < messageBox.messageContentList.length )){
       timer.cancel();
     }
+
+    scaleValue = List.filled(messageBox.messageContentList.length, 1.0);
 
   }
 
@@ -44,6 +48,9 @@ class _messageBoxState extends State<MessageBox>{
   @override
   Widget build(BuildContext context) {
     messageBox =  EMessageBox.fromMap(widget.tempBox??MessageManager.instance.messages[widget.index]);
+    if(scaleValue.length != messageBox.messageContentList.length){
+      scaleValue = List.filled(messageBox.messageContentList.length, 1.0);
+    }
     switch(messageBox.senderId){
       case 1:return senseiBox();
       case 2:return asideBox();
@@ -128,7 +135,7 @@ class _messageBoxState extends State<MessageBox>{
   Widget getBoxItemContent(String mes,bool isImg){
     const double fz = 15;//double.parse("${(LocalConfig.fontSize-2)*2+15}");
     Widget origin;
-    origin = Text(mes,style: const TextStyle(color: Colors.white,fontSize: fz,height: 1.1,wordSpacing: -0.6,letterSpacing: -0.6));
+    origin = Text(mes,style: const TextStyle(color: Colors.white,height: 1.1,wordSpacing: -0.6,letterSpacing: -0.6));
     if(mes.length > 7 && mes.substring(3,7) == ":://"){
       if(mes.substring(0,7) == "IMG:://"){
         File f = File(mes.substring(7));
@@ -149,39 +156,42 @@ class _messageBoxState extends State<MessageBox>{
 
   //老师的消息盒子
   Widget senseiBox(){
-    return Column(children: [
-      ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(15, 1, 15, 1),
-          itemCount: messageBox.messageContentList.length,
-          itemBuilder: (c,i){
-            var message = messageBox.messageContentList[i];
-            //判断是否是IMG消息类型.........
-            bool isImg = MessageManager.instance.checkIsImg(message);
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                //套一个Expanded是为了使Text自动换行
-                Expanded(child:
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Container(
-                      constraints: isImg?const BoxConstraints(maxWidth: 180):null,//限制宽度
-                      padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 10),
-                      margin: const EdgeInsets.only(top: 5),
-                      decoration: BoxDecoration(
-                        //根据图片是否白色底色+描边
-                        border: isImg?Border.all(width: 0.3):null,
-                        color: isImg?Colors.white:const Color(0xFF4A8ACB),
-                        borderRadius: const BorderRadius.all(Radius.circular(6)),
-                      ),
-                      child: GestureDetector(child: getBoxItemContent(message,isImg))
-                  ),)),
-                (isImg||i>0)?const SizedBox(width: 6,):Image.asset("assets/images/chatres/arrow_teacher.webp",scale: 20)
-              ],
-            );
-          })],);
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 3),
+      child: Column(children: [
+        ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(15, 1, 15, 1),
+            itemCount: messageBox.messageContentList.length,
+            itemBuilder: (c,i){
+              var message = messageBox.messageContentList[i];
+              //判断是否是IMG消息类型.........
+              bool isImg = MessageManager.instance.checkIsImg(message);
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  //套一个Expanded是为了使Text自动换行
+                  Expanded(child:
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Container(
+                        constraints: isImg?const BoxConstraints(maxWidth: 180):null,//限制宽度
+                        padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 10),
+                        margin: const EdgeInsets.only(top: 5),
+                        decoration: BoxDecoration(
+                          //根据图片是否白色底色+描边
+                          border: isImg?Border.all(width: 0.3):null,
+                          color: isImg?Colors.white:const Color(0xFF4A8ACB),
+                          borderRadius: const BorderRadius.all(Radius.circular(6)),
+                        ),
+                        child: GestureDetector(child: getBoxItemContent(message,isImg))
+                    ),)),
+                  (isImg||i>0)?const SizedBox(width: 6,):Image.asset("assets/images/chatres/arrow_teacher.webp",scale: 20)
+                ],
+              );
+            })],),
+    );
   }
 
   //旁白
@@ -189,6 +199,7 @@ class _messageBoxState extends State<MessageBox>{
     return Container(
       alignment: Alignment.center,
       margin:const EdgeInsets.fromLTRB(20, 10, 20, 10),
+      padding: const EdgeInsets.symmetric(horizontal: 5),
       decoration: BoxDecoration(
         color: const Color.fromRGBO(220,230,230, 1),
         borderRadius: BorderRadius.circular(8)
@@ -199,15 +210,20 @@ class _messageBoxState extends State<MessageBox>{
     );
   }
 
+  //透明旁白
   Widget asidetransBox(){
     return Container(
       alignment: Alignment.center,
       margin:const EdgeInsets.fromLTRB(20, 10, 20, 10),
+      padding: const EdgeInsets.symmetric(horizontal: 5),
       child:Text(
         textAlign: TextAlign.center, messageBox.messageContentList[0]),
     );
   }
 
+
+
+  //回复
   Widget replyBox(){
     return Align(
         alignment: Alignment.centerRight,
@@ -223,7 +239,11 @@ class _messageBoxState extends State<MessageBox>{
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: messageBox.messageContentList.length,
                     itemBuilder: (context,index){
-                      return replyItem(messageBox.messageContentList[index],);
+                      String mes = messageBox.messageContentList[index];
+                      return GestureDetector(
+                        child: replyItem(index,mes),
+                        onTap: ()=>replyItemClick(index,mes),
+                      );
                     }),),//单个回复项目
               const Image(image: AssetImage("assets/images/chattools/reply_tail.png"),width: 280,),
             ],
@@ -231,7 +251,22 @@ class _messageBoxState extends State<MessageBox>{
         ));
   }
 
-  Widget replyItem(String mes){
+
+  void replyItemClick(int index,String mes)async{
+    if(!widget.isPlayMode) return;
+    setState(() {
+      scaleValue[index] = 0.85;
+    });
+    await Future.delayed(const Duration(milliseconds: 100));
+    setState(() {
+      scaleValue[index] = 1.0;
+    });
+    await Future.delayed(const Duration(milliseconds: 100));
+    AppLibrary.sendReplyEvent(mes);
+  }
+
+
+  Widget replyItem(int index,String mes){
     return Container(
       width: 280,
       constraints:const BoxConstraints(
@@ -241,24 +276,27 @@ class _messageBoxState extends State<MessageBox>{
           border:  Border(left:BorderSide(width:0.1,color:Colors.black),right:BorderSide(width:0.1,color:Colors.black) ),
           color: Color.fromRGBO(226,237,239, 1)
       ),
-      child:Container(
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-          margin: const EdgeInsets.only(right:15, top: 4,left: 15,bottom: 4),
-          decoration: BoxDecoration(
-            boxShadow: [BoxShadow(
-              color: Colors.black.withOpacity(0.5),		// 阴影的颜色
-              offset: const Offset(0.5, 0.5),						// 阴影与容器的距离
-              blurRadius: 2.0,							// 高斯的标准偏差与盒子的形状卷积。
-              spreadRadius: 0.0,							// 在应用模糊之前，框应该膨胀的量。
-            )],
-            border: Border.all(color: Colors.grey, width: 0.3),
-            color: Colors.white,
-            borderRadius:const BorderRadius.all(Radius.circular(6)),
-          ),
-          child: Text(mes,textAlign: TextAlign.center,style: const TextStyle(
-            color: Color.fromRGBO(90,90,125, 1),
-          ),)),
+      child:AnimatedScale(
+        scale: scaleValue[index], duration: const Duration(milliseconds: 100),
+        child: Container(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+            margin: const EdgeInsets.only(right:15, top: 4,left: 15,bottom: 4),
+            decoration: BoxDecoration(
+              boxShadow: [BoxShadow(
+                color: Colors.black.withOpacity(0.5),		// 阴影的颜色
+                offset: const Offset(0.5, 0.5),						// 阴影与容器的距离
+                blurRadius: 2.0,							// 高斯的标准偏差与盒子的形状卷积。
+                spreadRadius: 0.0,							// 在应用模糊之前，框应该膨胀的量。
+              )],
+              border: Border.all(color: Colors.grey, width: 0.3),
+              color: Colors.white,
+              borderRadius:const BorderRadius.all(Radius.circular(6)),
+            ),
+            child: Text(mes,textAlign: TextAlign.center,style: const TextStyle(
+              color: Color.fromRGBO(90,90,125, 1),
+            ),)),
+      ),
     );
   }
 

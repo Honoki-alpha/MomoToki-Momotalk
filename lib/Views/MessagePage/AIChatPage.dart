@@ -49,9 +49,7 @@ class _AiChatPage extends State<AIChatPage>{
     "500 Internal_Server_Error":"服务器内部错误。这可能是OpenAI服务器的问题，并非老师的问题，可切换HOST尝试，若仍出现问题，请等待OpenAI解决。",
     "503 Service_Unavailable":"服务暂时不可用。这可能是由于OpenAI正在进行维护或者服务器过载引起，请耐心等待一段时间后尝试。",
   };
-  final List hostList = [
-    "https://api.chatanywhere.tech","https://api.chatanywhere.com.cn","https://api.chatanywhere.cn"
-  ];
+  final String hostlink = "https://api.chatanywhere.tech";
   int hostIndex = Random().nextInt(1);
   final Map<String,String> headers = {
     'Authorization': 'Bearer ${UserConfig.aiChatKey}',
@@ -169,7 +167,7 @@ class _AiChatPage extends State<AIChatPage>{
       "messages": historyMessage
     });
     var result = await post(
-        Uri.parse("${hostList[hostIndex]}/v1/chat/completions"),
+        Uri.parse("$hostlink/v1/chat/completions"),
         headers: headers,
         body: body,
         encoding:Encoding.getByName("UTF-8"));

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
@@ -95,6 +97,11 @@ class _seitoSet extends State<StudentSetting>{
             ]),
             getSettingBorderBox([
               ListTile(
+                title: const Text("下载配置表(离线必须！)"),
+                trailing: const Icon(Icons.arrow_forward_ios_sharp),
+                onTap: downloadJson,
+              ),
+              ListTile(
                 title: const Text("头像资源下载"),
                 trailing: const Icon(Icons.arrow_forward_ios_sharp),
                 onTap: downloadAvatar,
@@ -104,15 +111,28 @@ class _seitoSet extends State<StudentSetting>{
                 trailing: const Icon(Icons.arrow_forward_ios_sharp),
                 onTap: downloadSingle,
               ),
-              ListTile(
-                title: const Text("下载全部差分"),
-                trailing: const Icon(Icons.arrow_forward_ios_sharp),
-                onTap: downloadEmotion,
-              ),
+              // ListTile(
+              //   title: const Text("下载全部差分"),
+              //   trailing: const Icon(Icons.arrow_forward_ios_sharp),
+              //   onTap: downloadEmotion,
+              // ),
             ])
           ],
         )
     );
+  }
+
+  void downloadJson()async{
+    var dio = Dio();
+    var cancel = BotToast.showLoading();
+    await dio.download(
+        "https://gitee.com/honoki/mtkresouce/raw/master/public/students.json",
+        join(AppLibrary.applicationPath,"Resources","students.json"));
+    await dio.download(
+        "https://gitee.com/honoki/mtkresouce/raw/master/public/appDatas.json",
+        join(AppLibrary.applicationPath,"Resources","appDatas.json"));
+    cancel();
+    BotToast.showText(text: "下载配置表完成");
   }
 
   void downloadAvatar()async{
@@ -122,16 +142,21 @@ class _seitoSet extends State<StudentSetting>{
     var dio = Dio();
     int i = 0;
     int length = StudentManager.instance.studentDirctory.length;
+    //下载工具
     for(var item in StudentManager.instance.toolStudentDirctory.entries){
       EStudent student = item.value;
-      await dio.download("https:${student.avatar}", join(AppLibrary.applicationPath,"Resouces","Avatars","${student.id}_0.png"));
+      await dio.download("https:${student.avatar}", join(AppLibrary.applicationPath,"Resources","Avatars","${student.id}_0.png"));
     }
+    await dio.download("https://gitee.com/honoki/mtkresouce/raw/master/assets/images/icon/unkown.webp", join(AppLibrary.applicationPath,"Resources","Avatars","99_0.png"));
+    //下载学生
     for(var item in StudentManager.instance.studentDirctory.entries){
       EStudent student = item.value;
       var skinIndex = 0;
       for(var skin in student.skinList){
         if(!mounted) return;
-        await dio.download("https:${skin["avatar"]}", join(AppLibrary.applicationPath,"Resouces","Avatars","${student.id}_$skinIndex.png"));
+        File f = File(join(AppLibrary.applicationPath,"Resources","Avatars","${student.id}_$skinIndex.png"));
+        if(f.existsSync()) continue;
+        await dio.download("https:${skin["avatar"]}", f.path);
         skinIndex++;
         await Future.delayed(const Duration(milliseconds: 200));
       }
@@ -144,11 +169,16 @@ class _seitoSet extends State<StudentSetting>{
   }
 
   void downloadSingle()async{
+    if(AppLibrary.requestTimes > 12){
+      BotToast.showText(text: "请求过于频繁，请等待30分钟后重启软件后再次下载");
+      return;
+    }
     EStudent? student = await Get.to(()=>const SelectPage(),transition: Transition.rightToLeftWithFade);
     if(student == null) return;
     var cancel = BotToast.showLoading();
     await downloadSingleEmotion(student);
     cancel();
+    AppLibrary.requestTimes++;
     BotToast.showText(text: "下载完成");
   }
 
@@ -158,7 +188,7 @@ class _seitoSet extends State<StudentSetting>{
     for(var gal in student.gallery){
       if(!mounted) return;
       for(var img in gal["images"]){
-        await dio.download("https:$img", join(AppLibrary.applicationPath,"Resouces","Emotions","${student.id}","$fileIndex.png"));
+        await dio.download("https:$img", join(AppLibrary.applicationPath,"Resources","Emotions","${student.id}","$fileIndex.png"));
         fileIndex++;
       }
       await Future.delayed(const Duration(milliseconds: 100));
@@ -207,4 +237,6 @@ class _seitoSet extends State<StudentSetting>{
       ),
     );
   }
+
+
 }

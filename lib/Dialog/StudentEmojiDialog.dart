@@ -4,9 +4,9 @@ import '../AppData/AppLibrary.dart';
 import '../Managers/StudentManager.dart';
 
 class StudentEmojiDialog extends StatelessWidget{
-  const StudentEmojiDialog({super.key, required this.studentID});
+  const StudentEmojiDialog({super.key, required this.studentID,this.height});
   final int studentID;
-
+  final double? height;
   @override
   Widget build(BuildContext context) {
     List gallery = StudentManager.instance.getStudentById(studentID).gallery;
@@ -28,7 +28,7 @@ class StudentEmojiDialog extends StatelessWidget{
       children: [
         Text(item["title"]),
         SizedBox(
-          height: 170,
+          height: height ?? 170,
           width: 300,
           child: GridView(
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

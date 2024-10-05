@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
+import 'package:motoki/AppData/UserConfig.dart';
 import 'package:motoki/Dialog/InquireDialog.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:path/path.dart';
@@ -24,6 +25,10 @@ Future<String> getPictureFromDevice(String savePath)async{
 
 //获取最新版本
 void getLastVersion()async{
+  if(UserConfig.applyOfflineMode){
+    BotToast.showText(text: "离线模式将不会检测版本更新");
+    return;
+  }
   Dio dio = Dio();
   var response = await dio.get("https://gitee.com/api/v5/repos/honoki/momotoki/releases/latest");
   if(response.data["tag_name"] == AppLibrary.appVersion){

@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
@@ -191,7 +193,7 @@ class _messagePageState extends State<MessagePage>{
                           IconButton(onPressed: emojiButtonClick, icon: const Icon(Icons.emoji_emotions)),
                           IconButton(onPressed: imagePickerClick, icon: const Icon(Icons.image)),
                           IconButton(onPressed: addUsualStudent, icon: const Icon(Icons.person_add)),
-                          IconButton(onPressed: (){}, icon: const Icon(Icons.shield)),
+                          IconButton(onPressed: circleEmojiButtonClick, icon: const Icon(Icons.shield)),
                           IconButton(onPressed: playButtonClick, icon: const Icon(Icons.play_circle)),
                           IconButton(onPressed: screenShotButton, icon: const Icon(Icons.screenshot_sharp)),
                         ])),
@@ -336,6 +338,7 @@ class _messagePageState extends State<MessagePage>{
 
   //表情差分按钮
   void emojiButtonClick()async{
+    if(currentStudent.id < 100) return;
     if(currentStudent.release != 2 && !UserConfig.applyOfflineMode){
       var result = await Get.dialog(StudentEmojiDialog(studentID: currentStudent.id));
       if(result == null) return;
@@ -361,6 +364,19 @@ class _messagePageState extends State<MessagePage>{
       loadImgPath = result;
     }
   }
+
+  void circleEmojiButtonClick()async{
+    if(UserConfig.applyOfflineMode){
+      BotToast.showText(text: "离线模式请自行下载");
+      return;
+    }
+    var result = await Get.dialog(const StudentEmojiDialog(studentID: 6,height: 370));
+    if(result == null) return;
+    input.text = "[图片已加载]";
+    loadImgMethod = "URL";
+    loadImgPath = result["url"];
+  }
+
 
   //图片按钮
  void imagePickerClick()async{
@@ -390,7 +406,12 @@ class _messagePageState extends State<MessagePage>{
 
  //删除常用学生
   void deleteUsualStudent(int index)async{
-    StudentManager.instance.deleteUsualStudent(index);
+    if(index < StudentManager.instance.toolStudentDirctory.length) return;
+    int newIndex = index - StudentManager.instance.toolStudentDirctory.length;
+    setState(() {
+      StudentManager.instance.deleteUsualStudent(newIndex);
+    });
+    BotToast.showText(text: "删除成功！");
   }
 
   void screenShotButton()async{
@@ -442,6 +463,8 @@ class _messagePageState extends State<MessagePage>{
   }
 
   void playButtonClick()async{
+    var result = await Get.dialog(playInfoDialog());
+    if(result != true) return;
     await saveButtonClick(noneDialog: true);
     if(AppLibrary.appLandscapeMode){
       WindowHomeState.setRightPage(PlayPage(startPointer: 0, endPointer: MessageManager.instance.messages.length-1));
@@ -455,7 +478,7 @@ class _messagePageState extends State<MessagePage>{
  Widget skinIndexSelectDialog(List skinList){
     return AlertDialog(
       content: SizedBox(
-        height: 200,
+        height: 140,
         child: SingleChildScrollView(
           child: Column(
             children: skinList.map<Widget>((element){
@@ -467,6 +490,44 @@ class _messagePageState extends State<MessagePage>{
           ),
         ),
       ),
+    );
+ }
+
+ TextEditingController ellipsis = TextEditingController();
+ TextEditingController perMessage = TextEditingController();
+ Widget playInfoDialog(){
+   ellipsis.text = AppLibrary.ellipsisTime.toString();
+   perMessage.text = AppLibrary.perMessageTime.toString();
+   return AlertDialog(
+      title: const Text("播放设置"),
+      content: SizedBox(
+        height: 150,
+        child: Column(
+          children: [
+            Expanded(child: TextField(
+              keyboardType: TextInputType.number,
+              controller: ellipsis,
+              decoration: const InputDecoration(
+                helperText: "等待动画持续时长(ms)"
+              ),
+            )),
+            Expanded(child: TextField(
+              keyboardType: TextInputType.number,
+              controller: perMessage,
+              decoration: const InputDecoration(
+                helperText: "每条消息间隔时长(ms)"
+              ),
+            )),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: (){
+          AppLibrary.ellipsisTime = max(int.parse(ellipsis.text), 500);
+          AppLibrary.perMessageTime = max(int.parse(perMessage.text), 500);
+          Get.back(result: true);
+        }, child: const Text("确认"))
+      ],
     );
  }
 

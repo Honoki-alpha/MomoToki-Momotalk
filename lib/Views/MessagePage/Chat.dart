@@ -186,7 +186,7 @@ class _ChatState extends State<Chat>{
       message = json.decode(fileStr);
     }catch(e){
       Clipboard.setData(ClipboardData(text: e.toString()));
-      BotToast.showText(text: "发生错误，错误信息已粘贴，请发送给作者");
+      BotToast.showText(text: "文件丢失，请重新创建该聊天！");
       return;
     }
     //Tile信息

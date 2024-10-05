@@ -46,7 +46,7 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
     Get.off(
         ()=>getHome(),
         transition: Transition.downToUp,
-        duration: const Duration(milliseconds: 1200),
+        duration: const Duration(milliseconds: 600),
         curve: Curves.ease
     );
   }

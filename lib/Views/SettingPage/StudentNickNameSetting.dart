@@ -97,7 +97,7 @@ class _StudentNickNameSettingState extends State<StudentNickNameSetting>{
     return AlertDialog(
       title: const Text("点击框外选择原皮"),
       content: SizedBox(
-        height: 200,
+        height: 140,
         child: SingleChildScrollView(
           child: Column(
             children: skinList.map<Widget>((element){

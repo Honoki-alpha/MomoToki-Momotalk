@@ -13,7 +13,11 @@ class StudentManager{
   Map<int,EStudent> toolStudentDirctory = {};//聊天工具列表
   Map<String,dynamic> studentNickName = {};//学生备注名
   List<String> usualStudents = [];//常用学生(以"ID||skinIndex"形式存储)
+
+  //丢失学生
   EStudent noneStudent = EStudent.simpleDIY(0, "", "学生丢失", "//gitee.com/honoki/momotoki/raw/master/assets/NoneAvatar.jpg");
+  //社团学生
+  late EStudent circleStudent;
 
   EStudent getStudentById(int id){
     if(studentDirctory.containsKey(id)){
@@ -22,6 +26,8 @@ class StudentManager{
       return toolStudentDirctory[id]!;
     }else if(diyStudentDirctory.containsKey(id)){
       return diyStudentDirctory[id]!;
+    }else if(id == 6){
+      return circleStudent;
     }else{
       return noneStudent;
     }

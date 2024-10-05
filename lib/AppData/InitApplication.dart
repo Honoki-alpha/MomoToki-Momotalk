@@ -25,11 +25,18 @@ Future initApplication()async{
   await initWindowsConfig();//初始化桌面端尺寸
   await setDefaultApplicationPath();//设置软件路径
   await createNecessaryDirctory();//创建必要文件
-  await loadStudentInfoFromNet();//获取学生信息
+  await UserConfig().initUserConfig();//初始化用户配置
+  if(UserConfig.applyOfflineMode){
+    await loadStudentInfoFromLocal();//获取学生信息
+    await loadAppDataFromLocal();//获取资源信息
+  }else{
+    await loadStudentInfoFromNet();//获取学生信息
+    await loadAppDataFromNet();//获取资源信息
+  }
+  initSpecialStudent();
   await loadJsonFiles();//获取本地聊天记录
   await loadDIYJson();//获取DIY学生
   await loadStudentNickName();//获取学生备注
-  await UserConfig().initUserConfig();//初始化用户配置
   await loadUsualJson();//添加常用学生
   await loadCustomFont();//初始化字体
   ThemeManager.initTheme();//初始化主题
@@ -48,12 +55,16 @@ Future setDefaultApplicationPath()async{
 //创建必要文件夹
 Future createNecessaryDirctory()async{
   /*
-  ChatTileGroups：聊天项分组
   ChatTiles：聊天列表的项
   Message：所有消息记录
   User：用于存储DIY.json和Usually.json
+  AICHAT:ai聊天
+  PictureCache：图片储存地址
+  DIYemotion：自定义差分存储
+  MessageCature：PC截图保存
+  Resouces:资源存储
   * */
-  List dirs = ["ChatTiles","Messages","Users","AIChat","PictureCache","DIYemotion","MessageCature","Resouces"];
+  List dirs = ["ChatTiles","Messages","Users","AIChat","PictureCache","DIYemotion","MessageCature","Resources"];
   for (var dir in dirs) {
     Directory d = Directory(join(AppLibrary.applicationPath,dir));
     if(!d.existsSync()){
@@ -63,16 +74,18 @@ Future createNecessaryDirctory()async{
         File defaultjson = File(join(d.path,"ChatTilesGroups.json"));
         defaultjson.create();
         defaultjson.writeAsString("[{\"groupName\":\"默认分组\",\"chatTiles\":[]}]");
-      }else if(dir == "Users"){
+      }
+      else if(dir == "Users"){
         File diyjson = File(join(d.path,"DIY.json"));
         diyjson.create();
         diyjson.writeAsString("[]");
         File usualJson = File(join(d.path,"Usually.json"));
         usualJson.create();
         usualJson.writeAsString("[]");
-      }else if(dir=="Resouces"){
-        Directory(join(dir,"Avatars")).create(recursive: true);
-        Directory(join(dir,"Emotions")).create(recursive: true);
+      }
+      else if(dir=="Resources"){
+        Directory(join(d.path,"Avatars")).create(recursive: true);
+        Directory(join(d.path,"Emotions")).create(recursive: true);
       }
     }
   }
@@ -81,19 +94,52 @@ Future createNecessaryDirctory()async{
 //从网络获取学生信息
 Future loadStudentInfoFromNet()async{
   Dio dio = Dio();
-  Response studentFronNet = await dio.request("https://gitee.com/honoki/mtkresouce/raw/master/public/students.json");
-  for(var student in studentFronNet.data){
+  dynamic netData = {};
+  try{
+    Response studentFronNet = await dio.request("https://gitee.com/honoki/mtkresouce/raw/master/public/students.json");
+    netData = studentFronNet.data;
+  }catch(e){
+    return;
+  }
+  for(var student in netData){
     StudentManager.instance.studentDirctory[student["id"]] = EStudent.fromMap(student);
   }
   String chatTools = await rootBundle.loadString("assets/datas/chatTools.json");
   for(var tool in jsonDecode(chatTools)){
     StudentManager.instance.toolStudentDirctory[tool["id"]] = EStudent.fromMap(tool);
   }
-  StudentManager.instance.noneStudent.release = 0;
 
 }
+Future loadStudentInfoFromLocal()async{
+  File students = File(join(AppLibrary.applicationPath,"Resources","students.json"));
+  if(!students.existsSync()) {
+    UserConfig.sp.setBool("applyOfflineMode", false);
+    return;
+  }
+  for(var student in json.decode(students.readAsStringSync())){
+    StudentManager.instance.studentDirctory[student["id"]] = EStudent.fromMap(student);
+  }
+  String chatTools = await rootBundle.loadString("assets/datas/chatTools.json");
+  for(var tool in jsonDecode(chatTools)){
+    StudentManager.instance.toolStudentDirctory[tool["id"]] = EStudent.fromMap(tool);
+  }
+}
+//从网络获取软件信息
+Future loadAppDataFromNet()async{
+  Dio dio = Dio();
+  Response dataFronNet = await dio.request("https://gitee.com/honoki/mtkresouce/raw/master/public/appDatas.json");
+  AppLibrary.schoolList = dataFronNet.data["schoolList"];
+}
+Future loadAppDataFromLocal()async{
+  File datas = File(join(AppLibrary.applicationPath,"Resources","appDatas.json"));
+  if(!datas.existsSync()) {
+    UserConfig.sp.setBool("applyOfflineMode", false);
+    return;
+  }
+  AppLibrary.schoolList = json.decode(datas.readAsStringSync())["schoolList"];
+}
 
-//这个会用到的
+//加载学生头像文件
 Future loadStudentAvatar()async{
   StudentManager.instance.studentDirctory.forEach((id,student){
     loadStudentAvatarResource(student);
@@ -123,6 +169,22 @@ void loadStudentAvatarResource(EStudent student){
   }
 }
 
+//实例化特殊学生
+void initSpecialStudent(){
+  //空学生
+  StudentManager.instance.noneStudent.release = 0;
+  //社团学生
+  EStudent circle = EStudent.simpleDIY(6, "社团", "表情", "");
+  List circles = [];
+  for(var i = 1;i <= 247;i++){
+    circles.add("//gitee.com/honoki/momotoki/raw/master/public/CircleEmoji/CircleEmoji_($i).webp");
+  }
+  circle.gallery = [{
+    "title":"社团表情",
+    "images":circles
+  }];
+  StudentManager.instance.circleStudent = circle;
+}
 
 //读取本地json聊天块列表记录
 Future loadJsonFiles()async{

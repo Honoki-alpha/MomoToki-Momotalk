@@ -50,17 +50,16 @@ Widget getAvatarFromResource(int id,int skinIndex){
   EStudent student = StudentManager.instance.getStudentById(id);
   File? f = AppResource.getStudentAvatarFile(id, skinIndex, student.release);
   if(f != null && f.existsSync()){
-    if(UserConfig.applyOfflineMode || student.release==2){
+    if(UserConfig.applyOfflineMode || student.release == 2){
       return Image.file(f,
           fit: BoxFit.fitWidth,
           errorBuilder: (b,o,t){return Image.asset("assets/images/icon/IMAGELOST.png",fit: BoxFit.fitWidth,);});
     }
   }
-  String url = student.avatar;
+  String url = "https:${student.avatar}";
   if(skinIndex < student.skinList.length){
     url = "https:${student.skinList[skinIndex]["avatar"]}";
   }
-  //url = "http://static.kivo.fun/images/students/%E7%A0%82%E7%8B%BC%20%E7%99%BD%E5%AD%90%2A%E6%81%90%E6%80%96/original/avatar.png";
   return Image.network(
     url,
     scale: 30,

@@ -22,7 +22,7 @@ class AppResource{
   }
 
   static String getReleaseStudentPath(int id,int skinIndex){
-    return join(AppLibrary.applicationPath,"Resouces","Avatars","${id}_$skinIndex.png");
+    return join(AppLibrary.applicationPath,"Resources","Avatars","${id}_$skinIndex.png");
   }
 
 }

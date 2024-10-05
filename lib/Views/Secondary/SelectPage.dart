@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get/get_rx/get_rx.dart';
+import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import '../../Entity/EStudent.dart';
 import '../../AppData/AppLibrary.dart';
@@ -53,6 +55,7 @@ class _selectPageState extends State<SelectPage> with SingleTickerProviderStateM
                 ),
                 onSubmitted: searchButtonClick,
               )),
+              IconButton(onPressed: filterButtonClick, icon: const Icon(Icons.select_all))
               //IconButton(onPressed: SearchButtonClick, icon: const Icon(Icons.search)),
               //ElevatedButton(onLongPress: ResetButtonClick,onPressed: FilterCheck, child:const Text("筛选/重置"),)
             ],),
@@ -68,7 +71,7 @@ class _selectPageState extends State<SelectPage> with SingleTickerProviderStateM
                         childAspectRatio: 1.0, //显示区域宽高相等
                       ),
                       itemBuilder: (context, index){
-                        return GestureDetector(child:getRectangleStudentAvatar(eStudentList[index].id),onTap: (){
+                        return GestureDetector(child:getCicleStudentAvatar(eStudentList[index].id),onTap: (){
                           Get.back(result: eStudentList[index]);
                         },);
                       }),
@@ -81,9 +84,11 @@ class _selectPageState extends State<SelectPage> with SingleTickerProviderStateM
                         childAspectRatio: 1.0, //显示区域宽高相等
                       ),
                       itemBuilder: (context, index){
-                        return GestureDetector(child:getRectangleStudentAvatar(diyStudentList[index].id),onTap: (){
-                          Get.back(result: diyStudentList[index]);
-                        },);
+                        return  GestureDetector(
+                          child:getCicleStudentAvatar(diyStudentList[index].id),
+                          onTap: (){
+                            Get.back(result: diyStudentList[index]);
+                          },);
                       }),
                 ]))
           ],
@@ -106,32 +111,13 @@ class _selectPageState extends State<SelectPage> with SingleTickerProviderStateM
     });
   }
 
-  //
-  // void FilterCheck() async{
-  //   Map? result = await Get.dialog(const FilterDialog());
-  //   var db = await AppDataBase.instance.database;
-  //   if(result == null) return;
-  //   //这一步只是为了凑个and
-  //   String Sr = result["SR"]==""?"":"t.SR = '${result["SR"]}'";
-  //   String month = result["month"]==""?"":"t.month = '${result["month"]}'";
-  //   String bt = result["bulletType"]==""?"":"t.bulletType = '${result["bulletType"]}'";
-  //   String at = result["armorType"]==""?"":"t.armorType = '${result["armorType"]}'";
-  //   String sc = result["school"]==""?"":"t.school = '${result["school"]}'";
-  //   var list = [Sr,month,bt,at,sc];
-  //   var resultList = [];
-  //   for (var element in list) {if(element!="") resultList.add(element);}
-  //   String sqls = """SELECT * FROM (SELECT * FROM Seito union SELECT * FROM DIYs) t
-  //   WHERE ${resultList.join(" and ")} and (t.id >30049 or t.id < 30000);
-  //   """;
-  //   List charas = await db.rawQuery(sqls);
-  //   List<Seito> Ss = [];
-  //   for (var element in charas) {
-  //     Ss.add(Seito.fromMap(element));
-  //   }
-  //   setState(() {
-  //     studentList = Ss;
-  //   });
-  // }
+  void filterButtonClick()async{
+    var result = await Get.dialog(filterDialog());
+    resetButtonClick();
+    if(result == true){
+      filterStudent();
+    }
+  }
 
   void resetButtonClick(){
     setState(() {
@@ -152,5 +138,71 @@ class _selectPageState extends State<SelectPage> with SingleTickerProviderStateM
   //注销快捷键
   void removeHotKey()async{
     await hotKeyManager.unregister(hotKey);
+  }
+
+  List bulletType = ["爆发","贯通","神秘","振动","全部"];
+  List defenceType = ["轻装甲","重装甲","特殊装甲","弹力装甲","全部"];
+  RxBool isRealased = true.obs;
+  RxInt currentSchoolIndex = 0.obs;
+  RxInt currentBulletIndex = 0.obs;
+  RxInt currentDefenceIndex = 0.obs;
+  Widget filterDialog(){
+    return AlertDialog(
+      title: const Text("筛选选择"),
+      content: SizedBox(
+        width: 400,
+        height: 230,
+        child: ListView(
+          children: [
+            Obx(()=>ElevatedButton(onPressed: (){
+              isRealased.value = !isRealased.value;
+            }, child: Text(isRealased.value?"已实装":"未实装"))),
+            ListTile(title: const Text("所属组织"),
+              trailing: Obx(()=>DropdownButton(
+                value: currentSchoolIndex.value,
+                items: List.generate(AppLibrary.schoolList.length, (index){
+                  return DropdownMenuItem(value: index,child: Text(AppLibrary.schoolList[index]));
+                }), onChanged: (int? value) {
+                currentSchoolIndex.value = value ?? 0;
+              },
+              )),),
+            ListTile(title: const Text("攻击类型"),
+              trailing: Obx(()=>DropdownButton(
+                value: currentBulletIndex.value,
+                items: List.generate(bulletType.length, (index){
+                  return DropdownMenuItem(value: index,child: Text(bulletType[index]));
+                }), onChanged: (int? value) {
+                currentBulletIndex.value = value ?? 0;
+              },
+              )),),
+            ListTile(title: const Text("防御类型"),
+              trailing: Obx(()=>DropdownButton(
+                value: currentDefenceIndex.value,
+                items: List.generate(defenceType.length, (index){
+                  return DropdownMenuItem(value: index,child: Text(defenceType[index]));
+                }), onChanged: (int? value) {
+                currentDefenceIndex.value = value ?? 0;
+              },
+              )),),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed:(){Get.back(result: false);} , child: const Text("重置")),
+        TextButton(onPressed:(){Get.back(result: true);}, child: const Text("确认")),
+      ],
+    );
+  }
+
+  void filterStudent(){
+    int re = isRealased.value?0:1;
+    eStudentList = eStudentList.where((EStudent s){
+      return (s.school == currentSchoolIndex.value && (currentBulletIndex.value == 4 || s.characterData["bullet"] == currentBulletIndex.value)
+          && (currentDefenceIndex.value == 4 || s.characterData["defence"] == currentDefenceIndex.value)
+          && s.release == re);
+    }).toList();
+    setState(() {
+
+    });
   }
 }

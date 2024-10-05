@@ -23,12 +23,14 @@ class AppSetting extends StatefulWidget{
 class _SettingState extends State<AppSetting>{
   var pickerColor = const Color(0xff443a49).obs;
   RxDouble size = 0.5.obs;
+  RxDouble fontSize = 0.0.obs;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     if(!UserConfig.denpendTheme) pickerColor.value=UserConfig.chatBackGroundColor;
     size.value = UserConfig.appDesktopSize;
+    fontSize.value = UserConfig.appFontSize < 5.0?16.0:UserConfig.appFontSize;
   }
 
   @override
@@ -69,11 +71,18 @@ class _SettingState extends State<AppSetting>{
                       title:const Text("离线模式"),
                       trailing: Switch(
                         value: UserConfig.applyOfflineMode,
-                        onChanged: (value){
-                          UserConfig.sp.setBool("applyOfflineMode", value);
+                        onChanged: (value)async{
+                          bool? result;
+                          if(value) {
+                            result = await Get.dialog(const Inquiredialog(
+                                title: "警告！",
+                                content: "在开启离线模式前，请确保已经下载了【配置表】和【学生头像】，若因此导致软件启动失败，则需清理数据解决。是否继续？"));
+                            result ??= false;
+                          }
+                          UserConfig.sp.setBool("applyOfflineMode", result ?? false);
                           setState(() {
-                            UserConfig.applyOfflineMode = value;
-                            if(value) BotToast.showText(text: "离线模式需前往【学生设置】下载资源");
+                            UserConfig.applyOfflineMode = result ?? false;
+
                           });
                         },
                       ),
@@ -93,6 +102,20 @@ class _SettingState extends State<AppSetting>{
                       title: const Text("聊天背景颜色"),
                       onTap: setPageBackGroundColor,
                       trailing: !UserConfig.denpendTheme?Container(color:pickerColor.value,height: 10,width: 10,):null,
+                    ),
+                    ListTile(title: Obx(()=>Text("软件字号(${fontSize.value.toStringAsFixed(2)})"))
+                      ,subtitle: Obx(()=>Slider(
+                        min: 10.0,
+                        max: 20.0,
+                        value: fontSize.value,
+                        onChanged: (double value) {
+                          fontSize.value = value;
+                      },
+                        onChangeEnd: (double value){
+                          UserConfig.sp.setDouble("appFontSize", value);
+                          BotToast.showText(text: "设置成功，重启后生效");
+                        },
+                      )),
                     ),
                     ListTile(title: const Text("软件字体"),onTap: setCustomFont,trailing: Text(UserConfig.customFont == ""?"未配置":"已配置"),),
                     ListTile(

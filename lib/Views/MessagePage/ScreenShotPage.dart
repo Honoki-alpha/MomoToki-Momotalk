@@ -74,7 +74,7 @@ class _screenShotPageState extends State<ScreenShotPage>{
   }
 
   void loadingWidgets(){
-    Timer(const Duration(milliseconds: 600), () {
+    Timer(const Duration(milliseconds: 800), () {
       shotSave();
     });
   }

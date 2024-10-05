@@ -1,6 +1,7 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:motoki/AppData/InitWebApp.dart';
 import 'package:motoki/AppData/UserConfig.dart';
 import 'package:motoki/Managers/ThemeManager.dart';
 import 'package:motoki/Views/Home/AnimationPage.dart';
@@ -10,10 +11,13 @@ import 'AppData/InitApplication.dart';
 
 void main() async {
 
-  int times = 0;
-
   WidgetsFlutterBinding.ensureInitialized();
-  await initApplication();
+  if(GetPlatform.isWeb){
+    await initWebApp();
+  }else{
+    await initApplication();
+  }
+
   runApp(ClipRRect(
     borderRadius: GetPlatform.isDesktop?BorderRadius.circular(12):BorderRadius.circular(0),
     clipBehavior: Clip.antiAlias,
