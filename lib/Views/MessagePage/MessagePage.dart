@@ -348,7 +348,7 @@ class _messagePageState extends State<MessagePage>{
     }else{
       Directory dir = Directory(join(AppLibrary.applicationPath,"DIYemotion",currentStudent.id.toString()));
       if(currentStudent.release != 2){
-        dir = Directory(join(AppLibrary.applicationPath,"Resouces","Emotions","${currentStudent.id}"));
+        dir = Directory(join(AppLibrary.applicationPath,"Resources","Emotions","${currentStudent.id}"));
       }
       if(!dir.existsSync()){
         BotToast.showText(text: "未找到该学生差分！");
