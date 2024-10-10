@@ -29,11 +29,11 @@ class StudentEmojiDialog extends StatelessWidget{
         Text(item["title"]),
         SizedBox(
           height: height ?? 170,
-          width: 300,
+          width: 380,
           child: GridView(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             mainAxisSpacing: 10,
-            crossAxisCount: AppLibrary.appLandscapeMode?5:4,
+            crossAxisCount: 4,
             childAspectRatio: 1.0, //显示区域宽高相等
           ),
           children: item["images"].map<Widget>((url){

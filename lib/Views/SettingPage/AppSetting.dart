@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:get/get.dart';
 import 'package:motoki/AppData/UserConfig.dart';
@@ -130,16 +131,25 @@ class _SettingState extends State<AppSetting>{
     );
   }
 
-  void dayOrNightChange(int? value){
+  void dayOrNightChange(int? value)async{
     if(value == null) return;
-    UserConfig.sp.setInt("themeIndex", value);
-    ThemeData tD = ThemeManager.getThemeData(value);
-    Get.changeTheme(tD);
-    ThemeManager.isDarkTheme = value == 1;
-    ThemeManager.currentTheme = tD;
-    setState(() {
-      UserConfig.themeIndex = value;
-    });
+    try{
+      var re  = await UserConfig.sp.setInt("themeIndex", value);
+      if(re != true){
+        BotToast.showText(text: "设置失败，请检查软件权限");
+        return;
+      }
+      ThemeData tD = ThemeManager.getThemeData(value);
+      Get.changeTheme(tD);
+      ThemeManager.isDarkTheme = ( value == 1 );
+      ThemeManager.currentTheme = tD;
+      setState(() {
+        UserConfig.themeIndex = value;
+      });
+    }catch(e){
+      BotToast.showText(text: "切换失败，错误信息已复制到粘贴板，请私信作者");
+      Clipboard.setData(ClipboardData(text: e.toString()));
+    }
   }
 
   void setCustomFont()async{

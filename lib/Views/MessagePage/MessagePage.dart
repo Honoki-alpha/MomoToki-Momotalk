@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:bot_toast/bot_toast.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
@@ -97,9 +96,7 @@ class _messagePageState extends State<MessagePage>{
         canPop: false,
         onPopInvoked: onPopInvoked,
         child: Scaffold(
-          appBar: getPlatformAppBar(Obx(()=>Text(StudentManager.instance.getStudentName(
-              currentStudent.id,skinIndex: currentStudentSkinIndex.value
-          ))),actions: [
+          appBar: getPlatformAppBar(Obx(()=> Text(StudentManager.instance.getStudentName(currentStudent.id, skinIndex: currentStudentSkinIndex.value))),actions: [
             IconButton(onPressed: saveButtonClick, icon: const Icon(Icons.save_as_rounded)),
           ]),
           body: Column(
@@ -144,7 +141,7 @@ class _messagePageState extends State<MessagePage>{
                           }
                         },
                         decoration: InputDecoration(
-                            icon:GestureDetector(
+                          icon:GestureDetector(
                               child: Obx(()=>SizedBox(
                                   width: 40,
                                   child: getCicleStudentAvatar(
@@ -161,7 +158,8 @@ class _messagePageState extends State<MessagePage>{
                                   currentStudentSkinIndex.value = 0;
                                 }
                               },
-                            )
+                            ),
+                          hintText: "当前共${MessageManager.instance.messages.length}条消息..."
                         ),
                         style: const TextStyle(
                             fontSize: 13
@@ -181,6 +179,9 @@ class _messagePageState extends State<MessagePage>{
                       padding: const EdgeInsets.symmetric(horizontal: 3),
                       child:ElevatedButton(
                           onPressed:sendButtonClick,
+                          // style: ButtonStyle(
+                          //   backgroundColor: WidgetStateProperty.all(Colors.lightBlueAccent)
+                          // ),
                           child:Obx(()=>Text(currentSelectedIndex.value>-1?"插入":"发送")))),
                 ],
               ),
@@ -203,7 +204,7 @@ class _messagePageState extends State<MessagePage>{
                             itemCount: StudentManager.instance.toolStudentDirctory.length+StudentManager.instance.usualStudents.length,
                             gridDelegate:SliverGridDelegateWithFixedCrossAxisCount(
                                 mainAxisSpacing: 5,
-                                crossAxisCount: AppLibrary.appLandscapeMode?12:7,
+                                crossAxisCount: AppLibrary.appLandscapeMode?9:7,
                                 childAspectRatio: 1.0),//显示区域宽高相等
                             itemBuilder: (context, index){
                               int iconId = 0;
@@ -309,7 +310,7 @@ class _messagePageState extends State<MessagePage>{
     if(input.text.isEmpty) return;
     String message = input.text;
     if(loadImgPath != ""){
-      message = "URL:://$loadImgPath";
+      message = "$loadImgMethod:://$loadImgPath";
       loadImgPath = "";
     }
     MessageManager.instance.addMessage(message);
@@ -345,7 +346,9 @@ class _messagePageState extends State<MessagePage>{
       input.text = "[图片已加载]";
       loadImgMethod = "URL";
       loadImgPath = result["url"];
-    }else{
+    }
+    else{
+      //获取自定义途径
       Directory dir = Directory(join(AppLibrary.applicationPath,"DIYemotion",currentStudent.id.toString()));
       if(currentStudent.release != 2){
         dir = Directory(join(AppLibrary.applicationPath,"Resources","Emotions","${currentStudent.id}"));
@@ -361,7 +364,7 @@ class _messagePageState extends State<MessagePage>{
       if(result == null) return;
       input.text = "[图片已加载]";
       loadImgMethod = "IMG";
-      loadImgPath = result;
+      loadImgPath = result.path;
     }
   }
 

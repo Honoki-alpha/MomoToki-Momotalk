@@ -33,9 +33,9 @@ class _faceImgState extends State<DIYEmojiDialog>{
             shrinkWrap: true,
             padding: const EdgeInsets.all(6),
             itemCount: widget.facePaths.length,
-            gridDelegate:SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate:const SliverGridDelegateWithFixedCrossAxisCount(
               mainAxisSpacing: 5,
-              crossAxisCount: (Get.width/100).floor(), //每行3列
+              crossAxisCount: 4,
               childAspectRatio: 1.0, //显示区域宽高相等
             ), itemBuilder: (context, index){
           return GestureDetector(child:CircleAvatar(

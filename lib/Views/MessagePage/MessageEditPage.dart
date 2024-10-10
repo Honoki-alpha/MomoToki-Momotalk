@@ -8,6 +8,7 @@ import 'package:motoki/Entity/EMessageBox.dart';
 import 'package:path/path.dart';
 
 import '../../AppData/AppLibrary.dart';
+import '../../AppData/UserConfig.dart';
 import '../../Dialog/DIYEmojiDialog.dart';
 import '../../Dialog/InquireDialog.dart';
 import '../../Dialog/StudentEmojiDialog.dart';
@@ -28,6 +29,7 @@ class MessageEditPage extends StatefulWidget{
 // ignore: camel_case_types
 class _messageEditPage extends State<MessageEditPage>{
   int selectedindex = 0;
+  int currentStudentRelease = 0;
   TextEditingController inputField = TextEditingController();
   String loadImgPath = "";
   String loadImgMethod = "URL";
@@ -40,6 +42,7 @@ class _messageEditPage extends State<MessageEditPage>{
     super.initState();
     String head = widget.messageBox.messageContentList[selectedindex];
     editMessage(selectedindex, MessageManager.instance.checkIsImg(head));
+    currentStudentRelease = StudentManager.instance.getStudentById(widget.messageBox.senderId).release;
   }
 
   @override
@@ -137,6 +140,7 @@ class _messageEditPage extends State<MessageEditPage>{
     if(student == null) return;
     setState(() {
       widget.messageBox.senderId = student.id;
+      currentStudentRelease = student.release;
     });
   }
 
@@ -159,7 +163,6 @@ class _messageEditPage extends State<MessageEditPage>{
   void editMessage(int index,bool isImg){
     selectedindex = index;
     inputField.text = isImg?"【图片资源】":widget.messageBox.messageContentList[index];
-    print(widget.messageBox.messageContentList[index]);
   }
 
   //删除消息
@@ -239,16 +242,23 @@ class _messageEditPage extends State<MessageEditPage>{
 
   //表情差分按钮
   void emojiButtonClick()async{
-    if(widget.messageBox.senderId < 10000){
+    if(widget.messageBox.senderId < 100) return;
+    if(currentStudentRelease != 2 && !UserConfig.applyOfflineMode){
       var result = await Get.dialog(StudentEmojiDialog(studentID: widget.messageBox.senderId));
       if(result == null) return;
       inputField.text = "【图片资源】";
       loadImgMethod = "URL";
       loadImgPath = result["url"];
     }else{
+      //载入自定义文件夹
       Directory dir = Directory(join(AppLibrary.applicationPath,"DIYemotion",widget.messageBox.senderId.toString()));
+      //如果不是自定义学生
+      if(currentStudentRelease != 2){
+        dir = Directory(join(AppLibrary.applicationPath,"Resources","Emotions","${widget.messageBox.senderId}"));
+      }
+      //如果文件不存在
       if(!dir.existsSync()){
-        BotToast.showText(text: "未导入该自定义学生的差分");
+        BotToast.showText(text: "未找到该学生差分");
         return;
       }
       var cancel = BotToast.showLoading();
@@ -258,7 +268,7 @@ class _messageEditPage extends State<MessageEditPage>{
       if(result == null) return;
       inputField.text = "【图片资源】";
       loadImgMethod = "IMG";
-      loadImgPath = result;
+      loadImgPath = result.path;
     }
   }
 }

@@ -18,9 +18,10 @@ class Configure extends StatefulWidget{
 }
 
 class _configureState extends State<Configure>{
-
+  late Size deviceSize;
   @override
   Widget build(BuildContext context) {
+    deviceSize =  MediaQuery.of(context).size;
     return Container(
       alignment: Alignment.center,
       child:Stack(
@@ -28,7 +29,7 @@ class _configureState extends State<Configure>{
           Positioned(
             top: 0,
             child: SizedBox(
-              width:AppLibrary.appLandscapeMode?(MediaQuery.of(context).size.width * 5 / 11):MediaQuery.of(context).size.width,
+              width:AppLibrary.appLandscapeMode?(deviceSize.width * 0.46):deviceSize.width,
               child: Opacity(
                 opacity:ThemeManager.isDarkTheme?0.5:1.0,
                 child: Image.asset(
@@ -38,10 +39,10 @@ class _configureState extends State<Configure>{
               ),
             )),
           Positioned(
-            top: AppLibrary.appLandscapeMode?270:170,
+              top:AppLibrary.appLandscapeMode?deviceSize.height*0.4-30:deviceSize.height*0.3-30,
             child: const Text("   软件作者：BiliBili-星時Honoki")),
           Positioned(
-            top:AppLibrary.appLandscapeMode?300:200,
+            top:AppLibrary.appLandscapeMode?deviceSize.height*0.4:deviceSize.height*0.3,
             child: Container(
               width: AppLibrary.appLandscapeMode?(MediaQuery.of(context).size.width * 5 / 11):MediaQuery.of(context).size.width,
               height: 600,

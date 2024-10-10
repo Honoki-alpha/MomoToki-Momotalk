@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:get/get_rx/get_rx.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
@@ -219,16 +220,20 @@ class _seitoSet extends State<StudentSetting>{
     return Container(
       height: 200,
       width: 240,
-      color: Colors.white,
       alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8)
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          SizedBox(height:150,child: Image.asset("assets/images/source/loading.png",fit: BoxFit.fitHeight,),),
           SizedBox(
-            height: 130,
-            width: 130,
-            child: Obx(()=>CircularProgressIndicator(
-              strokeWidth:8,
+            width: 180,
+            height: 5,
+            child: Obx(()=>LinearProgressIndicator(
+              //strokeWidth:8,
               value: progroessValue.value,
             )),
           ),

@@ -38,7 +38,7 @@ class ThemeManager{
         brightness: Brightness.dark,
         fontFamily: AppLibrary.appFontSource,
         useMaterial3: true,
-        cardColor: Colors.black12,
+        cardColor: Colors.black,
         colorSchemeSeed: const Color.fromRGBO(79, 79, 79, 1),
         highlightColor: Colors.white38,
         canvasColor: Colors.grey,
