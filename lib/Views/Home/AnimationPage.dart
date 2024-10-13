@@ -18,11 +18,15 @@ class AnimationPage extends StatefulWidget{
 
 class _AnimationPageState extends State<AnimationPage> with TickerProviderStateMixin{
 
-
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    if(Get.mediaQuery.platformBrightness == Brightness.dark) {
+      UserConfig.themeIndex = 1;
+      ThemeManager.isDarkTheme = true;
+      ThemeManager.currentTheme = ThemeManager.darkTheme;
+    }
     Timer(const Duration(milliseconds: 300), enterHomePage);
   }
 

@@ -40,10 +40,17 @@ class _messagePageState extends State<MessagePage>{
   RxInt currentStudentSkinIndex = 0.obs;
   //插入的位置(后续更新了删除，现在为选择的消息盒子)
   RxInt currentSelectedIndex = RxInt(-1);
+  //聊天滑块
   ScrollController listController = ScrollController();
+  //输入框
   TextEditingController input = TextEditingController();
+  //是否禁用追加按钮
   bool disableAddtionButton = false;
+  //功能栏是否可见
   RxBool toolBarVisible = false.obs;
+  //是否直接发送到右侧
+  RxBool isRightMessage = false.obs;
+  //消息内容是否只读
   bool textFileldReadOnly = false;
 
   //载入的图片路径
@@ -177,12 +184,15 @@ class _messagePageState extends State<MessagePage>{
                   //点击“发送”按钮效果
                   Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 3),
-                      child:ElevatedButton(
+                      child:Obx(()=>ElevatedButton(
+                          onLongPress: (){
+                            isRightMessage.value = !isRightMessage.value;
+                          },
                           onPressed:sendButtonClick,
-                          // style: ButtonStyle(
-                          //   backgroundColor: WidgetStateProperty.all(Colors.lightBlueAccent)
-                          // ),
-                          child:Obx(()=>Text(currentSelectedIndex.value>-1?"插入":"发送")))),
+                          style: ButtonStyle(
+                              backgroundColor: WidgetStateProperty.all(isRightMessage.value?const Color(0xFFF0FFFF):const Color(0xFFF5EEFF))
+                          ),
+                          child:Text(currentSelectedIndex.value>-1?"插入":"发送")))),
                 ],
               ),
               Obx(()=>Container(
@@ -288,7 +298,7 @@ class _messagePageState extends State<MessagePage>{
         0,
         currentStudent.givenName["nm"],
         [message],
-        false,
+        isRightMessage.value,
         {});
     if(currentSelectedIndex.value>-1){
       MessageManager.instance.insertMessageBox(currentSelectedIndex.value,em);

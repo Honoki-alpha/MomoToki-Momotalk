@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:motoki/Entity/EStudent.dart';
 import 'package:motoki/Utils/CommonFunctions.dart';
 import 'package:motoki/Entity/EMessageBox.dart';
 import 'package:path/path.dart';
@@ -90,7 +92,8 @@ class _messageEditPage extends State<MessageEditPage>{
                       );
                     }),
               ),
-              TextButton(onPressed: disableInsert?null:addMessage, child: const Text("末尾追加")),
+              if(widget.messageBox.senderId != 5) TextButton(onPressed: disableInsert?null:addMessage, child: const Text("末尾追加")),
+              if(widget.messageBox.senderId == 5) TextButton(onPressed: editStoryButton, child: const Text("羁绊编辑")),
               Row(
                 children: [
                   Expanded(child: TextField(
@@ -101,18 +104,24 @@ class _messageEditPage extends State<MessageEditPage>{
                   TextButton(onPressed: applyEdit, child: const Text("应用"))
                 ],
               ),
-              ElevatedButton(onPressed: (){
-                Get.back(result: {
-                  "command":"delete",
-                });
-              }, child: const Text("删除整个消息盒子")),
-              ElevatedButton(onPressed: typeChangeClick, child: const Text("转化为其他消息类型")),
-              ElevatedButton(onPressed: (){
-                Get.back(result: {
-                  "command":"save",
-                  "box":widget.messageBox
-                });
-              }, child: const Text("保存并返回"))
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(onPressed: (){
+                    Get.back(result: {
+                      "command":"delete",
+                    });
+                  }, child: const Text("清除")),
+                  ElevatedButton(onPressed: typeChangeClick, child: const Text("转化")),
+                  ElevatedButton(onPressed: (){
+                    Get.back(result: {
+                      "command":"save",
+                      "box":widget.messageBox
+                    });
+                  }, child: const Text("保存"))
+                ],
+              )
             ],
           ),
         ),
@@ -271,4 +280,83 @@ class _messageEditPage extends State<MessageEditPage>{
       loadImgPath = result.path;
     }
   }
+
+  void editStoryButton()async{
+    Get.dialog(storyEditDialog());
+  }
+
+  RxInt storyMainStudent = 100.obs;
+  int skinLength = 1;
+  RxInt storyMainSkin = 0.obs;
+  TextEditingController storyLevel = TextEditingController();
+  TextEditingController stoneNum = TextEditingController();
+  TextEditingController chapter = TextEditingController();
+  TextEditingController title = TextEditingController();
+  Widget storyEditDialog(){
+    return AlertDialog(
+      title: const Text("羁绊故事编辑"),
+      content: SizedBox(
+        height: 400,
+        width: 300,
+        child: ListView(
+          children: [
+            Expanded(child: Obx(() => GestureDetector(
+              child: getCicleStudentAvatar(storyMainStudent.value,skinIndex: storyMainSkin.value,customWidth: 10),
+              onTap: ()async{
+                EStudent? student = await Get.to(()=>const SelectPage());
+                if(student == null) return;
+                storyMainStudent.value = student.id;
+                skinLength = student.skinList.length;
+              },
+              onDoubleTap: (){
+                if(storyMainSkin.value + 1 == skinLength){
+                  storyMainSkin.value = 0;
+                }else{
+                  storyMainSkin.value++;
+                }
+              },
+            ))),
+            Expanded(child: TextField(
+              controller: storyLevel,
+              decoration: const InputDecoration(
+                  helperText: "好感等级"
+              ),
+            )),
+            Expanded(child: TextField(
+              controller: chapter,
+              decoration: const InputDecoration(
+                  helperText: "输入第几章，格式:03"
+              ),
+            )),
+            Expanded(child: TextField(
+              controller: title,
+              decoration: const InputDecoration(
+                  hintText: "章节标题"
+              ),
+            )),
+            Expanded(child: TextField(
+              controller: stoneNum,
+              decoration: const InputDecoration(
+                  helperText: "青辉石数量"
+              ),
+            )),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: (){
+          widget.messageBox.storageInfo = {
+            "id":storyMainStudent.value.toString(),
+            "skin":storyMainSkin.value.toString(),
+            "level":storyLevel.text,
+            "ep":chapter.text,
+            "title":title.text,
+            "stone":stoneNum.text
+          };
+          Get.back();
+        }, child: const Text("确认")),
+      ],
+    );
+  }
+
 }

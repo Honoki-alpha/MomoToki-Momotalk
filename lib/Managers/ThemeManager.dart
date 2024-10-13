@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/AppData/UserConfig.dart';
 
@@ -69,7 +70,6 @@ class ThemeManager{
             titleTextStyle: TextStyle(fontSize: 20,color: Colors.white,fontFamily:"ResourceHanCN")
         )
     );
-
     currentTheme = getThemeData(UserConfig.themeIndex);
     isDarkTheme = UserConfig.themeIndex == 1;
   }

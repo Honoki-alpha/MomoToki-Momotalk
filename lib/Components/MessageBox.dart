@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/Utils/EventBus.dart';
+import 'package:motoki/Views/MessagePage/StoryPage.dart';
 
 import '../Entity/EMessageBox.dart';
 import '../Managers/MessageManager.dart';
@@ -198,7 +199,7 @@ class _messageBoxState extends State<MessageBox>{
   Widget asideBox(){
     return Container(
       alignment: Alignment.center,
-      margin:const EdgeInsets.fromLTRB(20, 10, 20, 10),
+      margin:const EdgeInsets.fromLTRB(20, 5, 10, 5),
       padding: const EdgeInsets.symmetric(horizontal: 5),
       decoration: BoxDecoration(
         color: const Color.fromRGBO(220,230,230, 1),
@@ -214,15 +215,13 @@ class _messageBoxState extends State<MessageBox>{
   Widget asidetransBox(){
     return Container(
       alignment: Alignment.center,
-      margin:const EdgeInsets.fromLTRB(20, 10, 20, 10),
+      margin:const EdgeInsets.fromLTRB(20, 5, 20, 5),
       padding: const EdgeInsets.symmetric(horizontal: 5),
       child:Text(
         textAlign: TextAlign.center, messageBox.messageContentList[0]),
     );
   }
-
-
-
+  
   //回复
   Widget replyBox(){
     return Align(
@@ -265,7 +264,7 @@ class _messageBoxState extends State<MessageBox>{
     AppLibrary.sendReplyEvent(mes);
   }
 
-
+  //单个回复项
   Widget replyItem(int index,String mes){
     return Container(
       width: 280,
@@ -300,26 +299,32 @@ class _messageBoxState extends State<MessageBox>{
     );
   }
 
+  //羁绊消息
   Widget storyBox(){
     return Align(
         alignment: Alignment.centerRight,
-        child:Container(
-          width: 290,
-          height: 100,
-          padding: const EdgeInsets.fromLTRB(20, 58, 20, 20),
-          margin: const EdgeInsets.fromLTRB(10, 10, 15, 10),
-          decoration:const BoxDecoration(
-            image: DecorationImage(
-              alignment: Alignment.center,
-              fit: BoxFit.fitWidth,
-              image: AssetImage(
-                  "assets/images/chattools/story.webp"),
+        child:GestureDetector(
+          onTap: (){
+            Get.to(()=>Storypage(messageBox: messageBox));
+          },
+          child: Container(
+            width: 290,
+            height: 100,
+            padding: const EdgeInsets.fromLTRB(20, 58, 20, 20),
+            margin: const EdgeInsets.fromLTRB(10, 10, 15, 10),
+            decoration:const BoxDecoration(
+              image: DecorationImage(
+                alignment: Alignment.center,
+                fit: BoxFit.fitWidth,
+                image: AssetImage(
+                    "assets/images/chattools/story.webp"),
+              ),
             ),
-          ),
-          child: Text(
-            messageBox.messageContentList[0].length>17? messageBox.messageContentList[0].substring(0,17):messageBox.messageContentList[0],
-            textAlign:TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontSize: 14),
+            child: Text(
+              messageBox.messageContentList[0].length>17? messageBox.messageContentList[0].substring(0,17):messageBox.messageContentList[0],
+              textAlign:TextAlign.center,
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+            ),
           ),
         ));
   }

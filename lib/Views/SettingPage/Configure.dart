@@ -21,7 +21,9 @@ class _configureState extends State<Configure>{
   late Size deviceSize;
   @override
   Widget build(BuildContext context) {
+    //获取屏幕分辨率
     deviceSize =  MediaQuery.of(context).size;
+
     return Container(
       alignment: Alignment.center,
       child:Stack(
