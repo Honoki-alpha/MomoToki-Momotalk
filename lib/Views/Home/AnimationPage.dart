@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
@@ -20,7 +21,6 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     if(Get.mediaQuery.platformBrightness == Brightness.dark) {
       UserConfig.themeIndex = 1;
@@ -28,6 +28,7 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
       ThemeManager.currentTheme = ThemeManager.darkTheme;
     }
     Timer(const Duration(milliseconds: 300), enterHomePage);
+
   }
 
   @override
@@ -47,6 +48,7 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
 
 
   void enterHomePage(){
+    BotToast.showText(text: (UserConfig.sp.getInt("BackTaskTest") ?? 0).toString());
     Get.off(
         ()=>getHome(),
         transition: Transition.downToUp,
@@ -68,4 +70,5 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
       }
     });
   }
+
 }

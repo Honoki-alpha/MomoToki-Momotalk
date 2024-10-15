@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:motoki/Entity/EMessageBox.dart';
+import 'package:motoki/Managers/StudentManager.dart';
 import 'package:motoki/Managers/ThemeManager.dart';
 import 'package:motoki/Utils/CommonComponents.dart';
 
@@ -49,6 +50,7 @@ class Storypage extends StatelessWidget{
                 ))
               ],
             ),
+            Text(StudentManager.instance.getStudentName(storage["id"] ?? 114,showFullName: true)),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -59,7 +61,7 @@ class Storypage extends StatelessWidget{
                     color: Color(0xFF2D4563),
                     borderRadius: BorderRadius.all(Radius.circular(4))
                   ),
-                  child: Text("章节 ${storage["ep"] ?? "03"}",style: TextStyle(color: Colors.white),),
+                  child: Text("章节 ${storage["ep"] ?? "03"}",style: const TextStyle(color: Colors.white),),
                 ),
                 Text(storage["title"] ?? "私たちの物語"),
               ],

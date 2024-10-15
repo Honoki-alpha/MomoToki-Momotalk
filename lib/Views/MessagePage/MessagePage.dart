@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
+import 'package:motoki/Managers/NotificationManager.dart';
 import 'package:motoki/Views/Home/WindowHome.dart';
 import 'package:path/path.dart';
 import '../../AppData/AppLibrary.dart';
@@ -52,6 +54,8 @@ class _messagePageState extends State<MessagePage>{
   RxBool isRightMessage = false.obs;
   //消息内容是否只读
   bool textFileldReadOnly = false;
+  //当前进度条
+  RxDouble nowProgress = 1.0.obs;
 
   //载入的图片路径
   String loadImgPath = "";
@@ -103,8 +107,11 @@ class _messagePageState extends State<MessagePage>{
         canPop: false,
         onPopInvoked: onPopInvoked,
         child: Scaffold(
-          appBar: getPlatformAppBar(Obx(()=> Text(StudentManager.instance.getStudentName(currentStudent.id, skinIndex: currentStudentSkinIndex.value))),actions: [
-            IconButton(onPressed: saveButtonClick, icon: const Icon(Icons.save_as_rounded)),
+          appBar: getPlatformAppBar(
+              Obx(()=> Text(StudentManager.instance.getStudentName(currentStudent.id, skinIndex: currentStudentSkinIndex.value))),
+            actions: [
+              IconButton(onPressed: saveButtonClick, icon: const Icon(Icons.save_as_rounded)),
+              IconButton(onPressed: notificationButtonClick, icon: const Icon(Icons.notifications))
           ]),
           body: Column(
             children: [
@@ -190,7 +197,9 @@ class _messagePageState extends State<MessagePage>{
                           },
                           onPressed:sendButtonClick,
                           style: ButtonStyle(
-                              backgroundColor: WidgetStateProperty.all(isRightMessage.value?const Color(0xFFF0FFFF):const Color(0xFFF5EEFF))
+                              backgroundColor: WidgetStateProperty.all(
+                                  isRightMessage.value?const Color(0xFF97E7EC):const Color(0xFFE595B5)
+                              )
                           ),
                           child:Text(currentSelectedIndex.value>-1?"插入":"发送")))),
                 ],
@@ -198,7 +207,18 @@ class _messagePageState extends State<MessagePage>{
               Obx(()=>Container(
                 child: toolBarVisible.value?Column(
                   children: [
-                    SizedBox(height:50,child: ListView(
+                    SizedBox(
+                        width: 500,
+                        height: 30,
+                        child: Obx(()=>Slider(
+                          divisions: 20,
+                          label: "${(nowProgress.value *100).floor()}%",
+                          value: nowProgress.value, onChanged: (double value) { nowProgress.value = value; },
+                          onChangeEnd: (double value){
+                            listController.jumpTo(nowProgress.value*listController.position.maxScrollExtent);
+                          },
+                        ))),
+                    SizedBox(height:30,child: ListView(
                         scrollDirection: Axis.horizontal,
                         children: [
                           IconButton(onPressed: emojiButtonClick, icon: const Icon(Icons.emoji_emotions)),
@@ -336,6 +356,37 @@ class _messagePageState extends State<MessagePage>{
     await MessageManager.instance.saveMessages();
     if(noneDialog != true) BotToast.showText(text: "消息记录保存成功(๑•ω•๑)");
     cancel();
+  }
+
+  void notificationButtonClick()async{
+    if(!GetPlatform.isAndroid){
+      BotToast.showText(text: "抱歉，该功能仅支持安卓/(ㄒoㄒ)/~~");
+    }
+    bool? result = await Get.dialog(notificationDialog());
+    if(result != true) return;
+    NotificationInstance.sendNotification(title.text, content.text);
+    title.clear();
+    content.clear();
+  }
+
+  TextEditingController title = TextEditingController();
+  TextEditingController content = TextEditingController();
+  Widget notificationDialog(){
+    return AlertDialog(
+      content: SizedBox(
+        width: 300,
+        height: 120,
+        child: Column(
+          children: [
+            Expanded(child: TextField(controller: title,decoration: const InputDecoration(helperText: "通知标题"))),
+            Expanded(child: TextField(controller: content,decoration: const InputDecoration(helperText: "通知内容")))
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: (){Get.back(result:true);}, child: const Text("发送"))
+      ],
+    );
   }
 
   //长按MessageBox效果

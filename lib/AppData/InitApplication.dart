@@ -277,8 +277,15 @@ Future loadStudentNickName()async{
 //权限申请
 Future requestAppPermission() async {
   Map<Permission, PermissionStatus> statuses = await [
+    Permission.notification,
+    Permission.accessNotificationPolicy,
+    Permission.scheduleExactAlarm,
     Permission.storage,
     Permission.photos,
     Permission.manageExternalStorage,
   ].request();
 }
+
+
+
+

@@ -183,6 +183,8 @@ class _SettingState extends State<AppSetting>{
       });
     },)));
     UserConfig.chatBackGroundColor = pickerColor.value;
+    Color c = pickerColor.value;
+    UserConfig.sp.setStringList("chatBackGroundColor", [c.red.toString(),c.green.toString(),c.blue.toString()]);
   }
 
   void setAIChatKey()async{

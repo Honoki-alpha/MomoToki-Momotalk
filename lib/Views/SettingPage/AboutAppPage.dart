@@ -1,8 +1,10 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
+import 'package:motoki/AppData/InitApplication.dart';
 import 'package:motoki/Utils/CommonComponents.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../Managers/NotificationManager.dart';
 import '../../Utils/CommonFunctions.dart';
 
 class AboutAppPage extends StatelessWidget{
@@ -23,6 +25,10 @@ class AboutAppPage extends StatelessWidget{
             },),
             ListTile(title: const Text("当前版本"),trailing: Text(AppLibrary.appVersion),),
             const ListTile(title: Text("检查更新"),trailing: Icon(Icons.arrow_forward_ios),onTap: getLastVersion),
+            ListTile(title: const Text("权限申请"),subtitle: const Text("用于部分情况下，软件未成功申请权限的问题"),onTap: ()async{
+              await requestAppPermission();
+              BotToast.showText(text: "申请完毕");
+            },)
           ]),
         ],
       ),

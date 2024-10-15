@@ -42,14 +42,12 @@ class StudentManager{
     }
   }
 
-  String getStudentName(int id,{int? skinIndex}){
+  String getStudentName(int id,{int? skinIndex,bool? showFullName}){
     int skin = skinIndex??0;
     //如果有备注直接返回
     if(studentNickName.containsKey(id.toString()) && studentNickName[id.toString()]!.containsKey(skin.toString())){
       return studentNickName[id.toString()]![skin.toString()];
     }
-
-
     //后缀名
     EStudent student = getStudentById(id);
     String family = student.familyName[UserConfig.studentNameLanguage] ?? student.familyName["nm"];
@@ -70,7 +68,7 @@ class StudentManager{
     String fullName = given;
     String mildle = " ";
     if(family == "") mildle = "";
-    if(UserConfig.applyStudentFamilyName){
+    if(UserConfig.applyStudentFamilyName || (showFullName ?? false)){
       fullName = "$family$mildle$given";
       if(UserConfig.applyNameReverse){
         fullName = "$given$mildle$family";

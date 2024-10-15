@@ -31,12 +31,12 @@ class MessageEditPage extends StatefulWidget{
 // ignore: camel_case_types
 class _messageEditPage extends State<MessageEditPage>{
   int selectedindex = 0;
-  int currentStudentRelease = 0;
   TextEditingController inputField = TextEditingController();
   String loadImgPath = "";
   String loadImgMethod = "URL";
   final List<String> typeMenu = ["老师","旁白","旁白（透明）","回复","羁绊"];
   bool disableInsert = false;
+  late EStudent currentStudent;
 
   @override
   void initState() {
@@ -44,12 +44,15 @@ class _messageEditPage extends State<MessageEditPage>{
     super.initState();
     String head = widget.messageBox.messageContentList[selectedindex];
     editMessage(selectedindex, MessageManager.instance.checkIsImg(head));
-    currentStudentRelease = StudentManager.instance.getStudentById(widget.messageBox.senderId).release;
+    currentStudent = StudentManager.instance.getStudentById(widget.messageBox.senderId);
+    skinLength = currentStudent.skinList.length;
   }
 
   @override
   Widget build(BuildContext context) {
     disableInsert = widget.messageBox.senderId < 100 && widget.messageBox.senderId != 4;
+    //获取当前学生
+    currentStudent = StudentManager.instance.getStudentById(widget.messageBox.senderId);
     return PopScope(
       canPop: false,
       onPopInvoked: saveRequest,
@@ -85,8 +88,9 @@ class _messageEditPage extends State<MessageEditPage>{
                       return Row(
                         children: [
                           Expanded(child: Text(isImg?"【图片资源】":element)),
-                          IconButton(icon: const Icon(Icons.edit),onPressed: ()=>editMessage(index,isImg),),
-                          IconButton(icon: const Icon(Icons.remove),onPressed: ()=>deleteMessage(index),),
+                          IconButton(icon: const Icon(Icons.edit), onPressed: ()=>editMessage(index,isImg)),
+                          IconButton(
+                            icon: const Icon(Icons.remove),onPressed: ()=>deleteMessage(index)),
                           IconButton(icon: const Icon(Icons.add),onPressed: disableInsert?null:()=>insertMessage(index),),
                         ],
                       );
@@ -112,8 +116,8 @@ class _messageEditPage extends State<MessageEditPage>{
                     Get.back(result: {
                       "command":"delete",
                     });
-                  }, child: const Text("清除")),
-                  ElevatedButton(onPressed: typeChangeClick, child: const Text("转化")),
+                  }, child: const Text("全删")),
+                  ElevatedButton(onPressed: typeChangeClick, child: const Text("转为...")),
                   ElevatedButton(onPressed: (){
                     Get.back(result: {
                       "command":"save",
@@ -149,7 +153,6 @@ class _messageEditPage extends State<MessageEditPage>{
     if(student == null) return;
     setState(() {
       widget.messageBox.senderId = student.id;
-      currentStudentRelease = student.release;
     });
   }
 
@@ -252,7 +255,7 @@ class _messageEditPage extends State<MessageEditPage>{
   //表情差分按钮
   void emojiButtonClick()async{
     if(widget.messageBox.senderId < 100) return;
-    if(currentStudentRelease != 2 && !UserConfig.applyOfflineMode){
+    if(currentStudent.release != 2 && !UserConfig.applyOfflineMode){
       var result = await Get.dialog(StudentEmojiDialog(studentID: widget.messageBox.senderId));
       if(result == null) return;
       inputField.text = "【图片资源】";
@@ -262,7 +265,7 @@ class _messageEditPage extends State<MessageEditPage>{
       //载入自定义文件夹
       Directory dir = Directory(join(AppLibrary.applicationPath,"DIYemotion",widget.messageBox.senderId.toString()));
       //如果不是自定义学生
-      if(currentStudentRelease != 2){
+      if(currentStudent.release != 2){
         dir = Directory(join(AppLibrary.applicationPath,"Resources","Emotions","${widget.messageBox.senderId}"));
       }
       //如果文件不存在
@@ -293,15 +296,21 @@ class _messageEditPage extends State<MessageEditPage>{
   TextEditingController chapter = TextEditingController();
   TextEditingController title = TextEditingController();
   Widget storyEditDialog(){
+    storyMainStudent.value = widget.messageBox.storageInfo["id"] ?? 100;
+    storyMainSkin.value = widget.messageBox.storageInfo["skin"] ?? 0;
+    storyLevel.text = widget.messageBox.storageInfo["level"] ?? "50";
+    stoneNum.text = widget.messageBox.storageInfo["stone"] ?? "60";
+    chapter.text = widget.messageBox.storageInfo["ep"] ?? "03";
+    title.text = widget.messageBox.storageInfo["title"] ?? "私たちの物語";
     return AlertDialog(
       title: const Text("羁绊故事编辑"),
       content: SizedBox(
-        height: 400,
+        height: 300,
         width: 300,
-        child: ListView(
+        child: Column(
           children: [
-            Expanded(child: Obx(() => GestureDetector(
-              child: getCicleStudentAvatar(storyMainStudent.value,skinIndex: storyMainSkin.value,customWidth: 10),
+            Obx(() => GestureDetector(
+              child: getCicleStudentAvatar(storyMainStudent.value,skinIndex: storyMainSkin.value),
               onTap: ()async{
                 EStudent? student = await Get.to(()=>const SelectPage());
                 if(student == null) return;
@@ -315,7 +324,7 @@ class _messageEditPage extends State<MessageEditPage>{
                   storyMainSkin.value++;
                 }
               },
-            ))),
+            )),
             Expanded(child: TextField(
               controller: storyLevel,
               decoration: const InputDecoration(
@@ -331,7 +340,7 @@ class _messageEditPage extends State<MessageEditPage>{
             Expanded(child: TextField(
               controller: title,
               decoration: const InputDecoration(
-                  hintText: "章节标题"
+                  helperText: "章节标题"
               ),
             )),
             Expanded(child: TextField(
@@ -346,8 +355,8 @@ class _messageEditPage extends State<MessageEditPage>{
       actions: [
         TextButton(onPressed: (){
           widget.messageBox.storageInfo = {
-            "id":storyMainStudent.value.toString(),
-            "skin":storyMainSkin.value.toString(),
+            "id":storyMainStudent.value,
+            "skin":storyMainSkin.value,
             "level":storyLevel.text,
             "ep":chapter.text,
             "title":title.text,

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/AppData/UserConfig.dart';
+import 'package:motoki/Dialog/InquireDialog.dart';
 import 'package:motoki/Utils/CommonComponents.dart';
 import 'package:motoki/Entity/EChatTileGroup.dart';
 import 'package:motoki/Views/Home/WindowHome.dart';
@@ -216,6 +217,7 @@ class _ChatState extends State<Chat>{
     if(result["command"] == "edit"){
       ChatGroupManager.instance.alterChatTileGroup(groupIndex, groupName.text);
     }else{
+
       ChatGroupManager.instance.removeChatTileGroup(groupIndex);
     }
     setState(() {});
@@ -225,6 +227,8 @@ class _ChatState extends State<Chat>{
     Map? result = await Get.dialog(tileEidtDialog(group,index));
     if(result == null) return;
     if(result["command"] == "delete"){
+      bool? result = await Get.dialog(const Inquiredialog(title: "警告！", content: "老师点击了删除按钮，是否要删除该聊天呢？"));
+      if(result != true) return;
       await deleteChatTile(group, index);
     }
     else if(result["command"] == "edit"){

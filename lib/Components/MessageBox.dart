@@ -3,7 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
+import 'package:motoki/Dialog/InquireDialog.dart';
+import 'package:motoki/Managers/ThemeManager.dart';
 import 'package:motoki/Utils/EventBus.dart';
+import 'package:motoki/Views/Home/WindowHome.dart';
 import 'package:motoki/Views/MessagePage/StoryPage.dart';
 
 import '../Entity/EMessageBox.dart';
@@ -304,9 +307,7 @@ class _messageBoxState extends State<MessageBox>{
     return Align(
         alignment: Alignment.centerRight,
         child:GestureDetector(
-          onTap: (){
-            Get.to(()=>Storypage(messageBox: messageBox));
-          },
+          onTap: storyBoxClick,
           child: Container(
             width: 290,
             height: 100,
@@ -327,5 +328,18 @@ class _messageBoxState extends State<MessageBox>{
             ),
           ),
         ));
+  }
+
+  void storyBoxClick()async{
+    if(ThemeManager.isDarkTheme){
+      var result = await Get.dialog(const Inquiredialog(title: "警告",content: "下一页面将强制使用白色背景，检测到老师开启了夜间模式，是否继续？",));
+      if(result != true) return;
+    }
+    if(AppLibrary.appLandscapeMode){
+      WindowHomeState.setRightPage(Storypage(messageBox: messageBox));
+    }else{
+      Get.to(()=>Storypage(messageBox: messageBox),transition: Transition.topLevel);
+    }
+
   }
 }
