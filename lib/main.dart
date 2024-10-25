@@ -39,20 +39,24 @@ void callbackDispatcher() {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  Workmanager().initialize(
-      callbackDispatcher, // The top level function, aka callbackDispatcher
-      isInDebugMode: false // If enabled it will post a notification whenever the task is running. Handy for debugging tasks
-  );
-  Workmanager().registerPeriodicTask(
-      "motoki", "greet",frequency: const Duration(hours: 1),
-      constraints: Constraints(
-        networkType: NetworkType.not_required,
-        requiresBatteryNotLow: false,
-        requiresCharging: false,
-        requiresDeviceIdle: false,
-        requiresStorageNotLow: false,
-      )
-  );
+  //先注释掉通知功能
+  if(false){
+    NotificationInstance.init();
+    Workmanager().initialize(
+        callbackDispatcher, // The top level function, aka callbackDispatcher
+        isInDebugMode: false // If enabled it will post a notification whenever the task is running. Handy for debugging tasks
+    );
+    Workmanager().registerPeriodicTask(
+        "motoki", "greet",frequency: const Duration(hours: 1),
+        constraints: Constraints(
+          networkType: NetworkType.not_required,
+          requiresBatteryNotLow: false,
+          requiresCharging: false,
+          requiresDeviceIdle: false,
+          requiresStorageNotLow: false,
+        )
+    );
+  }
 
 
   if(GetPlatform.isWeb){

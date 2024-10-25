@@ -25,9 +25,9 @@ class ScreenShotDialog extends StatelessWidget{
         ),
       ),
       actions: [
-        if(!AppLibrary.appLandscapeMode) CupertinoDialogAction(onPressed: (){Get.back(result: {"command":"every","x":int.parse(controller.text)});}, child:const Text("每X条一张图")),
-        if(!AppLibrary.appLandscapeMode) CupertinoDialogAction(onPressed: (){Get.back(result: {"command":"part","x":int.parse(controller.text)});}, child:const Text("共截X张图")),
-        if(!AppLibrary.appLandscapeMode) CupertinoDialogAction(onPressed: (){Get.back(result: {"command":"after","x":int.parse(controller.text)});}, child:const Text("从选中处向下截X条")),
+        CupertinoDialogAction(onPressed: (){Get.back(result: {"command":"every","x":int.parse(controller.text)});}, child:const Text("每X条一张图")),
+        CupertinoDialogAction(onPressed: (){Get.back(result: {"command":"part","x":int.parse(controller.text)});}, child:const Text("共截X张图")),
+        CupertinoDialogAction(onPressed: (){Get.back(result: {"command":"after","x":int.parse(controller.text)});}, child:const Text("从选中处向下截X条")),
         CupertinoDialogAction(onPressed: (){Get.back(result: {"command":"whole","x":0});}, child:const Text("整页截图"))
       ],
     );

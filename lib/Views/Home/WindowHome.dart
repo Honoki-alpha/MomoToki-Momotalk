@@ -26,6 +26,7 @@ class WindowHomeState extends State<WindowHome>{
   int currentPageIndex = 0;
 
   static bool tabBarShow = false;
+  static late Widget tempWidget;
   static Rx<Widget> leftPage =( const Center(child: Text("请选择消息")) ).obs;
   static Rx<Widget> rightPage = ( const Center(child: Text("请选择学生")) ).obs;
 

@@ -86,6 +86,7 @@ class _playPageState extends State<PlayPage>{
   }
 
   void startPlay()async{
+    await Future.delayed(Duration(milliseconds: AppLibrary.perMessageTime));
     for(var mesBox in messageList){
       if(!mounted) return;
       List mbList = List.from(mesBox["messageContentList"].toList());

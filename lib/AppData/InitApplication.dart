@@ -91,6 +91,21 @@ Future createNecessaryDirctory()async{
   }
 }
 
+int _getBirthdayDifference(Map student){
+  if(student["release"] != 0 ) return -1;
+
+  //获取当前时间和学生的生日
+  DateTime dateTime = DateTime.now();
+  int month = int.parse(student["birthday"]["month"].toString());
+  int day = int.parse(student["birthday"]["day"].toString());
+  //计算学生月份差
+  int monthOffset =  month - dateTime.month;
+  //如果不是这个月生日，或者不是下个月生日
+  if(monthOffset > 1 || monthOffset < 0) return -1;
+  Duration timeOffset = dateTime.difference(DateTime(dateTime.year,month,day));
+  return -timeOffset.inDays;
+}
+
 //从网络获取学生信息
 Future loadStudentInfoFromNet()async{
   Dio dio = Dio();
@@ -103,6 +118,10 @@ Future loadStudentInfoFromNet()async{
   }
   for(var student in netData){
     StudentManager.instance.studentDirctory[student["id"]] = EStudent.fromMap(student);
+    int birthDayDifference = _getBirthdayDifference(student);
+    if(birthDayDifference >= 0 && birthDayDifference < 5){
+      StudentManager.instance.birthdayStudent[student["id"]] = birthDayDifference;
+    }
   }
   String chatTools = await rootBundle.loadString("assets/datas/chatTools.json");
   for(var tool in jsonDecode(chatTools)){
@@ -118,6 +137,10 @@ Future loadStudentInfoFromLocal()async{
   }
   for(var student in json.decode(students.readAsStringSync())){
     StudentManager.instance.studentDirctory[student["id"]] = EStudent.fromMap(student);
+    int birthDayDifference = _getBirthdayDifference(student);
+    if(birthDayDifference >= 0 && birthDayDifference < 5){
+      StudentManager.instance.birthdayStudent[student["id"]] = birthDayDifference;
+    }
   }
   String chatTools = await rootBundle.loadString("assets/datas/chatTools.json");
   for(var tool in jsonDecode(chatTools)){

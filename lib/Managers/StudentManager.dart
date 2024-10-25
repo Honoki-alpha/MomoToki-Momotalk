@@ -11,6 +11,7 @@ class StudentManager{
   Map<int,EStudent> studentDirctory = {};//学生列表
   Map<int,EStudent> diyStudentDirctory = {};//自定义学生列表
   Map<int,EStudent> toolStudentDirctory = {};//聊天工具列表
+  Map<int,int> birthdayStudent = {};
   Map<String,dynamic> studentNickName = {};//学生备注名
   List<String> usualStudents = [];//常用学生(以"ID||skinIndex"形式存储)
 

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:motoki/Utils/EventBus.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:path/path.dart';
 import '../../AppData/AppLibrary.dart';
@@ -18,12 +19,13 @@ class ScreenShotPage extends StatefulWidget{
   final int endPointer;
 
   @override
-  State<StatefulWidget> createState() => _screenShotPageState();
+  State<StatefulWidget> createState() => ScreenShotPageState();
 
 }
 
 // ignore: camel_case_types
-class _screenShotPageState extends State<ScreenShotPage>{
+class ScreenShotPageState extends State<ScreenShotPage>{
+  //消息列表
   late final List showList;
   late final Widget captureWidget;
   double pixelRatio = 1.5;
@@ -37,7 +39,12 @@ class _screenShotPageState extends State<ScreenShotPage>{
     super.initState();
     //pagePixelRatio = PlatformDispatcher.instance.views.elementAt(0).devicePixelRatio;
     showList = MessageManager.instance.messages.sublist(widget.startPointer,widget.endPointer);
-    loadingWidgets();
+    if(!AppLibrary.appLandscapeMode) {
+      loadingWidgets();
+    }else{
+      AppLibrary.globalEvent.on<ScreenShotEvent>().listen((screenShotEvent)=>loadingWidgets());
+      loadingWidgets();
+    }
   }
 
   @override
@@ -72,6 +79,7 @@ class _screenShotPageState extends State<ScreenShotPage>{
       ),
     );
   }
+
 
   void loadingWidgets(){
     Timer(const Duration(milliseconds: 800), () {

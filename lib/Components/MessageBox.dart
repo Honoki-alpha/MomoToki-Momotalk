@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/Dialog/InquireDialog.dart';
 import 'package:motoki/Managers/ThemeManager.dart';
-import 'package:motoki/Utils/EventBus.dart';
 import 'package:motoki/Views/Home/WindowHome.dart';
 import 'package:motoki/Views/MessagePage/StoryPage.dart';
 

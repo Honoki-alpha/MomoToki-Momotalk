@@ -50,7 +50,7 @@ class _messageEditPage extends State<MessageEditPage>{
 
   @override
   Widget build(BuildContext context) {
-    disableInsert = widget.messageBox.senderId < 100 && widget.messageBox.senderId != 4;
+    disableInsert = widget.messageBox.senderId != 1 && widget.messageBox.senderId < 100 && widget.messageBox.senderId != 4;
     //获取当前学生
     currentStudent = StudentManager.instance.getStudentById(widget.messageBox.senderId);
     return PopScope(
@@ -116,7 +116,7 @@ class _messageEditPage extends State<MessageEditPage>{
                     Get.back(result: {
                       "command":"delete",
                     });
-                  }, child: const Text("全删")),
+                  }, child: const Text("清除")),
                   ElevatedButton(onPressed: typeChangeClick, child: const Text("转为...")),
                   ElevatedButton(onPressed: (){
                     Get.back(result: {
@@ -223,7 +223,7 @@ class _messageEditPage extends State<MessageEditPage>{
 
   //改变类型
   void typeChangeClick()async{
-    var result = await Get.dialog(const Inquiredialog(title: "警告",content: "转变类型将清空该盒子内的消息，是否继续？",));
+    var result = await Get.dialog(const Inquiredialog(title: "警告",content: "转变类型将删除盒子内的部分消息，是否继续？",));
     if(result != true) return;
     var typeId = await Get.dialog(typeMenuDialog());
     if(typeId == null) {
@@ -231,7 +231,11 @@ class _messageEditPage extends State<MessageEditPage>{
     }else{
       widget.messageBox.senderId = typeId + 1;
       widget.messageBox.senderSkinIndex = 0;
-      widget.messageBox.messageContentList = ["请编辑该消息"];
+      if(typeId != 0 && typeId != 3){
+        String beforeMessage = widget.messageBox.messageContentList[0];
+        widget.messageBox.messageContentList = [beforeMessage];
+      }
+
     }
     setState(() {});
   }

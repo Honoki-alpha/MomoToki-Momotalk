@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:motoki/Managers/NotificationManager.dart';
+import 'package:motoki/Utils/EventBus.dart';
 import 'package:motoki/Views/Home/WindowHome.dart';
 import 'package:path/path.dart';
 import '../../AppData/AppLibrary.dart';
@@ -111,7 +112,7 @@ class _messagePageState extends State<MessagePage>{
               Obx(()=> Text(StudentManager.instance.getStudentName(currentStudent.id, skinIndex: currentStudentSkinIndex.value))),
             actions: [
               IconButton(onPressed: saveButtonClick, icon: const Icon(Icons.save_as_rounded)),
-              IconButton(onPressed: notificationButtonClick, icon: const Icon(Icons.notifications))
+              //IconButton(onPressed: notificationButtonClick, icon: const Icon(Icons.notifications))
           ]),
           body: Column(
             children: [
@@ -497,32 +498,33 @@ class _messagePageState extends State<MessagePage>{
       if(eP>=MessageManager.instance.messages.length){
         eP = MessageManager.instance.messages.length;
       }
-      if(AppLibrary.appLandscapeMode){
-        WindowHomeState.setRightPage(ScreenShotPage(startPointer: sP, endPointer: eP));
-      }else{
-        await Get.to(()=>ScreenShotPage(startPointer: sP, endPointer: eP));
-      }
+      await gotoRightPageByPf(ScreenShotPage(startPointer: sP, endPointer: eP));
+      WindowHomeState.setRightPage(this.widget);
       return;
     }else if(result["command"] == "whole"){
-      if(AppLibrary.appLandscapeMode){
-        WindowHomeState.setRightPage(ScreenShotPage(startPointer: 0, endPointer: MessageManager.instance.messages.length));
-      }else{
-        await Get.to(()=>ScreenShotPage(startPointer: 0, endPointer: MessageManager.instance.messages.length));
-      }
+      await gotoRightPageByPf(ScreenShotPage(startPointer: 0, endPointer: MessageManager.instance.messages.length));
+      WindowHomeState.setRightPage(this.widget);
       return;
     }
-    if(GetPlatform.isMobile){
-      for(var i = 0;i<MessageManager.instance.messages.length;i=i+x){
-        var endPointer = i+x;
-        if(endPointer >= MessageManager.instance.messages.length){
-          endPointer = MessageManager.instance.messages.length;
-        }
-        if(AppLibrary.appLandscapeMode){
-          WindowHomeState.setRightPage(ScreenShotPage(startPointer: i, endPointer: endPointer));
-        }else{
-          await Get.to(()=>ScreenShotPage(startPointer: i, endPointer: endPointer));
-        }
+    print("开始截图");
+    for(var i = 0;i<MessageManager.instance.messages.length;i=i+x){
+      var endPointer = i+x;
+      if(endPointer >= MessageManager.instance.messages.length){
+        endPointer = MessageManager.instance.messages.length;
       }
+      await gotoRightPageByPf(ScreenShotPage(startPointer: i, endPointer: endPointer));
+    }
+    WindowHomeState.setRightPage(this.widget);
+  }
+
+  Future gotoRightPageByPf(Widget page)async{
+    if(AppLibrary.appLandscapeMode){
+      WindowHomeState.setRightPage(page);
+      AppLibrary.globalEvent.fire(ScreenShotEvent());
+      await Future.delayed(const Duration(seconds: 4));
+
+    }else{
+      await Get.to(()=>page);
     }
   }
 

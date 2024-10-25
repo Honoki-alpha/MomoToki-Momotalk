@@ -48,7 +48,6 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
 
 
   void enterHomePage(){
-    BotToast.showText(text: (UserConfig.sp.getInt("BackTaskTest") ?? 0).toString());
     Get.off(
         ()=>getHome(),
         transition: Transition.downToUp,

@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/AppData/UserConfig.dart';
 import 'package:motoki/Dialog/InquireDialog.dart';
+import 'package:motoki/Managers/StudentManager.dart';
 import 'package:motoki/Utils/CommonComponents.dart';
 import 'package:motoki/Entity/EChatTileGroup.dart';
 import 'package:motoki/Views/Home/WindowHome.dart';
@@ -42,11 +43,20 @@ class _ChatState extends State<Chat>{
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: ChatGroupManager.instance.chatTileGroups.length,
-      itemBuilder: (BuildContext context, int index) {
-        return chatTileGroup(ChatGroupManager.instance.chatTileGroups[index],index);
-      },
+    return Column(
+      children: [
+        if(StudentManager.instance.birthdayStudent.isNotEmpty) const ListTile(title: Text("生日学生"),leading: Icon(Icons.cake),),
+        for(var s in StudentManager.instance.birthdayStudent.entries)
+          ListTile(leading: getCicleStudentAvatar(s.key),
+            title: Text(StudentManager.instance.getStudentName(s.key)),
+            subtitle: Text(s.value == 0?"今天是她的生日哦！":"距离她的生日还有${s.value}天"),),
+        Expanded(child: ListView.builder(
+          itemCount: ChatGroupManager.instance.chatTileGroups.length,
+          itemBuilder: (BuildContext context, int index) {
+            return chatTileGroup(ChatGroupManager.instance.chatTileGroups[index],index);
+          },
+        ))
+      ],
     );
   }
 
@@ -203,6 +213,7 @@ class _ChatState extends State<Chat>{
     if(!AppLibrary.appLandscapeMode){
       Get.to(()=>MessagePage(chatTileUID: tile.chatTileUID),transition: Transition.rightToLeftWithFade);
     }else{
+      WindowHomeState.tempWidget = MessagePage(chatTileUID: tile.chatTileUID);
       WindowHomeState.setRightPage(MessagePage(chatTileUID: tile.chatTileUID));
     }
     setState(() {
@@ -217,7 +228,12 @@ class _ChatState extends State<Chat>{
     if(result["command"] == "edit"){
       ChatGroupManager.instance.alterChatTileGroup(groupIndex, groupName.text);
     }else{
-
+      var firstResult = await Get.dialog(const Inquiredialog(title: "警告", content: "老师，您点击了删除按钮，是否删除分组？"));
+      if(firstResult != true) return;
+      var secondResult = await Get.dialog(const Inquiredialog(title: "警告", content: "老师，您点击了删除按钮，是否真的要删除分组？"));
+      if(secondResult != true) return;
+      var thirdResult = await Get.dialog(const Inquiredialog(title: "警告", content: "老师，您点击了删除按钮，是否真的真的要删除分组？"));
+      if(thirdResult != true) return;
       ChatGroupManager.instance.removeChatTileGroup(groupIndex);
     }
     setState(() {});

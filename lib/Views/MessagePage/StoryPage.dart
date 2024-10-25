@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/Entity/EMessageBox.dart';
 import 'package:motoki/Managers/StudentManager.dart';
 import 'package:motoki/Managers/ThemeManager.dart';
 import 'package:motoki/Utils/CommonComponents.dart';
+import 'package:motoki/Views/Home/WindowHome.dart';
 
 class Storypage extends StatelessWidget{
   const Storypage({super.key, required this.messageBox});
@@ -30,7 +33,7 @@ class Storypage extends StatelessWidget{
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const ListTile(leading: Text("好感故事"),trailing: Icon(Icons.close)),
+            ListTile(leading: const Text("好感故事"),trailing: IconButton(icon:const Icon(Icons.close),onPressed: backToLastPage,)),
             const Divider(indent: 10,endIndent: 10,color: Colors.black54,),
             Stack(
               children: [
@@ -78,6 +81,14 @@ class Storypage extends StatelessWidget{
         ),
       ),
     );
+  }
+
+  void backToLastPage(){
+    if(AppLibrary.appLandscapeMode){
+      WindowHomeState.setRightPage(WindowHomeState.tempWidget);
+    }else{
+      Get.back();
+    }
   }
 
 }
