@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
-import 'package:motoki/Entity/EMessageBox.dart';
 import 'package:motoki/Utils/EventBus.dart';
 
 import '../../Components/MessageBox.dart';
@@ -67,6 +66,7 @@ class _playPageState extends State<PlayPage>{
     return Scaffold(
       body: Column(
         children: [
+          if(GetPlatform.isIOS) GestureDetector(child:const Text("点此返回"),onTap: ()=>Get.back(),),
           Expanded(child: Container(
             color: ThemeManager.currentTheme.cardColor,
             alignment: Alignment.topCenter,

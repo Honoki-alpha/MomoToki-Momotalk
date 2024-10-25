@@ -62,6 +62,12 @@ dependencies:
   universal_html: ^2.2.4
   workmanager: ^0.5.2
 
+dependency_overrides:
+  image_gallery_saver:
+    git:
+      url: https://github.com/knottx/image_gallery_saver.git
+      ref: knottx-latest
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
