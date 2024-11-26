@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:get/get_rx/get_rx.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/AppData/UserConfig.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,8 @@ import 'package:motoki/Views/Home/WindowHome.dart';
 import 'package:motoki/Views/Secondary/SelectPage.dart';
 import 'package:motoki/Views/SettingPage/StudentNickNameSetting.dart';
 import 'package:path/path.dart';
+
+import '../../Utils/CommonFunctions.dart';
 
 class StudentSetting extends StatefulWidget{
   const StudentSetting({super.key});
@@ -95,6 +98,7 @@ class _seitoSet extends State<StudentSetting>{
                   }
                 },
               ),
+              ListTile(title: const Text("设置老师头像"),onTap: setSenseiAvatar,)
             ]),
             getSettingBorderBox([
               ListTile(
@@ -121,6 +125,27 @@ class _seitoSet extends State<StudentSetting>{
           ],
         )
     );
+  }
+
+  void setSenseiAvatar()async{
+    if(!AppLibrary.customSenseiAvatar.existsSync()){
+      XFile? file = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+      );
+      if(file == null){
+        BotToast.showText(text: "设置头像失败");
+        return;
+      }
+      String path = join(AppLibrary.applicationPath,"Users","Sensei.png");
+      await file.saveTo(path);
+      BotToast.showText(text: "设置头像成功");
+    }else{
+      var result = await Get.dialog(const Inquiredialog(title: "文件已存在", content: "自定义老师头像已存在，是否删除？"));
+      if(result ?? false){
+        await AppLibrary.customSenseiAvatar.delete();
+        BotToast.showText(text: "删除成功");
+      }
+    }
   }
 
   void downloadJson()async{

@@ -14,6 +14,8 @@ class UserConfig{
   //聊天背景
   static bool denpendTheme = true;
   static Color chatBackGroundColor = Colors.white;
+  //自定义主题
+  static Color customAppThemeColor = Colors.purpleAccent;
   //学生名字语言
   static String studentNameLanguage = "";
   //自定义字体路径
@@ -43,6 +45,7 @@ class UserConfig{
     appFontSize = sp.getDouble("appFontSize") ?? 0.0;
     List<String> colors = sp.getStringList("chatBackGroundColor") ?? ["255","255","255"];
     chatBackGroundColor = Color.fromRGBO(int.parse(colors[0]), int.parse(colors[1]), int.parse(colors[2]), 1);
+    List<String> ccolors = sp.getStringList("customAppThemeColor") ?? ["255","255","255"];
+    customAppThemeColor = Color.fromRGBO(int.parse(ccolors[0]), int.parse(ccolors[1]), int.parse(ccolors[2]), 1);
   }
-
 }

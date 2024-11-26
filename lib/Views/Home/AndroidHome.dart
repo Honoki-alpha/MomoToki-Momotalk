@@ -11,6 +11,7 @@ import 'package:motoki/Managers/ChatGroupManager.dart';
 import 'package:motoki/Managers/ThemeManager.dart';
 import 'package:motoki/Utils/CommonFunctions.dart';
 import '../../AppData/AppConstant.dart';
+import '../../AppData/UserConfig.dart';
 import '../Secondary/SelectPage.dart';
 import '../MessagePage/Chat.dart';
 import '../SettingPage/Configure.dart';
@@ -22,7 +23,7 @@ class AndroidHome extends StatefulWidget{
   State<StatefulWidget> createState() => _homeState();
 }
 
-class _homeState extends State<AndroidHome>{
+class _homeState extends State<AndroidHome> with WidgetsBindingObserver{
   int popTimes = 0;
   bool floatingButtonVisable = true;
   RxBool isMessagePage = true.obs;
@@ -34,7 +35,36 @@ class _homeState extends State<AndroidHome>{
     AppLibrary.appLandscapeMode = false;
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top,SystemUiOverlay.bottom]);
     kawaiNotification();
+    //初始化监听
+    WidgetsBinding.instance.addObserver(this);
     getLastVersion();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    //移除监听
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // TODO: implement didChangeAccessibilityFeatures
+    super.didChangeAppLifecycleState(state);
+    //软件从后台返回到前台
+    if(state == AppLifecycleState.resumed){
+      if(Get.mediaQuery.platformBrightness == Brightness.dark) {
+        ThemeManager.isDarkTheme = true;
+        ThemeManager.currentTheme = ThemeManager.darkTheme;
+      }else{
+        ThemeManager.isDarkTheme = false;
+        ThemeManager.currentTheme = ThemeManager.getThemeData(UserConfig.themeIndex);
+      }
+      setState(() {
+        navigationCurrentPage = 0;
+      });
+    }
   }
 
   //弹出两个小可爱的问候

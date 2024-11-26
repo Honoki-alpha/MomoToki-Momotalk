@@ -29,6 +29,7 @@ class Chat extends StatefulWidget{
 class _ChatState extends State<Chat>{
 
   int host = 1;
+  RxBool birthdayIsShow = true.obs;
 
   @override
   void initState() {
@@ -45,11 +46,29 @@ class _ChatState extends State<Chat>{
   Widget build(BuildContext context) {
     return Column(
       children: [
-        if(StudentManager.instance.birthdayStudent.isNotEmpty) const ListTile(title: Text("生日学生"),leading: Icon(Icons.cake),),
-        for(var s in StudentManager.instance.birthdayStudent.entries)
-          ListTile(leading: getCicleStudentAvatar(s.key),
-            title: Text(StudentManager.instance.getStudentName(s.key)),
-            subtitle: Text(s.value == 0?"今天是她的生日哦！":"距离她的生日还有${s.value}天"),),
+        if(StudentManager.instance.birthdayStudent.isNotEmpty) Obx(()=>ExpansionPanelList(
+          expansionCallback: (value,expanded){
+            birthdayIsShow.value = !birthdayIsShow.value;
+          },
+          children: [
+            ExpansionPanel(
+                canTapOnHeader: true,
+                isExpanded: birthdayIsShow.value,
+                headerBuilder: (builder,expanded){
+                  return const ListTile(title: Text("生日学生"),leading: Icon(Icons.cake),);
+                },
+                body: ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: StudentManager.instance.birthdayStudent.length,
+                    itemBuilder: (context,index){
+                      var s = StudentManager.instance.birthdayStudent.entries.elementAt(index);
+                      return ListTile(leading: getCicleStudentAvatar(s.key),
+                        title: Text(StudentManager.instance.getStudentName(s.key)),
+                        subtitle: Text(s.value == 0?"今天是她的生日哦！":"距离她的生日还有${s.value}天"),);
+                    }))
+          ],
+        ) ),
         Expanded(child: ListView.builder(
           itemCount: ChatGroupManager.instance.chatTileGroups.length,
           itemBuilder: (BuildContext context, int index) {

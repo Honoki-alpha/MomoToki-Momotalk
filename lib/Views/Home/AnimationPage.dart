@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
@@ -22,11 +21,7 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
   @override
   void initState() {
     super.initState();
-    if(Get.mediaQuery.platformBrightness == Brightness.dark) {
-      UserConfig.themeIndex = 1;
-      ThemeManager.isDarkTheme = true;
-      ThemeManager.currentTheme = ThemeManager.darkTheme;
-    }
+
     Timer(const Duration(milliseconds: 300), enterHomePage);
 
   }

@@ -61,7 +61,8 @@ class WindowHomeState extends State<WindowHome>{
             Padding(padding: const EdgeInsets.all(15),child: IconButton(onPressed: (){
               windowManager.minimize();
             }, icon: const Icon(Icons.remove)),),
-            Padding(padding: const EdgeInsets.all(10),child: IconButton(onPressed: (){
+            Padding(padding: const EdgeInsets.all(10),child: IconButton(onPressed: ()async{
+              await saveButtonClick();
               windowManager.close();
             }, icon: const Icon(Icons.close))),
           ]:[],),
@@ -143,7 +144,7 @@ class WindowHomeState extends State<WindowHome>{
     Get.dialog(inputDialog());
   }
 
-  void saveButtonClick()async{
+  Future saveButtonClick()async{
     if(MessageManager.instance.messages.isNotEmpty || MessageManager.instance.aiMessages.isNotEmpty){
       var cancel = BotToast.showLoading();
       await MessageManager.instance.saveMessages();

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'package:bot_toast/bot_toast.dart';
@@ -64,6 +65,8 @@ class _messagePageState extends State<MessagePage>{
 
   final HotKey _attachKey = HotKey(KeyCode.enter,modifiers: [KeyModifier.control],scope: HotKeyScope.inapp);
   final HotKey _sendKey = HotKey(KeyCode.enter,scope:HotKeyScope.inapp);
+  //自动保存计时器
+  late Timer timer;
 
   @override
   void initState() {
@@ -72,11 +75,21 @@ class _messagePageState extends State<MessagePage>{
     initHotKey();
     currentStudent = StudentManager.instance.getStudentById(MessageManager.instance.currentStudentId);
     scrollToBottom();
+    timer = Timer.periodic(const Duration(minutes: 3), (t){
+      if(mounted){
+        saveButtonClick();
+      }
+    });
+    //添加列表滚动监听
+    listController.addListener((){
+      nowProgress.value = listController.position.pixels/listController.position.maxScrollExtent;
+    });
   }
 
   @override
   void deactivate() {
     super.deactivate();
+    timer.cancel();
     destoryHotKey();
   }
 
@@ -506,7 +519,6 @@ class _messagePageState extends State<MessagePage>{
       WindowHomeState.setRightPage(this.widget);
       return;
     }
-    print("开始截图");
     for(var i = 0;i<MessageManager.instance.messages.length;i=i+x){
       var endPointer = i+x;
       if(endPointer >= MessageManager.instance.messages.length){

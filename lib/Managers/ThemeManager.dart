@@ -10,6 +10,7 @@ class ThemeManager{
   static late ThemeData momoTheme;
   static late ThemeData darkTheme;
   static late ThemeData blueTheme;
+  static late ThemeData customTheme;
   static bool isDarkTheme = true;
 
 
@@ -70,6 +71,20 @@ class ThemeManager{
             titleTextStyle: TextStyle(fontSize: 20,color: Colors.white,fontFamily:"ResourceHanCN")
         )
     );
+    customTheme = ThemeData(
+        textTheme: UserConfig.appFontSize<5.0?null:TextTheme(
+          bodyLarge: TextStyle(fontSize: UserConfig.appFontSize),
+          bodyMedium: TextStyle(fontSize: UserConfig.appFontSize -2),
+        ),
+        brightness: Brightness.light,
+        fontFamily: AppLibrary.appFontSource,
+        useMaterial3: true,
+        colorSchemeSeed: UserConfig.customAppThemeColor,
+        appBarTheme: AppBarTheme(
+            color: UserConfig.customAppThemeColor,
+            titleTextStyle: const TextStyle(fontSize: 20,color: Colors.white,fontFamily:"ResourceHanCN")
+        )
+    );
     currentTheme = getThemeData(UserConfig.themeIndex);
     isDarkTheme = UserConfig.themeIndex == 1;
   }
@@ -79,6 +94,7 @@ class ThemeManager{
       case 0: return momoTheme;
       case 1: return darkTheme;
       case 2: return blueTheme;
+      case 99 : return customTheme;
       default: return momoTheme;
     }
   }

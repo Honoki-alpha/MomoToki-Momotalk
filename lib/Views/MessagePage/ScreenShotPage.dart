@@ -9,6 +9,7 @@ import 'package:motoki/Utils/EventBus.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:path/path.dart';
 import '../../AppData/AppLibrary.dart';
+import '../../AppData/UserConfig.dart';
 import '../../Components/MessageBox.dart';
 import '../../Managers/MessageManager.dart';
 import '../../Managers/ThemeManager.dart';
@@ -50,12 +51,14 @@ class ScreenShotPageState extends State<ScreenShotPage>{
   @override
   void deactivate(){
     super.deactivate();
+    //
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top,SystemUiOverlay.bottom]);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text("截图界面")),
       body: Column(
         children: [
           Expanded(
@@ -63,7 +66,7 @@ class ScreenShotPageState extends State<ScreenShotPage>{
               child: Screenshot(
                 controller: screenshotController,
                 child: Container(
-                  color: ThemeManager.currentTheme.cardColor,
+                  color: ThemeManager.isDarkTheme || UserConfig.denpendTheme?ThemeManager.currentTheme.cardColor:UserConfig.chatBackGroundColor,
                   child: ListView(
                     physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,

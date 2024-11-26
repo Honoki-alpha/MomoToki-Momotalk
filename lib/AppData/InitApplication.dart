@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -65,6 +66,8 @@ Future createNecessaryDirctory()async{
   Resouces:资源存储
   * */
   List dirs = ["ChatTiles","Messages","Users","AIChat","PictureCache","DIYemotion","MessageCature","Resources"];
+  AppLibrary.customSenseiAvatar = File(join(AppLibrary.applicationPath,"Users","Sensei.png"));
+  print(AppLibrary.customSenseiAvatar.existsSync());
   for (var dir in dirs) {
     Directory d = Directory(join(AppLibrary.applicationPath,dir));
     if(!d.existsSync()){
@@ -91,20 +94,28 @@ Future createNecessaryDirctory()async{
   }
 }
 
-int _getBirthdayDifference(Map student){
-  if(student["release"] != 0 ) return -1;
-
-  //获取当前时间和学生的生日
-  DateTime dateTime = DateTime.now();
+final List days = [31,28,31,30,31,30,31,31,30,31,30,31];
+int _getDayDifference(Map student){
+  if(student["release"] != 0) return -1;
+  DateTime now = DateTime.now();
+  int nowMonth = now.month;
+  int nowDay = now.day;
   int month = int.parse(student["birthday"]["month"].toString());
   int day = int.parse(student["birthday"]["day"].toString());
-  //计算学生月份差
-  int monthOffset =  month - dateTime.month;
-  //如果不是这个月生日，或者不是下个月生日
-  if(monthOffset > 1 || monthOffset < 0) return -1;
-  Duration timeOffset = dateTime.difference(DateTime(dateTime.year,month,day));
-  return -timeOffset.inDays;
+  //如果月份相差大于1，或者当前月份大于生日月份，说明生日已过
+  if((nowMonth-month).abs() > 1 || nowMonth > month) return -1;
+  if(nowMonth == month) return day - nowDay;
+  if(month == 2){
+    if( (now.year % 4 == 0 && now.year % 100 != 0) ||
+        (now.year% 100 == 0 && now.year% 400 == 0)){
+      days[1] = 29;
+    }else{
+      days[1] = 28;
+    }
+  }
+  return days[nowMonth-1] - nowDay + day;
 }
+
 
 //从网络获取学生信息
 Future loadStudentInfoFromNet()async{
@@ -118,7 +129,9 @@ Future loadStudentInfoFromNet()async{
   }
   for(var student in netData){
     StudentManager.instance.studentDirctory[student["id"]] = EStudent.fromMap(student);
-    int birthDayDifference = _getBirthdayDifference(student);
+
+    int birthDayDifference = _getDayDifference(student);
+    //print("该学生是：${student["givenName"]["nm"]},她的差值是：${birthDayDifference}");
     if(birthDayDifference >= 0 && birthDayDifference < 5){
       StudentManager.instance.birthdayStudent[student["id"]] = birthDayDifference;
     }
@@ -137,7 +150,7 @@ Future loadStudentInfoFromLocal()async{
   }
   for(var student in json.decode(students.readAsStringSync())){
     StudentManager.instance.studentDirctory[student["id"]] = EStudent.fromMap(student);
-    int birthDayDifference = _getBirthdayDifference(student);
+    int birthDayDifference = _getDayDifference(student);
     if(birthDayDifference >= 0 && birthDayDifference < 5){
       StudentManager.instance.birthdayStudent[student["id"]] = birthDayDifference;
     }

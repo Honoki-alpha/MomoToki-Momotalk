@@ -23,6 +23,7 @@ class AppSetting extends StatefulWidget{
 
 class _SettingState extends State<AppSetting>{
   var pickerColor = const Color(0xff443a49).obs;
+  var customThemeColor = Rx<Color>(UserConfig.customAppThemeColor);
   RxDouble size = 0.5.obs;
   RxDouble fontSize = 0.0.obs;
   @override
@@ -45,17 +46,26 @@ class _SettingState extends State<AppSetting>{
                 children: [
                   getSettingBorderBox([
                     ListTile(
-                    title: const Text("主题模式"),
-                    trailing: DropdownButton(
+                      title: const Text("主题模式"),
+                      trailing: DropdownButton(
                       value: UserConfig.themeIndex,
                       items: const [
                         DropdownMenuItem(value:0,child: Text("MomoTalk")),
                         DropdownMenuItem(value:1,child: Text("夜间主题")),
                         DropdownMenuItem(value:2,child: Text("BlueArchive")),
+                        DropdownMenuItem(value:99,child: Text("自定义"))
                       ],
-                      onChanged:dayOrNightChange,
+                      onChanged:Get.mediaQuery.platformBrightness == Brightness.dark?null:dayOrNightChange,
                     ),
-                  ),
+                      enabled: Get.mediaQuery.platformBrightness != Brightness.dark,
+                      subtitle: Get.mediaQuery.platformBrightness == Brightness.dark?const Text("深色模式下不允许修改主题！"):null,
+                    ),
+                    ListTile(
+                      enabled: UserConfig.themeIndex==99,
+                      title: const Text("自定义主题颜色"),
+                      onTap: setCustomColor,
+                      trailing: !UserConfig.denpendTheme?Container(color:customThemeColor.value,height: 10,width: 10,):null,
+                    ),
                     if(GetPlatform.isMobile) ListTile(
                       title:const Text("什亭之匣"),
                       trailing: Switch(
@@ -134,7 +144,7 @@ class _SettingState extends State<AppSetting>{
   void dayOrNightChange(int? value)async{
     if(value == null) return;
     try{
-      var re  = await UserConfig.sp.setInt("themeIndex", value);
+      var re = await UserConfig.sp.setInt("themeIndex", value);
       if(re != true){
         BotToast.showText(text: "设置失败，请检查软件权限");
         return;
@@ -175,6 +185,17 @@ class _SettingState extends State<AppSetting>{
     setState(() {});
   }
 
+  void setCustomColor()async{
+    await Get.defaultDialog(content: Obx(()=>ColorPicker(pickerColor: customThemeColor.value, onColorChanged: (Color value) {
+      setState(() {
+        customThemeColor.value=value;
+      });
+    },)));
+    UserConfig.customAppThemeColor = customThemeColor.value;
+    Color c = customThemeColor.value;
+    UserConfig.sp.setStringList("customAppThemeColor", [c.red.toString(),c.green.toString(),c.blue.toString()]);
+    BotToast.showText(text: "设置主题颜色成功，重启后生效");
+  }
 
   void setPageBackGroundColor()async{
     await Get.defaultDialog(content: Obx(()=>ColorPicker(pickerColor: pickerColor.value, onColorChanged: (Color value) {

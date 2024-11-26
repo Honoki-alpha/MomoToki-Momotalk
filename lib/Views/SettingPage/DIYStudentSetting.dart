@@ -148,7 +148,8 @@ class _DIYSeitoState extends State<DIYStudentSetting>{
     int originId = diyList[index].id;//记录原来的ID便于修改
     EStudent student = StudentManager.instance.getStudentById(originId);
     diyImgPath = RxString(student.avatar);
-    var result = await Get.dialog(addOrEditDialog(originId,name:"${student.familyName["cn"]} ${student.givenName["cn"]}"));
+    var result = await Get.dialog(addOrEditDialog(originId,
+        name:"${student.familyName["nm"]==null||student.familyName["nm"]==""?"":'${student.familyName["nm"]} '}${student.givenName["nm"]??""}"));
     if(result == null) return;
     List<String> names = result["name"].split(" ");
     String fn = "";String gn = "";

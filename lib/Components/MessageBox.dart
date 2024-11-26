@@ -96,7 +96,7 @@ class _messageBoxState extends State<MessageBox>{
       ),
     );
   }
-  Widget messageBoxSignle(String mes,int index,bool isRight,bool isImg){
+  Widget messageBoxSignle(String mes,int  index,bool isRight,bool isImg){
     String arrow = "left";
     if(isRight){
       arrow = "right";

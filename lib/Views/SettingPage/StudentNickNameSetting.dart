@@ -81,15 +81,13 @@ class _StudentNickNameSettingState extends State<StudentNickNameSetting>{
     if(result==null) return;
     int skinIndex = 0;
     if(result.skinList.length > 1){
-      skinIndex = ( await Get.dialog(skinIndexSelectDialog(result.skinList)) )?? 0;
+      skinIndex = ( await Get.dialog(skinIndexSelectDialog(result.skinList)) ) ?? 0;
     }
-    await Get.defaultDialog(title:"请输入备注",content: TextField(controller: textEditingController,));
+    await Get.defaultDialog(title:"请输入备注",content: TextField(controller: textEditingController));
     if(textEditingController.text.isEmpty) return;
     StudentManager.instance.addNickName(result.id, skinIndex, textEditingController.text);
     textEditingController.text = "";
-    setState(() {
-
-    });
+    setState(() {});
   }
 
   //选择常用学生的皮肤

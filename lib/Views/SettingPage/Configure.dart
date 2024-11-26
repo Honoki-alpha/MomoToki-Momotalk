@@ -58,7 +58,7 @@ class _configureState extends State<Configure>{
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
-                  ListTile(title: const Text("自定义学生"),leading: const Icon(Icons.assignment_ind_sharp),onTap:(){
+                  ListTile(title: const Text("自定义学生/角色"),leading: const Icon(Icons.assignment_ind_sharp),onTap:(){
                     if(AppLibrary.appLandscapeMode){
                       WindowHomeState.setLeftPage(const DIYStudentSetting());
                     }else{
@@ -66,12 +66,12 @@ class _configureState extends State<Configure>{
                     }
                   }),
                   const Divider(indent: 10,endIndent: 10,),
-                  ListTile(title: const Text("加入群聊"),leading: const Icon(Icons.group),onTap: ()async{
-                    final Uri url = Uri.parse("http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=3GuV5A0V_f3Eu97RWurn2zN_cn2nMK01&authKey=6FB%2Bbtk53oZASsA9pMMYXlsIRxRkMzlzHqCjnsckRZiYCV1%2FODT28GXx5FmK80yq&noverify=0&group_code=671122437");
+                  ListTile(title: const Text("软件教程"),leading: const Icon(Icons.book),onTap: ()async{
+                    final Uri url = Uri.parse("https://www.yuque.com/unfriendly/cetwzc/ceaeblm4h7g9nmxk");
                     if (!await launchUrl(url,mode:LaunchMode.platformDefault)) {
                       BotToast.showText(text:"打开失败");
                     }
-                    Get.defaultDialog(title: "或通过二维码加入",content: Image.asset("assets/images/source/GroupQRcode.png",width: 300,fit: BoxFit.fitWidth));
+                    //Get.defaultDialog(title: "或通过二维码加入",content: Image.asset("assets/images/source/GroupQRcode.png",width: 300,fit: BoxFit.fitWidth));
                   }),
                   ListTile(title: const Text("关于软件"),leading:const Icon(Icons.apps),onTap: (){
                     if(AppLibrary.appLandscapeMode){

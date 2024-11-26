@@ -128,8 +128,9 @@ class StudentManager{
   }
 
   void removeNickName(int id,int skinIndex){
-    var skins = studentNickName["$id"]!;
-    skins.remove("$skinIndex");
+    Map skins = studentNickName["$id"]!;
+    var skinId = skins.entries.elementAt(skinIndex);
+    skins.remove(skinId.key);
     if(skins.isEmpty) studentNickName.remove("$id");
     saveNickName();
   }

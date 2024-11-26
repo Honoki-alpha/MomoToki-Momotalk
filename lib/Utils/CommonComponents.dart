@@ -49,10 +49,14 @@ Widget getCicleStudentAvatar(int id, {int? skinIndex,double? customWidth}){
 Widget getAvatarFromResource(int id,int skinIndex){
   EStudent student = StudentManager.instance.getStudentById(id);
   File? f = AppResource.getStudentAvatarFile(id, skinIndex, student.release);
-  if(f != null && f.existsSync()){
-    if(UserConfig.applyOfflineMode || student.release == 2){
+  if(id == 1 && AppLibrary.customSenseiAvatar.existsSync()){
+    return Image.file(AppLibrary.customSenseiAvatar,height: 50, fit: BoxFit.cover);
+  }
+  if( f != null && f.existsSync() ){
+    if(UserConfig.applyOfflineMode || student.release == 2 || id == 1){
       return Image.file(f,
-          fit: BoxFit.fitWidth,
+          height: 50,
+          fit: BoxFit.cover,
           errorBuilder: (b,o,t){return Image.asset("assets/images/icon/IMAGELOST.png",fit: BoxFit.fitWidth,);});
     }
   }
