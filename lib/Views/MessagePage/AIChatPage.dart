@@ -49,7 +49,7 @@ class _AiChatPage extends State<AIChatPage>{
     "500 Internal_Server_Error":"服务器内部错误。这可能是OpenAI服务器的问题，并非老师的问题，可切换HOST尝试，若仍出现问题，请等待OpenAI解决。",
     "503 Service_Unavailable":"服务暂时不可用。这可能是由于OpenAI正在进行维护或者服务器过载引起，请耐心等待一段时间后尝试。",
   };
-  final String hostlink = "https://api.chatanywhere.tech";
+  String hostlink = "https://api.chatanywhere.tech";
   int hostIndex = Random().nextInt(1);
   final Map<String,String> headers = {
     'Authorization': 'Bearer ${UserConfig.aiChatKey}',
@@ -61,6 +61,8 @@ class _AiChatPage extends State<AIChatPage>{
     // TODO: implement initState
     super.initState();
     currentStudent = StudentManager.instance.getStudentById(MessageManager.instance.currentStudentId);
+    hostlink = UserConfig.aiChatUrl ?? "https://api.chatanywhere.tech";
+    if(UserConfig.aiChatUrl == null || UserConfig.aiChatUrl == "") hostlink= "https://api.chatanywhere.tech";
   }
 
   @override

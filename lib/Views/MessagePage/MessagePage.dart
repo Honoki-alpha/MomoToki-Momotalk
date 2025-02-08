@@ -6,7 +6,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
-import 'package:motoki/Managers/NotificationManager.dart';
 import 'package:motoki/Utils/EventBus.dart';
 import 'package:motoki/Views/Home/WindowHome.dart';
 import 'package:path/path.dart';
@@ -65,8 +64,6 @@ class _messagePageState extends State<MessagePage>{
 
   final HotKey _attachKey = HotKey(KeyCode.enter,modifiers: [KeyModifier.control],scope: HotKeyScope.inapp);
   final HotKey _sendKey = HotKey(KeyCode.enter,scope:HotKeyScope.inapp);
-  //自动保存计时器
-  late Timer timer;
 
   @override
   void initState() {
@@ -75,11 +72,6 @@ class _messagePageState extends State<MessagePage>{
     initHotKey();
     currentStudent = StudentManager.instance.getStudentById(MessageManager.instance.currentStudentId);
     scrollToBottom();
-    timer = Timer.periodic(const Duration(minutes: 3), (t){
-      if(mounted){
-        saveButtonClick();
-      }
-    });
     //添加列表滚动监听
     listController.addListener((){
       nowProgress.value = listController.position.pixels/listController.position.maxScrollExtent;
@@ -89,7 +81,6 @@ class _messagePageState extends State<MessagePage>{
   @override
   void deactivate() {
     super.deactivate();
-    timer.cancel();
     destoryHotKey();
   }
 
@@ -297,7 +288,7 @@ class _messagePageState extends State<MessagePage>{
   bool checkAddtionButtonUse(){
     //为空或者最后为不可追加列表
     return MessageManager.instance.messages.isEmpty ||
-        [2,3,5].contains(MessageManager.instance.messages.last["senderId"]) ||
+        [2,3,5,6].contains(MessageManager.instance.messages.last["senderId"]) ||
         (loadImgPath != "" && MessageManager.instance.messages.last["senderId"] == 4);
   }
 
@@ -330,7 +321,7 @@ class _messagePageState extends State<MessagePage>{
         currentStudent.id,
         currentStudentSkinIndex.value,
         0,
-        currentStudent.givenName["nm"],
+        "",
         [message],
         isRightMessage.value,
         {});
@@ -339,9 +330,11 @@ class _messagePageState extends State<MessagePage>{
     }else{
       MessageManager.instance.addMessageBox(em);
     }
+    if(UserConfig.autoSaveMessage) saveButtonClick();
     setState(() {
       input.text = "";
     });
+    saveButtonClick();
     if(currentSelectedIndex.value==-1) {
       scrollToBottom();
     }else{
@@ -372,16 +365,6 @@ class _messagePageState extends State<MessagePage>{
     cancel();
   }
 
-  void notificationButtonClick()async{
-    if(!GetPlatform.isAndroid){
-      BotToast.showText(text: "抱歉，该功能仅支持安卓/(ㄒoㄒ)/~~");
-    }
-    bool? result = await Get.dialog(notificationDialog());
-    if(result != true) return;
-    NotificationInstance.sendNotification(title.text, content.text);
-    title.clear();
-    content.clear();
-  }
 
   TextEditingController title = TextEditingController();
   TextEditingController content = TextEditingController();
@@ -426,7 +409,7 @@ class _messagePageState extends State<MessagePage>{
       //获取自定义途径
       Directory dir = Directory(join(AppLibrary.applicationPath,"DIYemotion",currentStudent.id.toString()));
       if(currentStudent.release != 2){
-        dir = Directory(join(AppLibrary.applicationPath,"Resources","Emotions","${currentStudent.id}"));
+        dir = Directory(join(AppLibrary.faceBasePath,"Resources","Emotions","${currentStudent.id}"));
       }
       if(!dir.existsSync()){
         BotToast.showText(text: "未找到该学生差分！");

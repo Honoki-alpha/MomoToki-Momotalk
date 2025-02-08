@@ -25,6 +25,10 @@ Future<String> getPictureFromDevice(String savePath)async{
 
 //获取最新版本
 void getLastVersion()async{
+  if(GetPlatform.isIOS){
+    BotToast.showText(text: "因IOS政策原因，将不会进行版本检测");
+    return;
+  }
   if(UserConfig.applyOfflineMode){
     BotToast.showText(text: "离线模式将不会检测版本更新");
     return;

@@ -32,8 +32,11 @@ class MessageEditPage extends StatefulWidget{
 class _messageEditPage extends State<MessageEditPage>{
   int selectedindex = 0;
   TextEditingController inputField = TextEditingController();
+  //单条备注
+  TextEditingController nick = TextEditingController();
   String loadImgPath = "";
   String loadImgMethod = "URL";
+
   final List<String> typeMenu = ["老师","旁白","旁白（透明）","回复","羁绊"];
   bool disableInsert = false;
   late EStudent currentStudent;
@@ -46,6 +49,7 @@ class _messageEditPage extends State<MessageEditPage>{
     editMessage(selectedindex, MessageManager.instance.checkIsImg(head));
     currentStudent = StudentManager.instance.getStudentById(widget.messageBox.senderId);
     skinLength = currentStudent.skinList.length;
+    nick.text = widget.messageBox.sendMessageName;
   }
 
   @override
@@ -78,14 +82,20 @@ class _messageEditPage extends State<MessageEditPage>{
                   });
                 }),
               ]),
+              SizedBox(width: 300,child: TextField(controller: nick,decoration: const InputDecoration(
+                labelText: "单条消息备注"
+              ),onChanged: (value){
+                widget.messageBox.sendMessageName = value;
+              },)),
               SizedBox(
                 height: 280,
-                child: ListView.builder(
+                child: ReorderableListView.builder(
                     itemCount: widget.messageBox.messageContentList.length,
                     itemBuilder: (build,index){
                       var element = widget.messageBox.messageContentList[index];
                       bool isImg = MessageManager.instance.checkIsImg(element);
                       return Row(
+                        key: ObjectKey(index),
                         children: [
                           Expanded(child: Text(isImg?"【图片资源】":element)),
                           IconButton(icon: const Icon(Icons.edit), onPressed: ()=>editMessage(index,isImg)),
@@ -94,13 +104,23 @@ class _messageEditPage extends State<MessageEditPage>{
                           IconButton(icon: const Icon(Icons.add),onPressed: disableInsert?null:()=>insertMessage(index),),
                         ],
                       );
-                    }),
+                    }, onReorder: (int oldIndex, int newIndex) {
+                      var item = widget.messageBox.messageContentList.removeAt(oldIndex);
+                      if(newIndex < oldIndex){
+                        widget.messageBox.messageContentList.insert(newIndex, item);
+                      }else{
+                        widget.messageBox.messageContentList.insert(newIndex-1, item);
+                      }
+                      setState(() {});
+                      //print("oldIndex:$oldIndex;newIndex:$newIndex");
+                },),
               ),
               if(widget.messageBox.senderId != 5) TextButton(onPressed: disableInsert?null:addMessage, child: const Text("末尾追加")),
               if(widget.messageBox.senderId == 5) TextButton(onPressed: editStoryButton, child: const Text("羁绊编辑")),
               Row(
                 children: [
                   Expanded(child: TextField(
+                    maxLines: null,
                     controller: inputField,
                   )),
                   IconButton(onPressed: emojiButtonClick, icon: const Icon(Icons.emoji_emotions)),
@@ -139,11 +159,15 @@ class _messageEditPage extends State<MessageEditPage>{
     if(didPop){
       return;
     }else{
-      var result = await Get.dialog(const Inquiredialog(title: "保存",content: "老师，若您进行了修改，请点击下方的【保存并退出】，是否继续返回？",));
+      var result = await Get.dialog(const Inquiredialog(title: "保存",content: "老师，您点击了退出按钮，在退出之前，是否保存此次修改呢？",));
       if(result != true){
+        Get.back();
         return;
       }
-      Get.back();
+      Get.back(result: {
+        "command":"save",
+        "box":widget.messageBox
+      });
     }
   }
 
@@ -270,7 +294,7 @@ class _messageEditPage extends State<MessageEditPage>{
       Directory dir = Directory(join(AppLibrary.applicationPath,"DIYemotion",widget.messageBox.senderId.toString()));
       //如果不是自定义学生
       if(currentStudent.release != 2){
-        dir = Directory(join(AppLibrary.applicationPath,"Resources","Emotions","${widget.messageBox.senderId}"));
+        dir = Directory(join(AppLibrary.faceBasePath,"Resources","Emotions","${widget.messageBox.senderId}"));
       }
       //如果文件不存在
       if(!dir.existsSync()){

@@ -80,6 +80,12 @@ class ChatGroupManager{
     if(saved) saveAsJson();
   }
 
+  Future moveChatTile(EChatTileGroup oldGroup,int tileIndex,int newGroupIndex,)async{
+    EChatTile tile = oldGroup.chatTiles.removeAt(tileIndex);
+    chatTileGroups[newGroupIndex].chatTiles.add(tile);
+    saveAsJson();
+  }
+
   Future saveAsJson()async{
     List<Map> maps = [];
     for(var group in chatTileGroups){

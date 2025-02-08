@@ -4,7 +4,7 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:motoki/Utils/EventBus.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:path/path.dart';
@@ -100,7 +100,7 @@ class ScreenShotPageState extends State<ScreenShotPage>{
       cancel();
     }else{
       var cancel = BotToast.showLoading();
-      await ImageGallerySaver.saveImage(result,quality: 100);
+      await ImageGallerySaverPlus.saveImage(result,quality: 100);
       cancel();
     }
     if(!AppLibrary.appLandscapeMode) Get.back();

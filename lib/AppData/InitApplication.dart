@@ -48,7 +48,11 @@ Future initApplication()async{
 Future setDefaultApplicationPath()async{
   if(GetPlatform.isWindows){
     AppLibrary.applicationPath = join(Directory.current.path,"Momotalk");
-  }else{
+  }
+  // else if(GetPlatform.isAndroid){
+  //   AppLibrary.applicationPath = join((await getExternalStorageDirectory())!.path,"Momotalk");
+  // }
+  else {
     AppLibrary.applicationPath = join((await getApplicationDocumentsDirectory()).path,"Momotalk");
   }
 }
@@ -92,6 +96,8 @@ Future createNecessaryDirctory()async{
       }
     }
   }
+
+
 }
 
 final List days = [31,28,31,30,31,30,31,31,30,31,30,31];

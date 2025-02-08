@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'AppLibrary.dart';
+
 class UserConfig{
   static late SharedPreferences sp;
   //是否显示学生姓氏
@@ -28,8 +30,17 @@ class UserConfig{
   static bool applyOfflineMode = false;
   //字体大小
   static double appFontSize = 0.0;
-
-
+  //是否自动保存消息
+  static bool autoSaveMessage = false;
+  //差分保存路径
+  static String faceSaveDirectory = "";
+  //AI聊天Host
+  static String? aiChatUrl;
+  //自定义问候学生
+  static int? customGreetStudent;
+  //自定义问候语
+  static String? customGreetContent;
+  
   Future initUserConfig()async{
     sp = await SharedPreferences.getInstance();
     applyNameReverse = sp.getBool("applyNameReverse") ?? false;
@@ -47,5 +58,15 @@ class UserConfig{
     chatBackGroundColor = Color.fromRGBO(int.parse(colors[0]), int.parse(colors[1]), int.parse(colors[2]), 1);
     List<String> ccolors = sp.getStringList("customAppThemeColor") ?? ["255","255","255"];
     customAppThemeColor = Color.fromRGBO(int.parse(ccolors[0]), int.parse(ccolors[1]), int.parse(ccolors[2]), 1);
+    autoSaveMessage = sp.getBool("autoSaveMessage") ?? false;
+
+    //自定义差分存储路径
+    faceSaveDirectory = sp.getString("faceSaveDirectory") ?? "";
+    AppLibrary.faceBasePath = AppLibrary.applicationPath;
+    if(UserConfig.faceSaveDirectory != "") AppLibrary.faceBasePath = UserConfig.faceSaveDirectory;
+
+    aiChatUrl = sp.getString("aiChatUrl");
+    customGreetStudent = sp.getInt("customGreetStudent");
+    customGreetContent = sp.getString("customGreetContent");
   }
 }

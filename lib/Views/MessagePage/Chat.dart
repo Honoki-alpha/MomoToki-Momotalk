@@ -181,6 +181,7 @@ class _ChatState extends State<Chat>{
               hintText: "故事名",
             ),
             controller: asnameC,),
+          TextButton(onPressed: ()=>changeGroupButton(group,tileIndex), child: const Text("更改分组")),
         ],
       ),
       actions: [
@@ -195,6 +196,15 @@ class _ChatState extends State<Chat>{
         }, child: const Text("确认")),
       ],
     );
+  }
+
+  void changeGroupButton(EChatTileGroup oldGroup,int tileIndex)async{
+    int? newGroupIndex = await Get.dialog(groupDialog());
+    if(newGroupIndex == null) return;
+    await ChatGroupManager.instance.moveChatTile(oldGroup, tileIndex, newGroupIndex);
+    Get.back();
+    setState(() {});
+    BotToast.showText(text: "转移分组成功");
   }
 
   void visitChatTile(EChatTileGroup group,int index)async{
@@ -337,4 +347,20 @@ class _ChatState extends State<Chat>{
     ChatGroupManager.instance.saveAsJson();
   }
 
+  Widget groupDialog(){
+    return AlertDialog(
+      title: const Text("请选择分组"),
+      content: SizedBox(
+        height: 400,
+        width: 270,
+        child: ListView.builder(
+          itemCount: ChatGroupManager.instance.chatTileGroups.length,
+          itemBuilder: (context,index){
+            return ListTile(title: Text(ChatGroupManager.instance.chatTileGroups[index].groupName),onTap: (){
+              Get.back(result: index);
+            },);
+          }),
+      ),
+    );
+  }
 }

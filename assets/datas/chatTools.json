@@ -128,5 +128,31 @@
         "gallery": [],
         "birthday": "00-00",
         "release": 4
+    },
+    {
+        "id": 6,
+        "skinList": [],
+        "familyName": {
+            "nm":"",
+            "cn": "",
+            "en": "",
+            "kr": "",
+            "jp": "",
+            "tw": ""
+        },
+        "givenName": {
+            "nm":"图片旁白",
+            "cn":"图片旁白",
+            "en": "",
+            "kr": "",
+            "jp": "",
+            "tw": ""
+        },
+        "avatar": "//gitee.com/honoki/mtkresouce/raw/master/assets/images/icon/img_narration.png",
+        "introduction": "",
+        "mosign": [],
+        "gallery": [],
+        "birthday": "00-00",
+        "release": 4
     }
 ]

@@ -97,7 +97,24 @@ class _SettingState extends State<AppSetting>{
                           });
                         },
                       ),
-                    ),]),
+                    ),
+                    ListTile(title: const Text("自动保存聊天"),trailing: Switch(
+                      value: UserConfig.autoSaveMessage,
+                      onChanged: (value)async{
+                        bool? result;
+                        if(value) {
+                          result = await Get.dialog(const Inquiredialog(
+                              title: "警告！",
+                              content: "频繁的保存操作可能会造成消息丢失，若出现消息丢失，请立即关闭该设置！"));
+                          result ??= false;
+                        }
+                        UserConfig.sp.setBool("autoSaveMessage", result ?? false);
+                        setState(() {
+                          UserConfig.autoSaveMessage = result ?? false;
+
+                        });
+                      },
+                    ),)]),
                   getSettingBorderBox([
                     ListTile(title: const Text("背景跟随主题"),trailing:Switch(
                       value: UserConfig.denpendTheme,
@@ -130,7 +147,11 @@ class _SettingState extends State<AppSetting>{
                     ),
                     ListTile(title: const Text("软件字体"),onTap: setCustomFont,trailing: Text(UserConfig.customFont == ""?"未配置":"已配置"),),
                     ListTile(
-                      title: const Text("AI聊天KEY", style: TextStyle(color: Colors.blue),),
+                      title: const Text("AI聊天Host"),subtitle: const Text("可不配置，将使用默认的Host"),
+                        trailing: Text(UserConfig.aiChatUrl==null?"未配置":"已配置", style: TextStyle(color:UserConfig.aiChatUrl==null?Colors.red:Colors.blue)),
+                        onTap: setAIChatUrl),
+                    ListTile(
+                        title: const Text("AI聊天KEY", style: TextStyle(color: Colors.blue),),
                         trailing: Text(UserConfig.aiChatKey==null?"未配置":"已配置", style: TextStyle(color:UserConfig.aiChatKey==null?Colors.red:Colors.blue)),
                         onTap: setAIChatKey),]),
                 ],
@@ -209,7 +230,7 @@ class _SettingState extends State<AppSetting>{
   }
 
   void setAIChatKey()async{
-    var result = await Get.dialog(inputDialog());
+    var result = await Get.dialog(inputDialog(false));
     if(result == null) return;
     UserConfig.sp.setString("aiChatKey", result);
     setState(() {
@@ -217,11 +238,21 @@ class _SettingState extends State<AppSetting>{
     });
   }
 
+  void setAIChatUrl()async{
+    var result = await Get.dialog(inputDialog(true));
+    if(result == null) return;
+    UserConfig.sp.setString("aiChatUrl", result);
+    setState(() {
+      UserConfig.aiChatUrl = result;
+    });
+  }
+
   TextEditingController sc = TextEditingController();
-  Widget inputDialog(){
+  Widget inputDialog(bool isUrl){
     sc.text = UserConfig.aiChatKey??"";
+    if(isUrl) sc.text = UserConfig.aiChatUrl??"";
     return AlertDialog(
-      title: const Text("请输入API Key"),
+      title: Text(isUrl?"请输入AI HOST":"请输入API KEY"),
       content: TextField(
         controller: sc,
       ),

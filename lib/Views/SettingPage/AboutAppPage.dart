@@ -4,7 +4,6 @@ import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/AppData/InitApplication.dart';
 import 'package:motoki/Utils/CommonComponents.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../Managers/NotificationManager.dart';
 import '../../Utils/CommonFunctions.dart';
 
 class AboutAppPage extends StatelessWidget{

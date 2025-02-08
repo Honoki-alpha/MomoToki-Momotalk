@@ -60,6 +60,7 @@ class _messageBoxState extends State<MessageBox>{
       case 3:return asidetransBox();
       case 4:return replyBox();
       case 5:return storyBox();
+      case 6:return imgNarBox();
       default:return nomalBox();
     }
   }
@@ -76,7 +77,9 @@ class _messageBoxState extends State<MessageBox>{
       trailing:[avatar,null][rightIndex],
       //获取学生姓名并进行左右对齐
       title:Text(
-        StudentManager.instance.getStudentName(messageBox.senderId,skinIndex:messageBox.senderSkinIndex),
+        //如果备注为空显示名字，否则显示备注
+        messageBox.sendMessageName == ""?
+        StudentManager.instance.getStudentName(messageBox.senderId,skinIndex:messageBox.senderSkinIndex):messageBox.sendMessageName,
         style: const TextStyle(fontSize: 15),textAlign: [TextAlign.right,null][rightIndex],),
       //设置消息列表
       subtitle:Container(
@@ -252,6 +255,44 @@ class _messageBoxState extends State<MessageBox>{
         ));
   }
 
+  Widget imgNarBox(){
+    String message = messageBox.messageContentList[0];
+    bool isImg = MessageManager.instance.checkIsImg(message);
+    Widget result = Image.asset("assets/images/icon/IMAGELOST.png");
+    if(isImg){
+      if(message.substring(0,7) == "IMG:://"){
+        File f = File(message.substring(7));
+        result = Image.file(f,
+          errorBuilder: (b,o,s){
+            return Image.asset("assets/images/icon/IMAGELOST.png");
+          },);
+      }else{
+        result = Image.network(message.substring(7)
+          ,errorBuilder: (b,o,s){
+            return Image.asset("assets/images/icon/IMAGELOST.png");
+          },
+        );
+      }
+    }
+    return Align(alignment:Alignment.center,child: Container(
+      padding: const EdgeInsets.all(5),
+      constraints: const BoxConstraints(
+        maxWidth: 200,
+        maxHeight: 400
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white38,
+        borderRadius: BorderRadius.circular(8),
+        border:const Border(
+            top: BorderSide(color: Colors.black),
+            bottom: BorderSide(color: Colors.black),
+            left: BorderSide(color: Colors.black),
+            right: BorderSide(color: Colors.black)
+        ),
+      ),
+      child: result,
+    ),);
+  }
 
   void replyItemClick(int index,String mes)async{
     if(!widget.isPlayMode) return;

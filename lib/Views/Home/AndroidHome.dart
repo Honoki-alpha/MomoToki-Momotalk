@@ -8,7 +8,9 @@ import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/Entity/EStudent.dart';
 import 'package:motoki/Managers/ChatGroupManager.dart';
+import 'package:motoki/Managers/StudentManager.dart';
 import 'package:motoki/Managers/ThemeManager.dart';
+import 'package:motoki/Utils/CommonComponents.dart';
 import 'package:motoki/Utils/CommonFunctions.dart';
 import '../../AppData/AppConstant.dart';
 import '../../AppData/UserConfig.dart';
@@ -69,7 +71,8 @@ class _homeState extends State<AndroidHome> with WidgetsBindingObserver{
 
   //弹出两个小可爱的问候
   void kawaiNotification(){
-    var chara = AppLibrary.randGetFromList(AppConstant.kawaiName);
+    int studentId = UserConfig.customGreetStudent ?? AppLibrary.randGetFromList([280,278]);
+    String name = StudentManager.instance.getStudentName(studentId);
     BotToast.showCustomNotification(toastBuilder: (b){
       return Material(color: Colors.transparent,child: Container(
         margin: const EdgeInsets.symmetric(vertical: 1,horizontal: 10),
@@ -78,9 +81,9 @@ class _homeState extends State<AndroidHome> with WidgetsBindingObserver{
             borderRadius: BorderRadius.circular(5)
         ),
         child: ListTile(
-          title: Text("From $chara"),
-          subtitle: Text("${AppLibrary.randGetFromList(AppConstant.greeting)}"),
-          leading: Image.asset("assets/images/expression/$chara.png"),
+          title: Text("From $name"),
+          subtitle: Text("${UserConfig.customGreetContent ?? AppLibrary.randGetFromList(AppConstant.greeting)}"),
+          leading: getCicleStudentAvatar(studentId),
         ),
       ),);
     },duration:const Duration(seconds: 3) );

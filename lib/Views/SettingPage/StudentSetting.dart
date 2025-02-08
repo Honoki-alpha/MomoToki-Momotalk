@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:get/get_rx/get_rx.dart';
@@ -98,7 +99,9 @@ class _seitoSet extends State<StudentSetting>{
                   }
                 },
               ),
-              ListTile(title: const Text("设置老师头像"),onTap: setSenseiAvatar,)
+              ListTile(title: const Text("设置老师头像"),onTap: setSenseiAvatar,),
+              ListTile(title: const Text("自定义学生"),onTap: setCustomGreetStudent,),
+              ListTile(title: const Text("自定义问候语"),onTap: setCustomGreetContent,),
             ]),
             getSettingBorderBox([
               ListTile(
@@ -110,6 +113,12 @@ class _seitoSet extends State<StudentSetting>{
                 title: const Text("头像资源下载"),
                 trailing: const Icon(Icons.arrow_forward_ios_sharp),
                 onTap: downloadAvatar,
+              ),
+              ListTile(
+                title: const Text("配置学生差分下载路径"),
+                trailing: Text(UserConfig.faceSaveDirectory == ""?"未配置":"已配置",style: TextStyle(color: UserConfig.faceSaveDirectory == ""?Colors.red:Colors.blueAccent),),
+                subtitle: const Text("配置路径后将会在相册显示"),
+                onTap:selectFaceSaveDirectory
               ),
               ListTile(
                 title: const Text("下载学生差分"),
@@ -124,6 +133,39 @@ class _seitoSet extends State<StudentSetting>{
             ])
           ],
         )
+    );
+  }
+
+  void setCustomGreetStudent()async{
+    EStudent? result = await Get.to(()=>const SelectPage());
+    if(result == null) return;
+    UserConfig.sp.setInt("customGreetStudent", result.id);
+    UserConfig.customGreetStudent = result.id;
+    BotToast.showText(text: "已成功将问候学生设置为${StudentManager.instance.getStudentName(result.id)}");
+  }
+
+  void setCustomGreetContent()async{
+    print(UserConfig.customGreetContent);
+    String? result = await Get.dialog(inputDialog());
+    if(result == null) return;
+    UserConfig.sp.setString("customGreetContent", result);
+    UserConfig.customGreetContent = result;
+    BotToast.showText(text: "已成功自定义问候语");
+  }
+
+  TextEditingController sc = TextEditingController();
+  Widget inputDialog(){
+    sc.text = UserConfig.customGreetContent??"";
+    return AlertDialog(
+      title: const Text("请输入自定义问候语"),
+      content: TextField(
+        controller: sc,
+      ),
+      actions: [
+        TextButton(onPressed: (){
+          Get.back(result:sc.text);
+        }, child: const Text("保存")),
+      ],
     );
   }
 
@@ -214,7 +256,7 @@ class _seitoSet extends State<StudentSetting>{
     for(var gal in student.gallery){
       if(!mounted) return;
       for(var img in gal["images"]){
-        await dio.download("https:$img", join(AppLibrary.applicationPath,"Resources","Emotions","${student.id}","$fileIndex.png"));
+        await dio.download("https:$img", join(AppLibrary.faceBasePath,"Resources","Emotions","${student.id}","$fileIndex.png"));
         fileIndex++;
       }
       await Future.delayed(const Duration(milliseconds: 100));
@@ -268,5 +310,25 @@ class _seitoSet extends State<StudentSetting>{
     );
   }
 
+  void selectFaceSaveDirectory()async{
+    if(UserConfig.faceSaveDirectory != ""){
+      bool? result = await Get.dialog(const Inquiredialog(title: "您已设置路径", content: "您已设置差分下载路径，是否清除后重新配置"));
+      if(result == true){
+        setState(() {
+          UserConfig.faceSaveDirectory = "";
+          UserConfig.sp.setString("faceSaveDirectory", "");
+          AppLibrary.faceBasePath = AppLibrary.applicationPath;
+        });
+      }
+      return;
+    }
+    var result = await FilePicker.platform.getDirectoryPath();
+    if(result == null) return;
+    setState(() {
+      UserConfig.faceSaveDirectory = result;
+      UserConfig.sp.setString("faceSaveDirectory", result);
+      AppLibrary.faceBasePath = result;
+    });
+  }
 
 }

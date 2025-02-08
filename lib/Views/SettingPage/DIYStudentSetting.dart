@@ -178,14 +178,13 @@ class _DIYSeitoState extends State<DIYStudentSetting>{
       content: SizedBox(
         height: 240,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
             Expanded(child: TextField(
                 readOnly: name == "",
                 controller: studentId,
                 decoration: const InputDecoration(
                   labelText: "ID",
-                  hintText: "创建时不必填写",
+                  hintText: "创建时不必填写1",
                 ))),
             Expanded(child: TextField(controller: studentName,
                 decoration: const InputDecoration(
@@ -194,12 +193,10 @@ class _DIYSeitoState extends State<DIYStudentSetting>{
                 ))),
             Row(
               children: [
-                SizedBox(
-                  width: 100,
-                  height: 100,
-                  child: Obx(()=>Image.file(File(diyImgPath.value),errorBuilder: (b,o,t){
-                    return Image.asset("assets/images/icon/DISUPLOAD.jpg");
-                  },))),
+                Obx(()=>SizedBox(
+                    width: 100,
+                    height: 100,
+                    child: getSelectImage())),
                 IconButton(onPressed: ()=>imagePickButtonClick(id), icon: const Icon(Icons.image)),
                 TextButton(onPressed: (){
                   Get.back(result: {"id":studentId.text,"name":studentName.text,"avatar":diyImgPath.value});
@@ -210,6 +207,18 @@ class _DIYSeitoState extends State<DIYStudentSetting>{
         ),
       ),
     );
+  }
+  
+  Widget getSelectImage(){
+    if(!GetPlatform.isDesktop){
+      return Image.file(File(diyImgPath.value),errorBuilder: (b,o,c){
+        return Image.asset("assets/images/icon/DISUPLOAD.jpg");
+      });
+    }else{
+      return Align(alignment: Alignment.center, child: Text(diyImgPath.value==""?"未选择头像":"已选择头像"));
+    }
+
+
   }
 
   void imagePickButtonClick(int id)async{
