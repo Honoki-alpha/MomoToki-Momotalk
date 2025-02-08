@@ -5,7 +5,6 @@
 import FlutterMacOS
 import Foundation
 
-import app_settings
 import connectivity_plus
 import file_picker
 import file_selector_macos
@@ -18,7 +17,6 @@ import url_launcher_macos
 import window_manager
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
-  AppSettingsPlugin.register(with: registry.registrar(forPlugin: "AppSettingsPlugin"))
   ConnectivityPlugin.register(with: registry.registrar(forPlugin: "ConnectivityPlugin"))
   FilePickerPlugin.register(with: registry.registrar(forPlugin: "FilePickerPlugin"))
   FileSelectorPlugin.register(with: registry.registrar(forPlugin: "FileSelectorPlugin"))
