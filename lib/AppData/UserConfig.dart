@@ -65,7 +65,9 @@ class UserConfig{
     AppLibrary.faceBasePath = AppLibrary.applicationPath;
     if(UserConfig.faceSaveDirectory != "") AppLibrary.faceBasePath = UserConfig.faceSaveDirectory;
 
-    aiChatUrl = sp.getString("aiChatUrl");
+    aiChatUrl = sp.getString("aiChatUrl") ?? "";
+    if(aiChatUrl == "") aiChatUrl = null;
+
     customGreetStudent = sp.getInt("customGreetStudent");
     customGreetContent = sp.getString("customGreetContent");
   }

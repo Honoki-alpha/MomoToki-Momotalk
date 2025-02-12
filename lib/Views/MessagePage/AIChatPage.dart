@@ -62,7 +62,6 @@ class _AiChatPage extends State<AIChatPage>{
     super.initState();
     currentStudent = StudentManager.instance.getStudentById(MessageManager.instance.currentStudentId);
     hostlink = UserConfig.aiChatUrl ?? "https://api.chatanywhere.tech";
-    if(UserConfig.aiChatUrl == null || UserConfig.aiChatUrl == "") hostlink= "https://api.chatanywhere.tech";
   }
 
   @override

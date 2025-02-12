@@ -216,7 +216,7 @@ void initSpecialStudent(){
   //空学生
   StudentManager.instance.noneStudent.release = 0;
   //社团学生
-  EStudent circle = EStudent.simpleDIY(6, "社团", "表情", "");
+  EStudent circle = EStudent.simpleDIY(7, "社团", "表情", "");
   List circles = [];
   for(var i = 1;i <= 247;i++){
     circles.add("//gitee.com/honoki/momotoki/raw/master/public/CircleEmoji/CircleEmoji_($i).webp");

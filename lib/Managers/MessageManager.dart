@@ -64,7 +64,9 @@ class MessageManager{
       if(lastMessage["senderId"] == 1){
         mes = "老师：$mes";
       }else if(lastMessage["senderId"] < 100){
-        mes = "[聊天]$mes";
+        bool img = MessageManager.instance.checkIsImg(mes);
+        String content = img?"图片消息":mes;
+        mes = "[聊天]$content";
       }else if(MessageManager.instance.checkIsImg(mes)){
         mes = "[图片]";
       }

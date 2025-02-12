@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:motoki/Utils/EventBus.dart';
@@ -71,6 +72,7 @@ class _messagePageState extends State<MessagePage>{
     //初始化快捷键
     initHotKey();
     currentStudent = StudentManager.instance.getStudentById(MessageManager.instance.currentStudentId);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top,SystemUiOverlay.bottom]);
     scrollToBottom();
     //添加列表滚动监听
     listController.addListener((){
@@ -431,7 +433,7 @@ class _messagePageState extends State<MessagePage>{
       BotToast.showText(text: "离线模式请自行下载");
       return;
     }
-    var result = await Get.dialog(const StudentEmojiDialog(studentID: 6,height: 370));
+    var result = await Get.dialog(const StudentEmojiDialog(studentID: 7,height: 370));
     if(result == null) return;
     input.text = "[图片已加载]";
     loadImgMethod = "URL";

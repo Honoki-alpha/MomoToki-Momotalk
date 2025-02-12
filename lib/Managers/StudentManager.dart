@@ -27,7 +27,7 @@ class StudentManager{
       return toolStudentDirctory[id]!;
     }else if(diyStudentDirctory.containsKey(id)){
       return diyStudentDirctory[id]!;
-    }else if(id == 6){
+    }else if(id == 7){
       return circleStudent;
     }else{
       return noneStudent;
