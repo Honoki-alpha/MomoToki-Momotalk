@@ -40,6 +40,7 @@ class _homeState extends State<AndroidHome> with WidgetsBindingObserver{
     //初始化监听
     WidgetsBinding.instance.addObserver(this);
     getLastVersion();
+    UpdateTheme();
   }
 
   @override
@@ -56,17 +57,21 @@ class _homeState extends State<AndroidHome> with WidgetsBindingObserver{
     super.didChangeAppLifecycleState(state);
     //软件从后台返回到前台
     if(state == AppLifecycleState.resumed){
-      if(Get.mediaQuery.platformBrightness == Brightness.dark) {
-        ThemeManager.isDarkTheme = true;
-        ThemeManager.currentTheme = ThemeManager.darkTheme;
-      }else{
-        ThemeManager.isDarkTheme = false;
-        ThemeManager.currentTheme = ThemeManager.getThemeData(UserConfig.themeIndex);
-      }
-      setState(() {
-        navigationCurrentPage = 0;
-      });
+      UpdateTheme();
     }
+  }
+
+  void UpdateTheme(){
+    if(Get.mediaQuery.platformBrightness == Brightness.dark) {
+      ThemeManager.isDarkTheme = true;
+      ThemeManager.currentTheme = ThemeManager.darkTheme;
+    }else{
+      ThemeManager.isDarkTheme = false;
+      ThemeManager.currentTheme = ThemeManager.getThemeData(UserConfig.themeIndex);
+    }
+    setState(() {
+      navigationCurrentPage = 0;
+    });
   }
 
   //弹出两个小可爱的问候
@@ -101,37 +106,19 @@ class _homeState extends State<AndroidHome> with WidgetsBindingObserver{
         child: Scaffold(
           appBar:navigationCurrentPage==0?AppBar(title: const Text("MomoTalk"),leading: Image.asset("assets/images/icon/momo.png")):null,
           body:navigationPageList[navigationCurrentPage],
-          bottomNavigationBar: BottomAppBar(
-            height: 60,
-            shape: const CircularNotchedRectangle(),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                    child: IconButton(
-                      onPressed: (){
-                  setState(() {
-                    navigationCurrentPage = 0;
-                  });
-                },
-                      icon: const Icon(Icons.message),
-                      color: navigationCurrentPage==0?ThemeManager.currentTheme.highlightColor:Colors.black45,)
-                ),
-                Expanded(
-                    child: IconButton(
-                      tooltip: "Hello",
-                      onPressed: (){
-                        setState(() {
-                          navigationCurrentPage = 1;
-                        });
-                      },
-                      icon: const Icon(Icons.more_horiz),
-                      color: navigationCurrentPage==1?ThemeManager.currentTheme.highlightColor:Colors.black45,)
-                ),
-              ],
-            ),
-            ),
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: navigationCurrentPage,
+            type: BottomNavigationBarType.shifting,
+            useLegacyColorScheme: false,
+            onTap: (index){
+              setState(() {
+                navigationCurrentPage = index;
+              });
+            },
+            items: [
+              BottomNavigationBarItem(icon: Icon(Icons.mail),label: "消息",),
+              BottomNavigationBarItem(icon: Icon(Icons.now_widgets),label: "设置"),
+            ]),
           floatingActionButton: SpeedDial(
             overlayColor: Colors.black45,
             direction: SpeedDialDirection.up,
@@ -143,6 +130,40 @@ class _homeState extends State<AndroidHome> with WidgetsBindingObserver{
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         ));
+  }
+
+  Widget old(){
+    return BottomAppBar(
+      height: 60,
+      shape: const CircularNotchedRectangle(),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+              child: IconButton(
+                onPressed: (){
+                  setState(() {
+                    navigationCurrentPage = 0;
+                  });
+                },
+                icon: const Icon(Icons.message),
+                color: navigationCurrentPage==0?ThemeManager.currentTheme.highlightColor:Colors.black45,)
+          ),
+          Expanded(
+              child: IconButton(
+                tooltip: "Hello",
+                onPressed: (){
+                  setState(() {
+                    navigationCurrentPage = 1;
+                  });
+                },
+                icon: const Icon(Icons.more_horiz),
+                color: navigationCurrentPage==1?ThemeManager.currentTheme.highlightColor:Colors.black45,)
+          ),
+        ],
+      ),
+    );
   }
 
   Future<bool> onWillPopHappend(bool didPop)async{

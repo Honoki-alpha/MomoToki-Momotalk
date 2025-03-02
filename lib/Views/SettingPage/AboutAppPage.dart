@@ -23,7 +23,7 @@ class AboutAppPage extends StatelessWidget{
               }
             },),
             ListTile(title: const Text("当前版本"),trailing: Text(AppLibrary.appVersion),),
-            const ListTile(title: Text("检查更新"),trailing: Icon(Icons.arrow_forward_ios),onTap: getLastVersion),
+            const ListTile(title: Text("检查更新"),trailing: Icon(Icons.arrow_right),onTap: getLastVersion),
             ListTile(title: const Text("权限申请"),subtitle: const Text("用于部分情况下，软件未成功申请权限的问题"),onTap: ()async{
               await requestAppPermission();
               BotToast.showText(text: "申请完毕");

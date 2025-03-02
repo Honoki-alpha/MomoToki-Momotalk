@@ -90,7 +90,7 @@ class _seitoSet extends State<StudentSetting>{
             getSettingBorderBox([
               ListTile(
                 title: const Text("学生备注"),
-                trailing: const Icon(Icons.arrow_forward_ios_sharp),
+                trailing: const Icon(Icons.arrow_right),
                 onTap: (){
                   if(AppLibrary.appLandscapeMode){
                     WindowHomeState.setLeftPage(const StudentNickNameSetting());
@@ -106,12 +106,12 @@ class _seitoSet extends State<StudentSetting>{
             getSettingBorderBox([
               ListTile(
                 title: const Text("下载配置表(离线必须！)"),
-                trailing: const Icon(Icons.arrow_forward_ios_sharp),
+                trailing: const Icon(Icons.arrow_right),
                 onTap: downloadJson,
               ),
               ListTile(
                 title: const Text("头像资源下载"),
-                trailing: const Icon(Icons.arrow_forward_ios_sharp),
+                trailing: const Icon(Icons.arrow_right),
                 onTap: downloadAvatar,
               ),
               ListTile(
@@ -122,7 +122,7 @@ class _seitoSet extends State<StudentSetting>{
               ),
               ListTile(
                 title: const Text("下载学生差分"),
-                trailing: const Icon(Icons.arrow_forward_ios_sharp),
+                trailing: const Icon(Icons.arrow_right),
                 onTap: downloadSingle,
               ),
               // ListTile(
@@ -213,7 +213,12 @@ class _seitoSet extends State<StudentSetting>{
     //下载工具
     for(var item in StudentManager.instance.toolStudentDirctory.entries){
       EStudent student = item.value;
-      await dio.download("https:${student.avatar}", join(AppLibrary.applicationPath,"Resources","Avatars","${student.id}_0.png"));
+      try{
+        await dio.download("https:${student.avatar}", join(AppLibrary.applicationPath,"Resources","Avatars","${student.id}_0.png"));
+      }catch(e){
+        BotToast.showText(text: "网络链接出错，下载失败");
+        return;
+      }
     }
     await dio.download("https://gitee.com/honoki/mtkresouce/raw/master/assets/images/icon/unkown.webp", join(AppLibrary.applicationPath,"Resources","Avatars","99_0.png"));
     //下载学生
@@ -256,7 +261,12 @@ class _seitoSet extends State<StudentSetting>{
     for(var gal in student.gallery){
       if(!mounted) return;
       for(var img in gal["images"]){
-        await dio.download("https:$img", join(AppLibrary.faceBasePath,"Resources","Emotions","${student.id}","$fileIndex.png"));
+        try{
+          await dio.download("https:$img", join(AppLibrary.faceBasePath,"Resources","Emotions","${student.id}","$fileIndex.png"));
+        }catch(e){
+          BotToast.showText(text: "网络链接出错，下载失败");
+          return;
+        }
         fileIndex++;
       }
       await Future.delayed(const Duration(milliseconds: 100));

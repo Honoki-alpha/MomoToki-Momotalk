@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -42,6 +40,7 @@ void main() async {
           Locale('zh', 'CN'),
           Locale('en', 'US'),
         ],
+
         theme: ThemeManager.getThemeData(UserConfig.themeIndex)),
   ));
 }

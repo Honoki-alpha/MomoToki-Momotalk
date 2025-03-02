@@ -162,7 +162,7 @@ class _messagePageState extends State<MessagePage>{
                           }
                         },
                         decoration: InputDecoration(
-                          icon:GestureDetector(
+                            icon:GestureDetector(
                               child: Obx(()=>SizedBox(
                                   width: 40,
                                   child: getCicleStudentAvatar(
@@ -180,7 +180,8 @@ class _messagePageState extends State<MessagePage>{
                                 }
                               },
                             ),
-                          hintText: "当前共${MessageManager.instance.messages.length}条消息..."
+                            hintText: "当前共${MessageManager.instance.messages.length}条消息...",
+                            border: InputBorder.none
                         ),
                         style: const TextStyle(
                             fontSize: 13
@@ -188,29 +189,47 @@ class _messagePageState extends State<MessagePage>{
                         maxLines: null,
                       )
                   ),
-                  //点击“追加”按钮效果
-                  ElevatedButton(
-                      onPressed: disableAddtionButton?null:addtionButtonClick,
-                      style: ButtonStyle(
-                          backgroundColor: WidgetStateProperty.all(Colors.purple)
-                      ),
-                      child:const Text("追加",style:TextStyle(color: Colors.white))),
-                  //点击“发送”按钮效果
-                  Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 3),
-                      child:Obx(()=>ElevatedButton(
-                          onLongPress: (){
-                            isRightMessage.value = !isRightMessage.value;
-                          },
-                          onPressed:sendButtonClick,
-                          style: ButtonStyle(
-                              backgroundColor: WidgetStateProperty.all(
-                                  isRightMessage.value?const Color(0xFF97E7EC):const Color(0xFFE595B5)
-                              )
-                          ),
-                          child:Text(currentSelectedIndex.value>-1?"插入":"发送")))),
+
+                  const SizedBox(width: 7,),
+
+
                 ],
               ),
+              Row(children: [
+                Expanded(flex: 4, child: SizedBox(height: 45,child:ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      IconButton(onPressed: emojiButtonClick, icon: const Icon(Icons.emoji_emotions)),
+                      IconButton(onPressed: imagePickerClick, icon: const Icon(Icons.image)),
+                      IconButton(onPressed: addUsualStudent, icon: const Icon(Icons.person_add)),
+                      IconButton(onPressed: circleEmojiButtonClick, icon: const Icon(Icons.shield)),
+                      IconButton(onPressed: playButtonClick, icon: const Icon(Icons.play_circle)),
+                      IconButton(onPressed: screenShotButton, icon: const Icon(Icons.crop)),
+                    ]))),
+                //点击“追加”按钮效果
+                Expanded(flex: 1,child: MaterialButton(
+                    onPressed: disableAddtionButton?null:addtionButtonClick,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    // style: ButtonStyle(
+                    //     backgroundColor: WidgetStateProperty.all(Colors.purple)
+                    // ),
+                    color: Colors.purple,
+                    child:const Text("追加",style:TextStyle(color: Colors.white,fontSize: 12))),),
+                //点击“发送”按钮效果
+                Expanded(flex: 1,child: Obx(()=>MaterialButton(
+                    onLongPress: (){
+                      isRightMessage.value = !isRightMessage.value;
+                    },
+                    onPressed:sendButtonClick,
+                    color: isRightMessage.value?const Color(0xFF97E7EC):const Color(0xFFE595B5),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    // style: ButtonStyle(
+                    //     backgroundColor: WidgetStateProperty.all(
+                    //         isRightMessage.value?const Color(0xFF97E7EC):const Color(0xFFE595B5)
+                    //     )
+                    // ),
+                    child:Text(currentSelectedIndex.value>-1?"插入":"发送",style:TextStyle(fontSize: 12)))),),
+              ]),
               Obx(()=>Container(
                 child: toolBarVisible.value?Column(
                   children: [
@@ -220,21 +239,12 @@ class _messagePageState extends State<MessagePage>{
                         child: Obx(()=>Slider(
                           divisions: 20,
                           label: "${(nowProgress.value *100).floor()}%",
-                          value: nowProgress.value, onChanged: (double value) { nowProgress.value = value; },
+                          value: nowProgress.value, onChanged: (double value) {
+                            nowProgress.value = value; },
                           onChangeEnd: (double value){
                             listController.jumpTo(nowProgress.value*listController.position.maxScrollExtent);
                           },
                         ))),
-                    SizedBox(height:30,child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          IconButton(onPressed: emojiButtonClick, icon: const Icon(Icons.emoji_emotions)),
-                          IconButton(onPressed: imagePickerClick, icon: const Icon(Icons.image)),
-                          IconButton(onPressed: addUsualStudent, icon: const Icon(Icons.person_add)),
-                          IconButton(onPressed: circleEmojiButtonClick, icon: const Icon(Icons.shield)),
-                          IconButton(onPressed: playButtonClick, icon: const Icon(Icons.play_circle)),
-                          IconButton(onPressed: screenShotButton, icon: const Icon(Icons.screenshot_sharp)),
-                        ])),
                     SizedBox(
                         height: 120,
                         child: GridView.builder(
@@ -336,7 +346,6 @@ class _messagePageState extends State<MessagePage>{
     setState(() {
       input.text = "";
     });
-    saveButtonClick();
     if(currentSelectedIndex.value==-1) {
       scrollToBottom();
     }else{
@@ -363,7 +372,14 @@ class _messagePageState extends State<MessagePage>{
   Future saveButtonClick({bool? noneDialog})async{
     var cancel = BotToast.showLoading();
     await MessageManager.instance.saveMessages();
-    if(noneDialog != true) BotToast.showText(text: "消息记录保存成功(๑•ω•๑)");
+    String tipText = "消息记录保存成功";
+    int totalLength = MessageManager.instance.messages.length;
+    if(totalLength > 1000 && totalLength<2000){
+      tipText = "已保存，但当前消息较长";
+    }else if(totalLength > 2000){
+      tipText = "已保存，当前消息记录过长，建议新建";
+    }
+    if(noneDialog != true) BotToast.showText(text: tipText);
     cancel();
   }
 
@@ -482,6 +498,10 @@ class _messagePageState extends State<MessagePage>{
     if(result == null) return;
     await saveButtonClick();
     int x = 0;
+    if(result["x"] <= 0){
+      BotToast.showText(text: "不合法的数字，请重新输入！");
+      return;
+    }
     if(result["command"] == "every"){
       x = result["x"];
     }else if(result["command"] == "part"){

@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:motoki/Utils/EventBus.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:path/path.dart';
@@ -38,7 +39,7 @@ class ScreenShotPageState extends State<ScreenShotPage>{
   void initState() {
     // TODO: implement initState
     super.initState();
-    //pagePixelRatio = PlatformDispatcher.instance.views.elementAt(0).devicePixelRatio;
+    //
     showList = MessageManager.instance.messages.sublist(widget.startPointer,widget.endPointer);
     if(!AppLibrary.appLandscapeMode) {
       loadingWidgets();
@@ -91,7 +92,8 @@ class ScreenShotPageState extends State<ScreenShotPage>{
   }
 
   void shotSave()async{
-    var result = await screenshotController.capture(pixelRatio: 4.0);
+    pixelRatio = PlatformDispatcher.instance.views.elementAt(0).devicePixelRatio;
+    var result = await screenshotController.capture(pixelRatio: pixelRatio*2);
     if(result == null)return;
     if(Platform.isWindows){
       File file = File(join(AppLibrary.applicationPath,"MessageCature","Momo_${DateTime.now().millisecond}${DateTime.now().microsecond}.png"));
@@ -100,11 +102,9 @@ class ScreenShotPageState extends State<ScreenShotPage>{
       cancel();
     }else{
       var cancel = BotToast.showLoading();
-      await ImageGallerySaverPlus.saveImage(result,quality: 100);
+      await ImageGallerySaver.saveImage(result);
       cancel();
     }
     if(!AppLibrary.appLandscapeMode) Get.back();
   }
-
-
 }

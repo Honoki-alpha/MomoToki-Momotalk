@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,8 +24,16 @@ Future initApplication()async{
   await requestAppPermission();//申请软件权限
   await initWindowsConfig();//初始化桌面端尺寸
   await setDefaultApplicationPath();//设置软件路径
-  await createNecessaryDirctory();//创建必要文件
-  await UserConfig().initUserConfig();//初始化用户配置
+  try{
+    await createNecessaryDirctory();//创建必要文件
+  }catch(e){
+    addProblemLog("创建文件时失败，请检查软件权限");
+  }
+  try{
+    await UserConfig().initUserConfig();//初始化用户配置
+    print("初始化用户配置");
+  }catch(e){addProblemLog("获取用户配置失败，请稍后重启");}
+
   if(UserConfig.applyOfflineMode){
     await loadStudentInfoFromLocal();//获取学生信息
     await loadAppDataFromLocal();//获取资源信息
@@ -35,11 +42,19 @@ Future initApplication()async{
     await loadAppDataFromNet();//获取资源信息
   }
   initSpecialStudent();
-  await loadJsonFiles();//获取本地聊天记录
-  await loadDIYJson();//获取DIY学生
-  await loadStudentNickName();//获取学生备注
-  await loadUsualJson();//添加常用学生
-  await loadCustomFont();//初始化字体
+  try{
+    await loadJsonFiles();//获取本地聊天记录
+    await loadDIYJson();//获取DIY学生
+    await loadStudentNickName();//获取学生备注
+    await loadUsualJson();//添加常用学生
+  }catch(e){
+    addProblemLog("获取本地聊天消息失败，请重启");
+  }
+  try{
+    await loadCustomFont();//初始化字体
+  }catch(e){
+    addProblemLog("获取字体文件失败，请重新配置");
+  }
   ThemeManager.initTheme();//初始化主题
   loadStudentAvatar();//初始化学生资源
 }
@@ -131,7 +146,7 @@ Future loadStudentInfoFromNet()async{
     Response studentFronNet = await dio.request("https://gitee.com/honoki/mtkresouce/raw/master/public/students.json");
     netData = studentFronNet.data;
   }catch(e){
-    return;
+    addProblemLog("获取在线学生资源失败，请等待一小时后重试");
   }
   for(var student in netData){
     StudentManager.instance.studentDirctory[student["id"]] = EStudent.fromMap(student);
@@ -279,7 +294,6 @@ Future initWindowsConfig()async{
     await windowManager.show();
   });
 
-
   //注册windows端快捷键
   await hotKeyManager.unregisterAll();
   await hotKeyManager.register(
@@ -318,16 +332,25 @@ Future loadStudentNickName()async{
 
 //权限申请
 Future requestAppPermission() async {
-  Map<Permission, PermissionStatus> statuses = await [
-    Permission.notification,
-    Permission.accessNotificationPolicy,
-    Permission.scheduleExactAlarm,
-    Permission.storage,
-    Permission.photos,
-    Permission.manageExternalStorage,
-  ].request();
+  try{
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.notification,
+      Permission.accessNotificationPolicy,
+      Permission.scheduleExactAlarm,
+      Permission.storage,
+      Permission.photos,
+      Permission.manageExternalStorage,
+    ].request();
+  }catch(e){
+    addProblemLog("获取权限错误");
+  }
+
 }
 
+void addProblemLog(String detail){
+  var index = AppLibrary.loadProblem.length;
+  AppLibrary.loadProblem.add("${index+1}.$detail");
+}
 
 
 
