@@ -498,10 +498,6 @@ class _messagePageState extends State<MessagePage>{
     if(result == null) return;
     await saveButtonClick();
     int x = 0;
-    if(result["x"] <= 0){
-      BotToast.showText(text: "不合法的数字，请重新输入！");
-      return;
-    }
     if(result["command"] == "every"){
       x = result["x"];
     }else if(result["command"] == "part"){
