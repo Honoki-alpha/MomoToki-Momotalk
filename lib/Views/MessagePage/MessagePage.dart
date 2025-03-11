@@ -63,14 +63,22 @@ class _messagePageState extends State<MessagePage>{
   String loadImgPath = "";
   String loadImgMethod = "URL";
 
+  //快捷键
   final HotKey _attachKey = HotKey(KeyCode.enter,modifiers: [KeyModifier.control],scope: HotKeyScope.inapp);
   final HotKey _sendKey = HotKey(KeyCode.enter,scope:HotKeyScope.inapp);
+  final HotKey _emojiKey = HotKey(KeyCode.keyQ,modifiers: [KeyModifier.control],scope:HotKeyScope.inapp);
+  final HotKey _imgKey = HotKey(KeyCode.keyW,modifiers: [KeyModifier.control],scope:HotKeyScope.inapp);
+  final HotKey _addUsuKey = HotKey(KeyCode.keyE,modifiers: [KeyModifier.control],scope:HotKeyScope.inapp);
+  final HotKey _circleKey = HotKey(KeyCode.keyA,modifiers: [KeyModifier.control],scope:HotKeyScope.inapp);
+  final HotKey _playKey = HotKey(KeyCode.keyD,modifiers: [KeyModifier.control],scope:HotKeyScope.inapp);
+  final HotKey _captureKey = HotKey(KeyCode.keyF,modifiers: [KeyModifier.control],scope:HotKeyScope.inapp);
+  final HotKey _saveKey = HotKey(KeyCode.keyS,modifiers: [KeyModifier.control],scope:HotKeyScope.inapp);
 
   @override
   void initState() {
     super.initState();
     //初始化快捷键
-    initHotKey();
+    if(GetPlatform.isDesktop) initHotKey();
     currentStudent = StudentManager.instance.getStudentById(MessageManager.instance.currentStudentId);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top,SystemUiOverlay.bottom]);
     scrollToBottom();
@@ -83,7 +91,7 @@ class _messagePageState extends State<MessagePage>{
   @override
   void deactivate() {
     super.deactivate();
-    destoryHotKey();
+    if(GetPlatform.isDesktop) destoryHotKey();
   }
 
   void scrollToBottom(){
@@ -97,13 +105,28 @@ class _messagePageState extends State<MessagePage>{
   }
 
   void initHotKey()async{
-    // await hotKeyManager.register(_sendKey,keyDownHandler: (hotkey)=>sendButtonClick());
-    // await hotKeyManager.register(_attachKey,keyDownHandler: (hotkey)=>attachButtonClick());
+    print("初始化");
+    await hotKeyManager.register(_sendKey,keyDownHandler: (hotkey)=>sendButtonClick());
+    await hotKeyManager.register(_attachKey,keyDownHandler: (hotkey)=>addtionButtonClick());
+    await hotKeyManager.register(_emojiKey,keyDownHandler: (hotkey)=>addtionButtonClick());
+    await hotKeyManager.register(_imgKey,keyDownHandler: (hotkey)=>imagePickerClick());
+    await hotKeyManager.register(_addUsuKey,keyDownHandler: (hotkey)=>addUsualStudent());
+    await hotKeyManager.register(_circleKey,keyDownHandler: (hotkey)=>circleEmojiButtonClick());
+    await hotKeyManager.register(_playKey,keyDownHandler: (hotkey)=>playButtonClick());
+    await hotKeyManager.register(_captureKey,keyDownHandler: (hotkey)=>screenShotButton());
+    await hotKeyManager.register(_saveKey,keyDownHandler: (hotkey)=>saveButtonClick());
   }
 
   void destoryHotKey(){
     hotKeyManager.unregister(_sendKey);
     hotKeyManager.unregister(_attachKey);
+    hotKeyManager.unregister(_emojiKey);
+    hotKeyManager.unregister(_imgKey);
+    hotKeyManager.unregister(_captureKey);
+    hotKeyManager.unregister(_addUsuKey);
+    hotKeyManager.unregister(_circleKey);
+    hotKeyManager.unregister(_playKey);
+    hotKeyManager.unregister(_saveKey);
   }
 
   @override
@@ -137,7 +160,7 @@ class _messagePageState extends State<MessagePage>{
                             child:Padding(
                                 padding:const EdgeInsets.symmetric(vertical: 1.0),
                                 child: Obx(()=>Container(
-                                    color: Color.fromRGBO(0, 0, 0,currentSelectedIndex.value==index?0.25:0),
+                                    color: Color.fromRGBO(70, 70, 70,currentSelectedIndex.value==index?0.5:0),
                                     child: MessageBox(index: index, isPlayMode: false)
                                 ))),
                             onLongPress: ()=>messageBoxHoldTap(index),
@@ -203,8 +226,9 @@ class _messagePageState extends State<MessagePage>{
                       IconButton(onPressed: imagePickerClick, icon: const Icon(Icons.image)),
                       IconButton(onPressed: addUsualStudent, icon: const Icon(Icons.person_add)),
                       IconButton(onPressed: circleEmojiButtonClick, icon: const Icon(Icons.shield)),
-                      IconButton(onPressed: playButtonClick, icon: const Icon(Icons.play_circle)),
                       IconButton(onPressed: screenShotButton, icon: const Icon(Icons.crop)),
+                      IconButton(onPressed: playButtonClick, icon: const Icon(Icons.play_circle)),
+
                     ]))),
                 //点击“追加”按钮效果
                 Expanded(flex: 1,child: MaterialButton(
@@ -214,6 +238,7 @@ class _messagePageState extends State<MessagePage>{
                     //     backgroundColor: WidgetStateProperty.all(Colors.purple)
                     // ),
                     color: Colors.purple,
+                    disabledColor: Colors.grey,
                     child:const Text("追加",style:TextStyle(color: Colors.white,fontSize: 12))),),
                 //点击“发送”按钮效果
                 Expanded(flex: 1,child: Obx(()=>MaterialButton(

@@ -111,7 +111,7 @@ class WindowHomeState extends State<WindowHome>{
                 Expanded(flex:12,child: Obx(()=>Container(child: leftPage.value,)))
               ],
             )),
-            Expanded(flex:5,child: Obx(()=>SizedBox(child: rightPage.value))),
+            Expanded(flex:6,child: Obx(()=>SizedBox(child: rightPage.value))),
           ],
         ),
       ),

@@ -19,7 +19,6 @@ void main() async {
     await initApplication();
   }
 
-
   runApp(ClipRRect(
     borderRadius: GetPlatform.isDesktop?BorderRadius.circular(12):BorderRadius.circular(0),
     clipBehavior: Clip.antiAlias,

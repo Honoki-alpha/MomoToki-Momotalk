@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
+import 'package:path/path.dart';
 import '../AppData/AppResource.dart';
 import '../AppData/UserConfig.dart';
 import '../Entity/EStudent.dart';
@@ -49,6 +50,9 @@ Widget getCicleStudentAvatar(int id, {int? skinIndex,double? customWidth}){
 Widget getAvatarFromResource(int id,int skinIndex){
   EStudent student = StudentManager.instance.getStudentById(id);
   File? f = AppResource.getStudentAvatarFile(id, skinIndex, student.release);
+  if(student.avatar.length >7 && student.avatar.substring(0,7) == "NIY:://"){
+    f = File(join(AppLibrary.applicationPath,"PictureCache","DIY",student.avatar.substring(7)));
+  }
   if(id == 1 && AppLibrary.customSenseiAvatar.existsSync()){
     return Image.file(AppLibrary.customSenseiAvatar,height: 50, fit: BoxFit.cover);
   }

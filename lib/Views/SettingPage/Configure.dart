@@ -3,14 +3,18 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
+import 'package:motoki/AppData/UserConfig.dart';
 import 'package:motoki/Components/SettingIcon.dart';
+import 'package:motoki/Managers/ChatGroupManager.dart';
 import 'package:motoki/Managers/ThemeManager.dart';
 import 'package:motoki/Views/Home/WindowHome.dart';
+import 'package:motoki/Views/Secondary/ThanksPage.dart';
 import 'package:motoki/Views/SettingPage/AboutAppPage.dart';
 import 'package:motoki/Views/SettingPage/BackUpData.dart';
 import 'package:motoki/Views/SettingPage/DIYStudentSetting.dart';
 import 'package:motoki/Views/SettingPage/StudentSetting.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:window_manager/window_manager.dart';
 import 'AppSetting.dart';
 
 class Configure extends StatefulWidget{
@@ -23,11 +27,23 @@ class Configure extends StatefulWidget{
 
 class _configureState extends State<Configure>{
   late Size deviceSize;
+  double configWidth = 0.0;
+  RxDouble windowWidth = 1228.0.obs;
+  RxDouble windowHeight = 648.0.obs;
+  double containerHeight = 420;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if(GetPlatform.isDesktop) getWindowsSize();
+  }
+
   @override
   Widget build(BuildContext context) {
     //获取屏幕分辨率
     deviceSize =  MediaQuery.of(context).size;
-
+    configWidth = AppLibrary.appLandscapeMode?(deviceSize.width * 0.42):deviceSize.width;
     return Container(
       alignment: Alignment.center,
       child:Stack(
@@ -35,7 +51,7 @@ class _configureState extends State<Configure>{
           Positioned(
             top: 0,
             child: SizedBox(
-              width:AppLibrary.appLandscapeMode?(deviceSize.width * 0.46):deviceSize.width,
+              width:configWidth,
               child: Opacity(
                 opacity:ThemeManager.isDarkTheme?0.5:1.0,
                 child: Image.asset(
@@ -47,7 +63,7 @@ class _configureState extends State<Configure>{
           Positioned(
             top:100,
             child: SizedBox(
-              width: deviceSize.width,
+              width: configWidth,
               child: ListTileTheme(
                 data: ListTileThemeData(
                   minTileHeight: 60
@@ -67,8 +83,8 @@ class _configureState extends State<Configure>{
           Positioned(
             top:170,
             child: Container(
-              width: AppLibrary.appLandscapeMode?(MediaQuery.of(context).size.width * 5 / 11):MediaQuery.of(context).size.width,
-              height: 600,
+              width: configWidth,
+              height: containerHeight,
               decoration: BoxDecoration(
                 color: ThemeManager.currentTheme.cardColor,
                 borderRadius: const BorderRadius.only(topLeft: Radius.circular(25),topRight: Radius.circular(25))
@@ -84,6 +100,7 @@ class _configureState extends State<Configure>{
                       }
                     }),
                     ListTile(title: const Text("消息管理(测试)"),leading: const Icon(Icons.chat_bubble),onTap: ()=>Get.to(()=>BackUpData()),),
+                    ListTile(title: const Text("感谢名单"),onTap: ()=>Get.to(()=>ThanksPage()),leading: const Icon(Icons.list),),
                     const Divider(indent: 10,endIndent: 10,),
                     ListTile(title: const Text("软件教程"),leading: const Icon(Icons.book),onTap: ()async{
                       final Uri url = Uri.parse("https://www.yuque.com/unfriendly/cetwzc/ceaeblm4h7g9nmxk");
@@ -114,6 +131,34 @@ class _configureState extends State<Configure>{
                         setState(() {});
                       }
                     }),
+                    if(GetPlatform.isDesktop) const Text("PC端尺寸调整（高 * 宽）"),
+                    if(GetPlatform.isDesktop) Row(
+                      children: [
+                        Expanded(
+                          child: Obx(()=>Slider(
+                            min: 486.0,
+                            max: 810.0,
+                            value: windowHeight.value.ceilToDouble(),
+                            onChangeEnd: (value){
+                              windowManager.setSize(Size(windowWidth.value, value),animate: true);
+                            },
+                            onChanged: (double value) {
+                              windowHeight.value = value;
+                              UserConfig.sp.setDouble("customWindowHeight",value);
+                              containerHeight = value - 256;
+                            },))),
+                        Expanded(child: Obx(()=>Slider(
+                          min: 921,
+                          max: 1535,
+                          value: windowWidth.value.ceilToDouble(),
+                          onChanged: (value){
+                            windowWidth.value = value;
+                          },onChangeEnd: (value){
+                          windowManager.setSize(Size(value,windowHeight.value),animate: true);
+                          UserConfig.sp.setDouble("customWindowWidth",value);
+                        },)))
+                      ],
+                    )
                   ],
                 ),
               ),
@@ -122,6 +167,15 @@ class _configureState extends State<Configure>{
         ],
       )
     );
+  }
+
+  void getWindowsSize()async{
+    Size s = await windowManager.getSize();
+    windowWidth.value = s.width;
+    windowHeight.value = s.height;
+    setState(() {
+      containerHeight = s.height - 256;
+    });
   }
 
   Widget old(){

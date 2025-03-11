@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:bot_toast/bot_toast.dart';
@@ -7,6 +8,11 @@ import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/Dialog/InquireDialog.dart';
 import 'package:path/path.dart';
+
+import '../../Entity/EChatTileGroup.dart';
+import '../../Entity/EStudent.dart';
+import '../../Managers/ChatGroupManager.dart';
+import '../../Managers/StudentManager.dart';
 
 class BackUpData extends StatefulWidget {
   const BackUpData({super.key});
@@ -24,7 +30,8 @@ class _BackUpDataState extends State<BackUpData> {
         children: [
           const Text("注意事项\n1.测试阶段可能存在BUG，请谨慎使用\n2.跨机型同步可能会造成图片信息丢失\n但其余消息将正常同步\n3.在同步前请确保软件获取存储权限",textAlign: TextAlign.center,),
           ListTile(title: const Text("消息导出"),trailing: const Icon(Icons.arrow_right),onTap: exportData,),
-          ListTile(title: const Text("消息导入"),trailing: const Icon(Icons.arrow_right),onTap: importData,),
+          ListTile(title: const Text("消息导入(覆盖)"),trailing: const Icon(Icons.arrow_right),onTap: importData,),
+          ListTile(title: const Text("消息导入(不覆盖)"),trailing: const Icon(Icons.arrow_right),onTap: importDataAttend,),
         ],
       ),
     );
@@ -62,9 +69,37 @@ class _BackUpDataState extends State<BackUpData> {
     Get.dialog(Inquiredialog(title: "完成导入", content: "导入消息完成，聊天记录将于软件重启后生效"));
   }
 
+  void importDataAttend()async{
+    String? result = await FilePicker.platform.getDirectoryPath(dialogTitle: "选择Momotalk文件夹所在目录");
+    if(result == null) return;
+    var cancel = BotToast.showLoading();
+    List<String> directCopyDirNames = ["AIChat","DIYemotion","Messages","PictureCache"];
+    //Momotalk\ChatTiles\ChatTilesGroups.json和Momotalk\Users\DIY.json这两个文件需要合并
+    for(String dirName in directCopyDirNames){
+      Directory source = Directory(join(result,"Momotalk",dirName));
+      Directory newDir = Directory(join(AppLibrary.applicationPath,dirName));
+      await copyDirectory(source, newDir);
+    }
+    File chatTileGroupJson = File(join(result,"Momotalk","ChatTiles","ChatTilesGroups.json"));
+    if(chatTileGroupJson.existsSync()){
+      for(var chatGroup in json.decode(chatTileGroupJson.readAsStringSync())){
+        ChatGroupManager.instance.chatTileGroups.add(EChatTileGroup.fromMap(chatGroup));
+      }
+    }
+    await ChatGroupManager.instance.saveAsJson();
+    File diyStudent = File(join(result,"Momotalk","Users","DIY.json"));
+    for(var student in json.decode(diyStudent.readAsStringSync())){
+      EStudent s = EStudent.fromMap(student);
+      StudentManager.instance.diyStudentDirctory[s.id] = s;
+    }
+    await StudentManager.instance.saveDIYStudent();
+    cancel();
+  }
+
   Future<void> copyDirectory(Directory source, Directory destination)async{
     // 检查源目录是否存在
     if (!await source.exists()) {
+      print("目录不存在：${source.path}");
       BotToast.showText(text: "源目录不存在！");
       return;
     }

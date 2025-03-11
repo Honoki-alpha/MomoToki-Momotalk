@@ -7,6 +7,7 @@ import 'package:motoki/Dialog/InquireDialog.dart';
 import 'package:motoki/Managers/ThemeManager.dart';
 import 'package:motoki/Views/Home/WindowHome.dart';
 import 'package:motoki/Views/MessagePage/StoryPage.dart';
+import 'package:path/path.dart';
 
 import '../Entity/EMessageBox.dart';
 import '../Managers/MessageManager.dart';
@@ -143,15 +144,20 @@ class _messageBoxState extends State<MessageBox>{
     Widget origin;
     origin = Text(mes,style: const TextStyle(color: Colors.white,height: 1.1,wordSpacing: -0.6,letterSpacing: -0.6));
     if(mes.length > 7 && mes.substring(3,7) == ":://"){
-      if(mes.substring(0,7) == "IMG:://"){
-        File f = File(mes.substring(7));
-        origin = Image.file(f,
-            errorBuilder: (b,o,s){
+      if(mes.substring(0,7) == "IMG:://" || mes.substring(0,7) == "DOC:://"){
+        String path = mes.substring(7);
+        if(mes.substring(0,7) == "DOC:://") path = join(AppLibrary.applicationPath,"PictureCache","Messages",mes.substring(7));
+        File f = File(path);
+        origin = Image.file(
+          f,
+          errorBuilder: (b,o,s){
               return Image.asset("assets/images/icon/IMAGELOST.png");
             },);
       }else{
-        origin = Image.network(mes.substring(7)
-          ,errorBuilder: (b,o,s){
+        origin = Image.network(
+          mes.substring(7),
+          errorBuilder: (b,o,s){
+            print("走这里了");
             return Image.asset("assets/images/icon/IMAGELOST.png");
           },
         );

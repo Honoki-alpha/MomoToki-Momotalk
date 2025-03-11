@@ -53,7 +53,7 @@ class MessageManager{
 
 
   bool checkIsImg(String message){
-    return message.length > 7 && (message.substring(0,7) == "IMG:://" || message.substring(0,7) == "URL:://");
+    return message.length > 7 && (message.substring(0,7) == "IMG:://" || message.substring(0,7) == "URL:://" || message.substring(0,7) == "DOC:://");
   }
 
   Future saveMessages()async{

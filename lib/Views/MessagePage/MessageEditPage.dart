@@ -132,7 +132,9 @@ class _messageEditPage extends State<MessageEditPage>{
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton(onPressed: (){
+                  ElevatedButton(onPressed: ()async{
+                    var result = await Get.dialog(Inquiredialog(title: "警告", content: "是否确认清除该消息？"));
+                    if(result != true) return;
                     Get.back(result: {
                       "command":"delete",
                     });

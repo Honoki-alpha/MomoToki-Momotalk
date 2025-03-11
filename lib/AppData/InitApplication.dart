@@ -22,7 +22,6 @@ import 'UserConfig.dart';
 
 Future initApplication()async{
   await requestAppPermission();//申请软件权限
-  await initWindowsConfig();//初始化桌面端尺寸
   await setDefaultApplicationPath();//设置软件路径
   try{
     await createNecessaryDirctory();//创建必要文件
@@ -33,7 +32,7 @@ Future initApplication()async{
     await UserConfig().initUserConfig();//初始化用户配置
     print("初始化用户配置");
   }catch(e){addProblemLog("获取用户配置失败，请稍后重启");}
-
+  await initWindowsConfig();//初始化桌面端尺寸
   if(UserConfig.applyOfflineMode){
     await loadStudentInfoFromLocal();//获取学生信息
     await loadAppDataFromLocal();//获取资源信息
@@ -271,17 +270,14 @@ Future loadUsualJson()async{
 Future initWindowsConfig()async{
   if(!GetPlatform.isWindows) return;
   await windowManager.ensureInitialized();
-  WindowOptions windowOptions = const WindowOptions(
+  WindowOptions windowOptions = WindowOptions(
     minimumSize: Size(921, 486),//设置窗口的最小尺寸
     maximumSize: Size(1535, 810),//设置窗口的最大尺寸
+
     //window 设置窗口的初始尺寸
-    size: Size(1228, 648),
+    size: Size(UserConfig.customWindowWidth, UserConfig.customWindowHeight),
     //窗口是否居中
     center: true,
-    //true 表示在状态栏不显示程序：就是windows最底部的状态
-    skipTaskbar: false,
-    //true 表示设置Window一直位于最顶层：置顶
-    alwaysOnTop: false,
     //hidden 表示隐藏标题栏 normal 窗体标题栏
     titleBarStyle: TitleBarStyle.hidden,
     title: "MomoToki - Momotalk Creator",
