@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
+import 'package:motoki/Components/StudentCircleAvatar.dart';
 import 'package:motoki/Entity/EMessageBox.dart';
-import 'package:motoki/Managers/StudentManager.dart';
+import 'package:motoki/Managers/Students.dart';
 import 'package:motoki/Managers/ThemeManager.dart';
-import 'package:motoki/Utils/CommonComponents.dart';
 import 'package:motoki/Views/Home/WindowHome.dart';
 
 class Storypage extends StatelessWidget{
@@ -37,7 +37,7 @@ class Storypage extends StatelessWidget{
             const Divider(indent: 10,endIndent: 10,color: Colors.black54,),
             Stack(
               children: [
-                getCicleStudentAvatar(
+                StudentCircleAvatar(id:
                   storage["id"] ?? 114,skinIndex:storage["skin"] ?? 0,customWidth: 100
                 ),
                 Positioned(right: 0,bottom: 0, height: 40,width: 40,
@@ -53,7 +53,7 @@ class Storypage extends StatelessWidget{
                 ))
               ],
             ),
-            Text(StudentManager.instance.getStudentName(storage["id"] ?? 114,showFullName: true)),
+            Text(Students().getStudentName(storage["id"] ?? 114,showFullName: true)),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

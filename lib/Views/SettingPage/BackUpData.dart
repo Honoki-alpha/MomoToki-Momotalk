@@ -11,8 +11,8 @@ import 'package:path/path.dart';
 
 import '../../Entity/EChatTileGroup.dart';
 import '../../Entity/EStudent.dart';
-import '../../Managers/ChatGroupManager.dart';
-import '../../Managers/StudentManager.dart';
+import '../../Managers/ChatGroups.dart';
+import '../../Managers/Students.dart';
 
 class BackUpData extends StatefulWidget {
   const BackUpData({super.key});
@@ -83,16 +83,16 @@ class _BackUpDataState extends State<BackUpData> {
     File chatTileGroupJson = File(join(result,"Momotalk","ChatTiles","ChatTilesGroups.json"));
     if(chatTileGroupJson.existsSync()){
       for(var chatGroup in json.decode(chatTileGroupJson.readAsStringSync())){
-        ChatGroupManager.instance.chatTileGroups.add(EChatTileGroup.fromMap(chatGroup));
+        ChatGroups().chatTileGroups.add(EChatTileGroup.fromMap(chatGroup));
       }
     }
-    await ChatGroupManager.instance.saveAsJson();
+    await ChatGroups().saveAsJson();
     File diyStudent = File(join(result,"Momotalk","Users","DIY.json"));
     for(var student in json.decode(diyStudent.readAsStringSync())){
       EStudent s = EStudent.fromMap(student);
-      StudentManager.instance.diyStudentDirctory[s.id] = s;
+      Students().diyStudentMap[s.id] = s;
     }
-    await StudentManager.instance.saveDIYStudent();
+    await Students().saveDIYStudent();
     cancel();
   }
 

@@ -4,14 +4,13 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:motoki/AppData/AppResource.dart';
+import 'package:motoki/Utils/WidgetUtils.dart';
 import 'package:path/path.dart';
-
 import '../../AppData/AppLibrary.dart';
+import '../../Components/StudentCircleAvatar.dart';
 import '../../Dialog/InquireDialog.dart';
 import '../../Entity/EStudent.dart';
-import '../../Managers/StudentManager.dart';
-import '../../Utils/CommonComponents.dart';
+import '../../Managers/Students.dart';
 import '../../Utils/CommonFunctions.dart';
 
 class DIYStudentSetting extends StatefulWidget{
@@ -33,21 +32,21 @@ class _DIYSeitoState extends State<DIYStudentSetting>{
   @override
   Widget build(BuildContext context) {
     //每次重置界面都要刷新下列表
-    diyList = StudentManager.instance.diyStudentDirctory.values.toList();
+    diyList = Students().diyStudentMap.values.toList();
     return Scaffold(
-      appBar: getPlatformAppBar(const Text("自定义学生列表")),
+      appBar: WidgetUtils().getPlatformAppBar(const Text("自定义学生列表")),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const SizedBox(height: 30,),
           Expanded(
             child: ListView.builder(
-              itemCount: StudentManager.instance.diyStudentDirctory.length,
+              itemCount: Students().diyStudentMap.length,
               itemBuilder: (context, index){
                 EStudent student = diyList[index];
                 return ListTile(
-                  leading:getCicleStudentAvatar(student.id),
-                  title: Text(StudentManager.instance.getStudentName(student.id)),
+                  leading:StudentCircleAvatar(id:student.id),
+                  title: Text(Students().getStudentName(student.id)),
                   subtitle: Text("学生ID: ${student.id}"),
                   onTap: ()=>onTap(index)
                 );
@@ -64,7 +63,7 @@ class _DIYSeitoState extends State<DIYStudentSetting>{
   void addButtonClick() async{
     int id = 0;
     int num = Random().nextInt(10000)+10000;
-    while(StudentManager.instance.diyStudentDirctory.containsKey(num)){
+    while(Students().diyStudentMap.containsKey(num)){
       num = Random().nextInt(10000)+10000;
     }
     id = num;
@@ -81,9 +80,8 @@ class _DIYSeitoState extends State<DIYStudentSetting>{
     }
     EStudent newStudent = EStudent.simpleDIY(
         id, fn, gn, result["avatar"]);
-    AppResource.addDIYAvatar(id,result["avatar"]);
     setState(() {
-      StudentManager.instance.addDIYStudent(newStudent);
+      Students().addDIYStudent(newStudent);
     });
   }
 
@@ -139,14 +137,14 @@ class _DIYSeitoState extends State<DIYStudentSetting>{
     if(result != true) return;
     int id = diyList[index].id;
     setState(() {
-      StudentManager.instance.deleteDIYStudent(id);
+      Students().deleteDIYStudent(id);
     });
   }
 
   //编辑操作
   void diyEdit(int index) async{
     int originId = diyList[index].id;//记录原来的ID便于修改
-    EStudent student = StudentManager.instance.getStudentById(originId);
+    EStudent student = Students().getStudentById(originId);
     diyImgPath = RxString(student.avatar);
     var result = await Get.dialog(addOrEditDialog(originId,
         name:"${student.familyName["nm"]==null||student.familyName["nm"]==""?"":'${student.familyName["nm"]} '}${student.givenName["nm"]??""}"));
@@ -160,9 +158,8 @@ class _DIYSeitoState extends State<DIYStudentSetting>{
       gn = names[1];
     }
     EStudent newStudent = EStudent.simpleDIY(int.parse(result["id"]),fn, gn, result["avatar"]);
-    AppResource.addDIYAvatar(int.parse(result["id"]), result["avatar"]);
     setState(() {
-      StudentManager.instance.alterDIYStudent(originId,newStudent);
+      Students().alterDIYStudent(originId,newStudent);
     });
   }
 

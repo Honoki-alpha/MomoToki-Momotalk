@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'package:bot_toast/bot_toast.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -13,16 +12,17 @@ import 'package:path/path.dart';
 import '../../AppData/AppLibrary.dart';
 import '../../AppData/UserConfig.dart';
 import '../../Components/MessageBox.dart';
+import '../../Components/StudentCircleAvatar.dart';
 import '../../Dialog/DIYEmojiDialog.dart';
 import '../../Dialog/ScreenShotDialog.dart';
 import '../../Dialog/StudentEmojiDialog.dart';
 import '../../Entity/EMessageBox.dart';
 import '../../Entity/EStudent.dart';
 import '../../Managers/MessageManager.dart';
-import '../../Managers/StudentManager.dart';
+import '../../Managers/Students.dart';
 import '../../Managers/ThemeManager.dart';
+import '../../Utils/WidgetUtils.dart';
 import '../Secondary/SelectPage.dart';
-import '../../Utils/CommonComponents.dart';
 import '../../Utils/CommonFunctions.dart';
 import 'MessageEditPage.dart';
 import 'PlayPage.dart';
@@ -40,7 +40,7 @@ class MessagePage extends StatefulWidget{
 
 class _messagePageState extends State<MessagePage>{
   //当前选择的学生
-  EStudent currentStudent = StudentManager.instance.studentDirctory.entries.first.value;
+  EStudent currentStudent = Students().studentMap.entries.first.value;
   RxInt currentStudentSkinIndex = 0.obs;
   //插入的位置(后续更新了删除，现在为选择的消息盒子)
   RxInt currentSelectedIndex = RxInt(-1);
@@ -79,7 +79,7 @@ class _messagePageState extends State<MessagePage>{
     super.initState();
     //初始化快捷键
     if(GetPlatform.isDesktop) initHotKey();
-    currentStudent = StudentManager.instance.getStudentById(MessageManager.instance.currentStudentId);
+    currentStudent = Students().getStudentById(MessageManager.instance.currentStudentId);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top,SystemUiOverlay.bottom]);
     scrollToBottom();
     //添加列表滚动监听
@@ -105,10 +105,9 @@ class _messagePageState extends State<MessagePage>{
   }
 
   void initHotKey()async{
-    print("初始化");
     await hotKeyManager.register(_sendKey,keyDownHandler: (hotkey)=>sendButtonClick());
     await hotKeyManager.register(_attachKey,keyDownHandler: (hotkey)=>addtionButtonClick());
-    await hotKeyManager.register(_emojiKey,keyDownHandler: (hotkey)=>addtionButtonClick());
+    await hotKeyManager.register(_emojiKey,keyDownHandler: (hotkey)=>emojiButtonClick());
     await hotKeyManager.register(_imgKey,keyDownHandler: (hotkey)=>imagePickerClick());
     await hotKeyManager.register(_addUsuKey,keyDownHandler: (hotkey)=>addUsualStudent());
     await hotKeyManager.register(_circleKey,keyDownHandler: (hotkey)=>circleEmojiButtonClick());
@@ -131,14 +130,14 @@ class _messagePageState extends State<MessagePage>{
 
   @override
   Widget build(BuildContext context) {
-    //currentStudent = StudentManager.instance.getStudentById(MessageManager.instance.currentStudentId);
+    //currentStudent = Students().getStudentById(MessageManager.instance.currentStudentId);
     disableAddtionButton = checkAddtionButtonUse();
     return PopScope(
         canPop: false,
         onPopInvoked: onPopInvoked,
         child: Scaffold(
-          appBar: getPlatformAppBar(
-              Obx(()=> Text(StudentManager.instance.getStudentName(currentStudent.id, skinIndex: currentStudentSkinIndex.value))),
+          appBar: WidgetUtils().getPlatformAppBar(
+              Obx(()=> Text(Students().getStudentName(currentStudent.id, skinIndex: currentStudentSkinIndex.value))),
             actions: [
               IconButton(onPressed: saveButtonClick, icon: const Icon(Icons.save_as_rounded)),
               //IconButton(onPressed: notificationButtonClick, icon: const Icon(Icons.notifications))
@@ -188,7 +187,7 @@ class _messagePageState extends State<MessagePage>{
                             icon:GestureDetector(
                               child: Obx(()=>SizedBox(
                                   width: 40,
-                                  child: getCicleStudentAvatar(
+                                  child: StudentCircleAvatar(id:
                                       currentStudent.id,
                                       skinIndex: currentStudentSkinIndex.value))),
                               onTap: (){
@@ -273,7 +272,7 @@ class _messagePageState extends State<MessagePage>{
                     SizedBox(
                         height: 120,
                         child: GridView.builder(
-                            itemCount: StudentManager.instance.toolStudentDirctory.length+StudentManager.instance.usualStudents.length,
+                            itemCount: Students().toolStudentMap.length+Students().usualStudents.length,
                             gridDelegate:SliverGridDelegateWithFixedCrossAxisCount(
                                 mainAxisSpacing: 5,
                                 crossAxisCount: AppLibrary.appLandscapeMode?9:7,
@@ -281,19 +280,19 @@ class _messagePageState extends State<MessagePage>{
                             itemBuilder: (context, index){
                               int iconId = 0;
                               int iconSkin = 0;
-                              int length = StudentManager.instance.toolStudentDirctory.length;
+                              int length = Students().toolStudentMap.length;
                               if(index<length){
                                 iconId = index + 1;
                               }else{
-                                List studentAndSkin = StudentManager.instance.usualStudents[index-length].split("||");
+                                List studentAndSkin = Students().usualStudents[index-length].split("||");
                                 iconId = int.parse(studentAndSkin[0]);
                                 iconSkin = int.parse(studentAndSkin[1]);
                               }
                               return GestureDetector(
-                                child:getCicleStudentAvatar(iconId,skinIndex: iconSkin),
+                                child:StudentCircleAvatar(id:iconId,skinIndex: iconSkin),
                                 onTap: (){
                                   currentStudentSkinIndex.value = iconSkin;
-                                  currentStudent = StudentManager.instance.getStudentById(iconId);
+                                  currentStudent = Students().getStudentById(iconId);
 
                                   setState(() {});
                                 },
@@ -471,8 +470,20 @@ class _messagePageState extends State<MessagePage>{
 
   void circleEmojiButtonClick()async{
     if(UserConfig.applyOfflineMode){
-      BotToast.showText(text: "离线模式请自行下载");
-      return;
+      //获取自定义途径
+      Directory dir = Directory(join(AppLibrary.faceBasePath,"Resources","Emotions","7"));
+      if(!dir.existsSync()){
+        BotToast.showText(text: "未找到该学生差分！");
+        return;
+      }
+      var cancel = BotToast.showLoading();
+      var files = dir.listSync();
+      cancel();
+      var result = await Get.dialog(DIYEmojiDialog(sendID: 7, facePaths: files));
+      if(result == null) return;
+      input.text = "[图片已加载]";
+      loadImgMethod = "IMG";
+      loadImgPath = result.path;
     }
     var result = await Get.dialog(const StudentEmojiDialog(studentID: 7,height: 370));
     if(result == null) return;
@@ -497,23 +508,21 @@ class _messagePageState extends State<MessagePage>{
 
  //添加常用学生
  void addUsualStudent()async{
-    EStudent? student = await Get.to(()=>const SelectPage());
-    if(student == null) return;
-    int skinIndex = 0;
-    if(student.skinList.length > 1){
-      skinIndex = ( await Get.dialog(skinIndexSelectDialog(student.skinList)) )?? 0;
-    }
+    List<EStudent>? students = await Get.to(()=>const SelectPage(multiple: true,));
+    if(students == null) return;
     setState(() {
-      StudentManager.instance.addUsualStudent(student.id,skinIndex);
+      for(var student in students){
+        Students().addUsualStudent(student.id,0);
+      }
     });
  }
 
  //删除常用学生
   void deleteUsualStudent(int index)async{
-    if(index < StudentManager.instance.toolStudentDirctory.length) return;
-    int newIndex = index - StudentManager.instance.toolStudentDirctory.length;
+    if(index < Students().toolStudentMap.length) return;
+    int newIndex = index - Students().toolStudentMap.length;
     setState(() {
-      StudentManager.instance.deleteUsualStudent(newIndex);
+      Students().deleteUsualStudent(newIndex);
     });
     BotToast.showText(text: "删除成功！");
   }
@@ -521,8 +530,18 @@ class _messagePageState extends State<MessagePage>{
   void screenShotButton()async{
     var result = await Get.dialog(ScreenShotDialog());
     if(result == null) return;
-    await saveButtonClick();
     int x = 0;
+    //检测输入是否为0
+    if(result["x"]==0 && result["command"] != "whole") {
+      BotToast.showText(text: "输入的值需大于0");
+      return;
+    }
+    //检测是否有消息
+    if(MessageManager.instance.messages.isEmpty){
+      BotToast.showText(text: "空消息无法截图");
+      return;
+    }
+    await saveButtonClick();
     if(result["command"] == "every"){
       x = result["x"];
     }else if(result["command"] == "part"){
@@ -560,7 +579,6 @@ class _messagePageState extends State<MessagePage>{
       WindowHomeState.setRightPage(page);
       AppLibrary.globalEvent.fire(ScreenShotEvent());
       await Future.delayed(const Duration(seconds: 4));
-
     }else{
       await Get.to(()=>page);
     }

@@ -1,20 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart';
-
+import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/AppData/UserConfig.dart';
 import 'package:motoki/Components/MessageBox.dart';
 import 'package:motoki/Entity/EMessageBox.dart';
 import 'package:motoki/Managers/MessageManager.dart';
-import 'package:motoki/Managers/StudentManager.dart';
-import 'package:motoki/Utils/CommonComponents.dart';
-
+import 'package:motoki/Managers/Students.dart';
+import '../../Components/StudentCircleAvatar.dart';
 import '../../Entity/EStudent.dart';
 
 class AIChatPage extends StatefulWidget{
@@ -27,7 +25,7 @@ class AIChatPage extends StatefulWidget{
 
 class _AiChatPage extends State<AIChatPage>{
   //当前选择的学生
-  EStudent currentStudent = StudentManager.instance.studentDirctory.entries.first.value;
+  EStudent currentStudent = Students().studentMap.entries.first.value;
   RxInt currentStudentSkinIndex = 0.obs;
   ScrollController sc = ScrollController();
   TextEditingController input = TextEditingController();
@@ -60,15 +58,15 @@ class _AiChatPage extends State<AIChatPage>{
   void initState() {
     // TODO: implement initState
     super.initState();
-    currentStudent = StudentManager.instance.getStudentById(MessageManager.instance.currentStudentId);
+    currentStudent = Students().getStudentById(MessageManager.instance.currentStudentId);
     hostlink = UserConfig.aiChatUrl ?? "https://api.chatanywhere.tech";
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:getPlatformAppBar(const Text("AI聊天"),
-        actions: [
+      appBar:AppLibrary.appLandscapeMode? null:
+        AppBar(title: Text("AI聊天"),actions: [
           IconButton(onPressed: saveButtonClick, icon: const Icon(Icons.save))
         ],),
       body:Column(
@@ -100,7 +98,7 @@ class _AiChatPage extends State<AIChatPage>{
                 child: TextField(
                   decoration: InputDecoration(
                       icon:GestureDetector(
-                        child: getCicleStudentAvatar(MessageManager.instance.currentStudentId,skinIndex: currentStudentSkinIndex.value),
+                        child: StudentCircleAvatar(id:MessageManager.instance.currentStudentId,skinIndex: currentStudentSkinIndex.value),
                         onTap: (){
                           usualVisable.value = !usualVisable.value;
                         },)
@@ -118,20 +116,20 @@ class _AiChatPage extends State<AIChatPage>{
               child: usualVisable.value?SizedBox(
                   height: 120,
                   child: GridView.builder(
-                      itemCount: StudentManager.instance.usualStudents.length,
+                      itemCount: Students().usualStudents.length,
                       gridDelegate:const SliverGridDelegateWithFixedCrossAxisCount(
                         mainAxisSpacing: 5,
                         crossAxisCount: 7, //每行五列
                         childAspectRatio: 1.0, //显示区域宽高相等
                       ), itemBuilder: (context, index){
-                    List studentAndSkin = StudentManager.instance.usualStudents[index].split("||");
+                    List studentAndSkin = Students().usualStudents[index].split("||");
                     var iconId = int.parse(studentAndSkin[0]);
                     var iconSkin = int.parse(studentAndSkin[1]);
                     return GestureDetector(
-                      child:getCicleStudentAvatar(iconId,skinIndex: iconSkin),
+                      child:StudentCircleAvatar(id:iconId,skinIndex: iconSkin),
                       onTap: (){
                         currentStudentSkinIndex.value = iconSkin;
-                        currentStudent = StudentManager.instance.getStudentById(iconId);
+                        currentStudent = Students().getStudentById(iconId);
                         setState(() {});
                       },
                     );
@@ -218,7 +216,7 @@ class _AiChatPage extends State<AIChatPage>{
         senderId,
         currentStudentSkinIndex.value,
         0,
-        StudentManager.instance.getStudentName(senderId),
+        Students().getStudentName(senderId),
         [text],
         false,
         {});

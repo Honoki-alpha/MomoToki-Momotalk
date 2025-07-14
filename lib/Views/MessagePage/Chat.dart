@@ -7,13 +7,13 @@ import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/AppData/UserConfig.dart';
 import 'package:motoki/Dialog/InquireDialog.dart';
-import 'package:motoki/Managers/StudentManager.dart';
-import 'package:motoki/Utils/CommonComponents.dart';
+import 'package:motoki/Managers/Students.dart';
 import 'package:motoki/Entity/EChatTileGroup.dart';
 import 'package:motoki/Views/Home/WindowHome.dart';
 import 'package:path/path.dart';
+import '../../Components/StudentCircleAvatar.dart';
 import '../../Entity/EChatTile.dart';
-import '../../Managers/ChatGroupManager.dart';
+import '../../Managers/ChatGroups.dart';
 import '../../Managers/MessageManager.dart';
 import '../../Utils/EventBus.dart';
 import 'AIChatPage.dart';
@@ -46,7 +46,7 @@ class _ChatState extends State<Chat>{
   Widget build(BuildContext context) {
     return Column(
       children: [
-        if(StudentManager.instance.birthdayStudent.isNotEmpty) Obx(()=>ExpansionPanelList(
+        if(Students().birthdayStudentMap.isNotEmpty) Obx(()=>ExpansionPanelList(
           expansionCallback: (value,expanded){
             birthdayIsShow.value = !birthdayIsShow.value;
           },
@@ -60,19 +60,19 @@ class _ChatState extends State<Chat>{
                 body: ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: StudentManager.instance.birthdayStudent.length,
+                    itemCount: Students().birthdayStudentMap.length,
                     itemBuilder: (context,index){
-                      var s = StudentManager.instance.birthdayStudent.entries.elementAt(index);
-                      return ListTile(leading: getCicleStudentAvatar(s.key),
-                        title: Text(StudentManager.instance.getStudentName(s.key)),
+                      var s = Students().birthdayStudentMap.entries.elementAt(index);
+                      return ListTile(leading: StudentCircleAvatar(id:s.key),
+                        title: Text(Students().getStudentName(s.key)),
                         subtitle: Text(s.value == 0?"今天是她的生日哦！":"距离她的生日还有${s.value}天"),);
                     }))
           ],
         ) ),
         Expanded(child: ListView.builder(
-          itemCount: ChatGroupManager.instance.chatTileGroups.length,
+          itemCount: ChatGroups().chatTileGroups.length,
           itemBuilder: (BuildContext context, int index) {
-            return chatTileGroup(ChatGroupManager.instance.chatTileGroups[index],index);
+            return chatTileGroup(ChatGroups().chatTileGroups[index],index);
           },
         ))
       ],
@@ -82,10 +82,10 @@ class _ChatState extends State<Chat>{
   Widget chatTileGroup(EChatTileGroup group,int groupIndex){
     return ExpansionPanelList(
       expansionCallback: (index,isOpen){
-        if(ChatGroupManager.instance.selectedGroupIndex==groupIndex){
-          ChatGroupManager.instance.selectedGroupIndex = -1;
+        if(ChatGroups().selectedGroupIndex==groupIndex){
+          ChatGroups().selectedGroupIndex = -1;
         }else{
-          ChatGroupManager.instance.selectedGroupIndex = groupIndex;
+          ChatGroups().selectedGroupIndex = groupIndex;
         }
         setState(() {
           group.display = !group.display;
@@ -93,7 +93,7 @@ class _ChatState extends State<Chat>{
       },
       children: [ExpansionPanel(
           canTapOnHeader: true,
-          isExpanded: ChatGroupManager.instance.selectedGroupIndex==groupIndex,
+          isExpanded: ChatGroups().selectedGroupIndex==groupIndex,
           headerBuilder: (context,open){
             return ListTile(
               leading: IconButton(
@@ -118,7 +118,7 @@ class _ChatState extends State<Chat>{
     var tile = group.chatTiles[index];
     return ListTile(
       title: Text(tile.tileTitle),
-      leading: getCicleStudentAvatar(tile.senderId),
+      leading: StudentCircleAvatar(id:tile.senderId),
       trailing: tile.unreadNum == 0?null:Container(
           //因为消息数位数不同宽度不同，会导致背景色宽度也不同，所以此处固定宽高
           width: 30,
@@ -140,7 +140,7 @@ class _ChatState extends State<Chat>{
 
   TextEditingController groupName = TextEditingController();
   Widget groupEditDialog(int index){
-    groupName.text = ChatGroupManager.instance.chatTileGroups[index].groupName;
+    groupName.text = ChatGroups().chatTileGroups[index].groupName;
     return AlertDialog(
       title: const Text("编辑/删除"),
       content: TextField(
@@ -201,7 +201,7 @@ class _ChatState extends State<Chat>{
   void changeGroupButton(EChatTileGroup oldGroup,int tileIndex)async{
     int? newGroupIndex = await Get.dialog(groupDialog());
     if(newGroupIndex == null) return;
-    await ChatGroupManager.instance.moveChatTile(oldGroup, tileIndex, newGroupIndex);
+    await ChatGroups().moveChatTile(oldGroup, tileIndex, newGroupIndex);
     Get.back();
     setState(() {});
     BotToast.showText(text: "转移分组成功");
@@ -230,7 +230,7 @@ class _ChatState extends State<Chat>{
       return;
     }
     //Tile信息
-    ChatGroupManager.instance.selectedTileIndex = index;
+    ChatGroups().selectedTileIndex = index;
 
     //Message信息
     MessageManager.instance.currentStudentId = tile.senderId;
@@ -248,14 +248,14 @@ class _ChatState extends State<Chat>{
     setState(() {
       tile.unreadNum = 0;
     });
-    ChatGroupManager.instance.saveAsJson();
+    ChatGroups().saveAsJson();
   }
 
   void groupEditClick(int groupIndex)async{
     var result = await Get.dialog(groupEditDialog(groupIndex));
     if(result == null) return;
     if(result["command"] == "edit"){
-      ChatGroupManager.instance.alterChatTileGroup(groupIndex, groupName.text);
+      ChatGroups().alterChatTileGroup(groupIndex, groupName.text);
     }else{
       var firstResult = await Get.dialog(const Inquiredialog(title: "警告", content: "老师，您点击了删除按钮，是否删除分组？"));
       if(firstResult != true) return;
@@ -263,7 +263,7 @@ class _ChatState extends State<Chat>{
       if(secondResult != true) return;
       var thirdResult = await Get.dialog(const Inquiredialog(title: "警告", content: "老师，您点击了删除按钮，是否真的真的要删除分组？"));
       if(thirdResult != true) return;
-      ChatGroupManager.instance.removeChatTileGroup(groupIndex);
+      ChatGroups().removeChatTileGroup(groupIndex);
     }
     setState(() {});
   }
@@ -278,26 +278,26 @@ class _ChatState extends State<Chat>{
     }
     else if(result["command"] == "edit"){
       setState(() {
-        ChatGroupManager.instance.alterChatTile(
+        ChatGroups().alterChatTile(
             group.chatTiles[index],
             result["tileTitle"] ?? "未输入标题",
             int.parse(result["unreadNum"] ?? "0"));
       });
     }
     else if(result["command"] == "AI"){
-      if(UserConfig.aiChatKey == null){
-        BotToast.showText(text: "未配置AI API KEY,可前往关于软件中查看教程");
+      if(UserConfig.aiChatKey == null || UserConfig.aiChatKey!.startsWith("sk-")){
+        BotToast.showText(text: "未配置API KEY或KEY格式错误,可前往关于软件中查看教程");
         return;
       }
       visitAIPage(group,index);
     }
-    ChatGroupManager.instance.saveAsJson();
+    ChatGroups().saveAsJson();
   }
 
   Future deleteChatTile(EChatTileGroup group,int index)async{
     var cancel = BotToast.showLoading();
     String uid = group.chatTiles[index].chatTileUID;
-    await ChatGroupManager.instance.removeChatTile(group, index, true);
+    await ChatGroups().removeChatTile(group, index, true);
     String path = join(AppLibrary.applicationPath,"PictureCache","Messages",uid);
     Directory directory = Directory(path);
     if(directory.existsSync()){
@@ -344,7 +344,7 @@ class _ChatState extends State<Chat>{
     setState(() {
       tile.unreadNum = 0;
     });
-    ChatGroupManager.instance.saveAsJson();
+    ChatGroups().saveAsJson();
   }
 
   Widget groupDialog(){
@@ -354,9 +354,9 @@ class _ChatState extends State<Chat>{
         height: 400,
         width: 270,
         child: ListView.builder(
-          itemCount: ChatGroupManager.instance.chatTileGroups.length,
+          itemCount: ChatGroups().chatTileGroups.length,
           itemBuilder: (context,index){
-            return ListTile(title: Text(ChatGroupManager.instance.chatTileGroups[index].groupName),onTap: (){
+            return ListTile(title: Text(ChatGroups().chatTileGroups[index].groupName),onTap: (){
               Get.back(result: index);
             },);
           }),

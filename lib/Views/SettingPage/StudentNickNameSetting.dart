@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:motoki/Managers/StudentManager.dart';
-import 'package:motoki/Utils/CommonComponents.dart';
+import 'package:motoki/Managers/Students.dart';
 import 'package:motoki/Views/Secondary/SelectPage.dart';
 
+import '../../Components/StudentCircleAvatar.dart';
 import '../../Entity/EStudent.dart';
+import '../../Utils/WidgetUtils.dart';
 
 class StudentNickNameSetting extends StatefulWidget{
   const StudentNickNameSetting({super.key});
@@ -24,13 +25,13 @@ class _StudentNickNameSettingState extends State<StudentNickNameSetting>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: getPlatformAppBar(const Text("学生备注")),
+      appBar: WidgetUtils().getPlatformAppBar(const Text("学生备注")),
       body: ListView.builder(
-        itemCount: StudentManager.instance.studentNickName.length,
+        itemCount: Students().studentNickName.length,
         itemBuilder: (b,index){
-          int id = int.parse(StudentManager.instance.studentNickName.keys.elementAt(index));
-          String name = StudentManager.instance.getStudentName(id,skinIndex: 0);
-          Map skins = StudentManager.instance.studentNickName.values.elementAt(index);
+          int id = int.parse(Students().studentNickName.keys.elementAt(index));
+          String name = Students().getStudentName(id,skinIndex: 0);
+          Map skins = Students().studentNickName.values.elementAt(index);
           return ExpansionPanelList(
             expansionCallback:(eIndex,isOpen){
               setState(() {
@@ -47,7 +48,7 @@ class _StudentNickNameSettingState extends State<StudentNickNameSetting>{
                 isExpanded: shownIndex ==index,
                 headerBuilder: (context,open){
                   return ListTile(
-                    leading: getCicleStudentAvatar(id),
+                    leading: StudentCircleAvatar(id:id),
                     title: Text(name),
                   );
                 },
@@ -57,10 +58,10 @@ class _StudentNickNameSettingState extends State<StudentNickNameSetting>{
                     itemCount: skins.length,
                     itemBuilder: (builder,skinIndex){
                       return ListTile(
-                        leading: getCicleStudentAvatar(id,skinIndex:int.parse(skins.keys.elementAt(skinIndex))),
+                        leading: StudentCircleAvatar(id:id,skinIndex:int.parse(skins.keys.elementAt(skinIndex))),
                         title: Text(skins.values.elementAt(skinIndex)),
                         onLongPress: (){
-                          StudentManager.instance.removeNickName(id, skinIndex);
+                          Students().removeNickName(id, skinIndex);
                           setState(() {});
                         },
                       );
@@ -77,7 +78,7 @@ class _StudentNickNameSettingState extends State<StudentNickNameSetting>{
 
   TextEditingController textEditingController = TextEditingController();
   void addStudentNickName()async{
-    EStudent? result = await Get.to(()=>const SelectPage());
+    EStudent? result = await Get.to(()=>const SelectPage(multiple: false,));
     if(result==null) return;
     int skinIndex = 0;
     if(result.skinList.length > 1){
@@ -85,7 +86,7 @@ class _StudentNickNameSettingState extends State<StudentNickNameSetting>{
     }
     await Get.defaultDialog(title:"请输入备注",content: TextField(controller: textEditingController));
     if(textEditingController.text.isEmpty) return;
-    StudentManager.instance.addNickName(result.id, skinIndex, textEditingController.text);
+    Students().addNickName(result.id, skinIndex, textEditingController.text);
     textEditingController.text = "";
     setState(() {});
   }

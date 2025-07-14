@@ -9,7 +9,7 @@ import 'package:motoki/Views/SettingPage/Configure.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../../Entity/EStudent.dart';
-import '../../Managers/ChatGroupManager.dart';
+import '../../Managers/ChatGroups.dart';
 import '../../Utils/CommonFunctions.dart';
 import '../Secondary/SelectPage.dart';
 
@@ -129,14 +129,14 @@ class WindowHomeState extends State<WindowHome>{
   }
 
   void addChatStudent() async{
-    if(ChatGroupManager.instance.selectedGroupIndex < 0){
+    if(ChatGroups().selectedGroupIndex < 0){
       BotToast.showText(text: "未选择分组，请展开任意分组");
       return;
     }
-    EStudent? student = await Get.to(()=>const SelectPage());
+    EStudent? student = await Get.to(()=>const SelectPage(multiple: false,));
     if(student == null) return;
     setState(() {
-      ChatGroupManager.instance.addChatTile(student);
+      ChatGroups().addChatTile(student);
     });
   }
 
@@ -173,7 +173,7 @@ class WindowHomeState extends State<WindowHome>{
 
   void addGroupButton(){
     if(inputField.text.isEmpty) return;
-    ChatGroupManager.instance.addChatTileGroup(inputField.text);
+    ChatGroups().addChatTileGroup(inputField.text);
     inputField.text = "";
   }
 

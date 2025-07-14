@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:bot_toast/bot_toast.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:motoki/Entity/EStudent.dart';
@@ -11,13 +10,14 @@ import 'package:path/path.dart';
 
 import '../../AppData/AppLibrary.dart';
 import '../../AppData/UserConfig.dart';
+import '../../Components/StudentCircleAvatar.dart';
 import '../../Dialog/DIYEmojiDialog.dart';
 import '../../Dialog/InquireDialog.dart';
 import '../../Dialog/StudentEmojiDialog.dart';
 import '../../Managers/MessageManager.dart';
-import '../../Managers/StudentManager.dart';
+import '../../Managers/Students.dart';
+import '../../Utils/WidgetUtils.dart';
 import '../Secondary/SelectPage.dart';
-import '../../Utils/CommonComponents.dart';
 
 class MessageEditPage extends StatefulWidget{
   const MessageEditPage({super.key,required this.chatTileUID, required this.messageBox});
@@ -47,7 +47,7 @@ class _messageEditPage extends State<MessageEditPage>{
     super.initState();
     String head = widget.messageBox.messageContentList[selectedindex];
     editMessage(selectedindex, MessageManager.instance.checkIsImg(head));
-    currentStudent = StudentManager.instance.getStudentById(widget.messageBox.senderId);
+    currentStudent = Students().getStudentById(widget.messageBox.senderId);
     skinLength = currentStudent.skinList.length;
     nick.text = widget.messageBox.sendMessageName;
   }
@@ -56,12 +56,12 @@ class _messageEditPage extends State<MessageEditPage>{
   Widget build(BuildContext context) {
     disableInsert = widget.messageBox.senderId != 1 && widget.messageBox.senderId < 100 && widget.messageBox.senderId != 4;
     //获取当前学生
-    currentStudent = StudentManager.instance.getStudentById(widget.messageBox.senderId);
+    currentStudent = Students().getStudentById(widget.messageBox.senderId);
     return PopScope(
       canPop: false,
       onPopInvoked: saveRequest,
       child: Scaffold(
-      appBar: getPlatformAppBar(const Text("消息编辑")),
+      appBar: WidgetUtils().getPlatformAppBar(const Text("消息编辑")),
       body: Container(
         padding: const EdgeInsets.symmetric(vertical: 10,horizontal: 15),
         child: SingleChildScrollView(
@@ -73,7 +73,7 @@ class _messageEditPage extends State<MessageEditPage>{
                 GestureDetector(
                   onTap: iconClick,
                   onDoubleTap: iconDoubleClick,
-                  child: getCicleStudentAvatar(widget.messageBox.senderId,skinIndex: widget.messageBox.senderSkinIndex),),
+                  child: StudentCircleAvatar(id:widget.messageBox.senderId,skinIndex: widget.messageBox.senderSkinIndex),),
                 const SizedBox(width: 20,),
                 const Text("位于右侧"),
                 Switch(value: widget.messageBox.boxAlign, onChanged: (value){
@@ -175,7 +175,7 @@ class _messageEditPage extends State<MessageEditPage>{
 
   //点击头像
   void iconClick()async{
-    var student = await Get.to(()=>const SelectPage());
+    var student = await Get.to(()=>const SelectPage(multiple: false,));
     if(student == null) return;
     setState(() {
       widget.messageBox.senderId = student.id;
@@ -184,7 +184,7 @@ class _messageEditPage extends State<MessageEditPage>{
 
   //双击头像
   void iconDoubleClick(){
-    int skinIndex = StudentManager.instance.getStudentSkinIndex(widget.messageBox.senderId, widget.messageBox.senderSkinIndex+1);
+    int skinIndex = Students().getStudentSkinIndex(widget.messageBox.senderId, widget.messageBox.senderSkinIndex+1);
     setState(() {
       widget.messageBox.senderSkinIndex = skinIndex;
     });
@@ -340,9 +340,9 @@ class _messageEditPage extends State<MessageEditPage>{
         child: Column(
           children: [
             Obx(() => GestureDetector(
-              child: getCicleStudentAvatar(storyMainStudent.value,skinIndex: storyMainSkin.value),
+              child: StudentCircleAvatar(id:storyMainStudent.value,skinIndex: storyMainSkin.value),
               onTap: ()async{
-                EStudent? student = await Get.to(()=>const SelectPage());
+                EStudent? student = await Get.to(()=>const SelectPage(multiple: false,));
                 if(student == null) return;
                 storyMainStudent.value = student.id;
                 skinLength = student.skinList.length;

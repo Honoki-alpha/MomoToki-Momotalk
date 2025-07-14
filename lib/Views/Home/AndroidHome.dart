@@ -7,13 +7,13 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/Entity/EStudent.dart';
-import 'package:motoki/Managers/ChatGroupManager.dart';
-import 'package:motoki/Managers/StudentManager.dart';
+import 'package:motoki/Managers/ChatGroups.dart';
+import 'package:motoki/Managers/Students.dart';
 import 'package:motoki/Managers/ThemeManager.dart';
-import 'package:motoki/Utils/CommonComponents.dart';
 import 'package:motoki/Utils/CommonFunctions.dart';
 import '../../AppData/AppConstant.dart';
 import '../../AppData/UserConfig.dart';
+import '../../Components/StudentCircleAvatar.dart';
 import '../Secondary/SelectPage.dart';
 import '../MessagePage/Chat.dart';
 import '../SettingPage/Configure.dart';
@@ -25,7 +25,7 @@ class AndroidHome extends StatefulWidget{
   State<StatefulWidget> createState() => _homeState();
 }
 
-class _homeState extends State<AndroidHome> with WidgetsBindingObserver{
+class _homeState extends State<AndroidHome>{
   int popTimes = 0;
   bool floatingButtonVisable = true;
   RxBool isMessagePage = true.obs;
@@ -38,46 +38,46 @@ class _homeState extends State<AndroidHome> with WidgetsBindingObserver{
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top,SystemUiOverlay.bottom]);
     kawaiNotification();
     //初始化监听
-    WidgetsBinding.instance.addObserver(this);
+    //WidgetsBinding.instance.addObserver(this);
     getLastVersion();
-    UpdateTheme();
+   // UpdateTheme();
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
     //移除监听
-    WidgetsBinding.instance.removeObserver(this);
+    //WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    // TODO: implement didChangeAccessibilityFeatures
-    super.didChangeAppLifecycleState(state);
-    //软件从后台返回到前台
-    if(state == AppLifecycleState.resumed){
-      UpdateTheme();
-    }
-  }
-
-  void UpdateTheme(){
-    if(Get.mediaQuery.platformBrightness == Brightness.dark) {
-      ThemeManager.isDarkTheme = true;
-      ThemeManager.currentTheme = ThemeManager.darkTheme;
-    }else{
-      ThemeManager.isDarkTheme = false;
-      ThemeManager.currentTheme = ThemeManager.getThemeData(UserConfig.themeIndex);
-    }
-    setState(() {
-      navigationCurrentPage = 0;
-    });
-  }
+  //
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) {
+  //   // TODO: implement didChangeAccessibilityFeatures
+  //   super.didChangeAppLifecycleState(state);
+  //   //软件从后台返回到前台
+  //   if(state == AppLifecycleState.resumed){
+  //     UpdateTheme();
+  //   }
+  // }
+  //
+  // void UpdateTheme(){
+  //   if(Get.mediaQuery.platformBrightness == Brightness.dark) {
+  //     ThemeManager.isDarkTheme = true;
+  //     ThemeManager.currentTheme = ThemeManager.darkTheme;
+  //   }else{
+  //     ThemeManager.isDarkTheme = false;
+  //     ThemeManager.currentTheme = ThemeManager.getThemeData(UserConfig.themeIndex);
+  //   }
+  //   setState(() {
+  //     navigationCurrentPage = 0;
+  //   });
+  // }
 
   //弹出两个小可爱的问候
   void kawaiNotification(){
     int studentId = UserConfig.customGreetStudent ?? AppLibrary.randGetFromList([280,278]);
-    String name = StudentManager.instance.getStudentName(studentId);
+    String name = Students().getStudentName(studentId);
     BotToast.showCustomNotification(toastBuilder: (b){
       return Material(color: Colors.transparent,child: Container(
         margin: const EdgeInsets.symmetric(vertical: 1,horizontal: 10),
@@ -88,7 +88,7 @@ class _homeState extends State<AndroidHome> with WidgetsBindingObserver{
         child: ListTile(
           title: Text("From $name"),
           subtitle: Text("${UserConfig.customGreetContent ?? AppLibrary.randGetFromList(AppConstant.greeting)}"),
-          leading: getCicleStudentAvatar(studentId),
+          leading: StudentCircleAvatar(id:studentId),
         ),
       ),);
     },duration:const Duration(seconds: 3) );
@@ -180,13 +180,13 @@ class _homeState extends State<AndroidHome> with WidgetsBindingObserver{
 
 
   void addChatStudent() async{
-    if(ChatGroupManager.instance.selectedGroupIndex < 0){
+    if(ChatGroups().selectedGroupIndex < 0){
       BotToast.showText(text: "未选择分组，请展开任意分组");
       return;
     }
-    EStudent? student = await Get.to(()=>const SelectPage());
+    EStudent? student = await Get.to(()=>const SelectPage(multiple: false,));
     if(student == null) return;
-    ChatGroupManager.instance.addChatTile(student);
+    ChatGroups().addChatTile(student);
     setState(() {
 
     });
@@ -215,7 +215,7 @@ class _homeState extends State<AndroidHome> with WidgetsBindingObserver{
 
   void addGroupButton(){
     if(inputField.text.isEmpty) return;
-    ChatGroupManager.instance.addChatTileGroup(inputField.text);
+    ChatGroups().addChatTileGroup(inputField.text);
     inputField.text = "";
 
   }

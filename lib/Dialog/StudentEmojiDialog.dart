@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../AppData/AppLibrary.dart';
-import '../Managers/StudentManager.dart';
+import '../Managers/Students.dart';
 
 class StudentEmojiDialog extends StatelessWidget{
   const StudentEmojiDialog({super.key, required this.studentID,this.height});
@@ -9,7 +9,7 @@ class StudentEmojiDialog extends StatelessWidget{
   final double? height;
   @override
   Widget build(BuildContext context) {
-    List gallery = StudentManager.instance.getStudentById(studentID).gallery;
+    List gallery = Students().getStudentById(studentID).gallery;
     return AlertDialog(
       content: SizedBox(
         height: 400,

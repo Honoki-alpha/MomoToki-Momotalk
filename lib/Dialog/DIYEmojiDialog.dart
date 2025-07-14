@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../Entity/EStudent.dart';
-import '../Managers/StudentManager.dart';
+import '../Managers/Students.dart';
 class DIYEmojiDialog extends StatefulWidget{
   const DIYEmojiDialog({super.key, required this.sendID,required this.facePaths});
   final int sendID;
@@ -20,7 +20,7 @@ class _faceImgState extends State<DIYEmojiDialog>{
   void initState() {
     // TODO: implement initState
     super.initState();
-    student = StudentManager.instance.getStudentById(widget.sendID);
+    student = Students().getStudentById(widget.sendID);
   }
   @override
   Widget build(BuildContext context) {

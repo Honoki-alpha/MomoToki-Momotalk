@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_rx/get_rx.dart';
-import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
+import '../../Components/StudentCircleAvatar.dart';
 import '../../Entity/EStudent.dart';
 import '../../AppData/AppLibrary.dart';
-import '../../Managers/StudentManager.dart';
-import '../../Utils/CommonComponents.dart';
+import '../../Managers/Students.dart';
 
 
 class SelectPage extends StatefulWidget{
-  const SelectPage({super.key});
+  const SelectPage({super.key, required this.multiple});
+  final bool multiple;
 
   @override
   State<StatefulWidget> createState() => _selectPageState();
 }
 
 class _selectPageState extends State<SelectPage> with SingleTickerProviderStateMixin{
-  List<EStudent> eStudentList = StudentManager.instance.studentDirctory.values.toList();
-  List<EStudent> diyStudentList = StudentManager.instance.diyStudentDirctory.values.toList();
+  List<EStudent> eStudentList = Students().studentMap.values.toList();
+  List<EStudent> diyStudentList = Students().diyStudentMap.values.toList();
+  //多选返回列表
+  final List<int> backList = [];
+  
   TextEditingController searchField = TextEditingController();
   HotKey hotKey = HotKey(KeyCode.enter,scope: HotKeyScope.inapp);
   late final TabController tbc;
@@ -40,9 +42,15 @@ class _selectPageState extends State<SelectPage> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text("请选择学生"),centerTitle: true,bottom:TabBar(
-            controller: tbc,
-            tabs: const [Tab(text: "内置"),Tab(text: "自定义")])),
+        appBar: AppBar(
+          title: const Text("请选择学生"),
+          centerTitle: true,
+          actions: [
+            if(widget.multiple) IconButton(onPressed: returnStudents, icon: const Icon(Icons.check))
+          ],
+          bottom:TabBar(
+          controller: tbc,
+          tabs: const [Tab(text: "内置"),Tab(text: "自定义")])),
         body: Column(
           children: [
             Row(children: [
@@ -71,9 +79,10 @@ class _selectPageState extends State<SelectPage> with SingleTickerProviderStateM
                         childAspectRatio: 1.0, //显示区域宽高相等
                       ),
                       itemBuilder: (context, index){
-                        return GestureDetector(child:getCicleStudentAvatar(eStudentList[index].id),onTap: (){
-                          Get.back(result: eStudentList[index]);
-                        },);
+                        return GestureDetector(
+                            child:StudentCircleAvatar(
+                                id:eStudentList[index].id,selected: backList.contains(eStudentList[index].id),),
+                            onTap: ()=>studentAvatarClick(false,index));
                       }),
                   GridView.builder(
                       padding: const EdgeInsets.all(10),
@@ -85,10 +94,8 @@ class _selectPageState extends State<SelectPage> with SingleTickerProviderStateM
                       ),
                       itemBuilder: (context, index){
                         return  GestureDetector(
-                          child:getCicleStudentAvatar(diyStudentList[index].id),
-                          onTap: (){
-                            Get.back(result: diyStudentList[index]);
-                          },);
+                          child:StudentCircleAvatar(id:diyStudentList[index].id,selected: backList.contains(diyStudentList[index].id),),
+                          onTap: ()=>studentAvatarClick(true,index));
                       }),
                 ]))
           ],
@@ -97,10 +104,33 @@ class _selectPageState extends State<SelectPage> with SingleTickerProviderStateM
     );
   }
 
+  void studentAvatarClick(bool diy,index)async{
+    List current = diy?diyStudentList:eStudentList;
+    if(!widget.multiple){
+      Get.back(result: eStudentList[index]);
+    }else{
+      if(backList.contains(current[index].id)){
+        backList.remove(current[index].id);
+      }else{
+        backList.add(current[index].id);
+      }
+      setState(() {});
+    }
+  }
+
+  void returnStudents(){
+    List<EStudent> ss = [];
+    for(int id in backList){
+      EStudent s = Students().getStudentById(id);
+      ss.add(s);
+    }
+    Get.back(result: ss);
+  }
+
   void searchButtonClick(String text) async{
     eStudentList.clear();
     List<EStudent> temp = [];
-    for(var item in StudentManager.instance.studentDirctory.values.toList()){
+    for(var item in Students().studentMap.values.toList()){
       if(item.familyName.values.toList().join(".").contains(text) ||
           item.givenName.values.toList().join(".").contains(text)){
         temp.add(item);
@@ -127,7 +157,7 @@ class _selectPageState extends State<SelectPage> with SingleTickerProviderStateM
   }
   //初始化数据
   void initPageData() async{
-    eStudentList = StudentManager.instance.studentDirctory.values.toList();
+    eStudentList = Students().studentMap.values.toList();
   }
 
 

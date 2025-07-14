@@ -32,6 +32,8 @@ class ThemeManager{
         titleTextStyle: TextStyle(fontSize: 20,color: Colors.white,fontFamily:"ResourceHanCN")
       )
     );
+
+
     darkTheme = ThemeData(
         textTheme: UserConfig.appFontSize<5.0?null:TextTheme(
           bodyLarge: TextStyle(fontSize: UserConfig.appFontSize),
@@ -40,12 +42,7 @@ class ThemeManager{
         brightness: Brightness.dark,
         fontFamily: AppLibrary.appFontSource,
         useMaterial3: true,
-        cardColor: Colors.black,
-        colorSchemeSeed: const Color.fromRGBO(79, 79, 79, 1),
-        highlightColor: Colors.white38,
-        canvasColor: Colors.grey,
         appBarTheme: const AppBarTheme(
-            color: Colors.black45,
             titleTextStyle: TextStyle(fontSize: 20,color: Colors.grey,fontFamily:"ResourceHanCN")
         )
     );

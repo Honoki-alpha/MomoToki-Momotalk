@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:motoki/Managers/ChatGroupManager.dart';
+import 'package:motoki/Managers/ChatGroups.dart';
 
 import '../Entity/EMessageBox.dart';
 import 'JsonFileManager.dart';
@@ -70,7 +70,7 @@ class MessageManager{
       }else if(MessageManager.instance.checkIsImg(mes)){
         mes = "[图片]";
       }
-      ChatGroupManager.instance.alterChatTileSubtitle(mes);
+      ChatGroups().alterChatTileSubtitle(mes);
       await JsonFileManager.instance.saveJsonFile("Messages", "$currentPage.json", json.encode(messages));
       messageHasEdit = false;
     }

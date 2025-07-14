@@ -10,16 +10,17 @@ import 'package:image_picker/image_picker.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/AppData/UserConfig.dart';
 import 'package:flutter/material.dart';
+import 'package:motoki/Components/SettingBox.dart';
 import 'package:motoki/Dialog/InquireDialog.dart';
 import 'package:motoki/Entity/EStudent.dart';
-import 'package:motoki/Managers/StudentManager.dart';
-import 'package:motoki/Utils/CommonComponents.dart';
+import 'package:motoki/Managers/Students.dart';
 import 'package:motoki/Views/Home/WindowHome.dart';
 import 'package:motoki/Views/Secondary/SelectPage.dart';
 import 'package:motoki/Views/SettingPage/StudentNickNameSetting.dart';
 import 'package:path/path.dart';
 
 import '../../Utils/CommonFunctions.dart';
+import '../../Utils/WidgetUtils.dart';
 
 class StudentSetting extends StatefulWidget{
   const StudentSetting({super.key});
@@ -34,10 +35,10 @@ class _seitoSet extends State<StudentSetting>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: getPlatformAppBar(const Text("学生设置")),
+        appBar: WidgetUtils().getPlatformAppBar(const Text("学生设置")),
         body:ListView(
           children: [
-            getSettingBorderBox([
+            SettingBox(children:[
               ListTile(
                 title:const Text("显示学生姓氏"),
                 trailing: Switch(
@@ -87,7 +88,7 @@ class _seitoSet extends State<StudentSetting>{
                 ),
               ),
             ]),
-            getSettingBorderBox([
+            SettingBox(children:[
               ListTile(
                 title: const Text("学生备注"),
                 trailing: const Icon(Icons.arrow_right),
@@ -103,7 +104,7 @@ class _seitoSet extends State<StudentSetting>{
               ListTile(title: const Text("自定义学生"),onTap: setCustomGreetStudent,),
               ListTile(title: const Text("自定义问候语"),onTap: setCustomGreetContent,),
             ]),
-            getSettingBorderBox([
+            SettingBox(children:[
               ListTile(
                 title: const Text("下载配置表(离线必须！)"),
                 trailing: const Icon(Icons.arrow_right),
@@ -125,11 +126,11 @@ class _seitoSet extends State<StudentSetting>{
                 trailing: const Icon(Icons.arrow_right),
                 onTap: downloadSingle,
               ),
-              // ListTile(
-              //   title: const Text("下载全部差分"),
-              //   trailing: const Icon(Icons.arrow_forward_ios_sharp),
-              //   onTap: downloadEmotion,
-              // ),
+              ListTile(
+                title: const Text("下载社团表情"),
+                trailing: const Icon(Icons.arrow_right),
+                onTap: downloadCircle,
+              )
             ])
           ],
         )
@@ -137,11 +138,11 @@ class _seitoSet extends State<StudentSetting>{
   }
 
   void setCustomGreetStudent()async{
-    EStudent? result = await Get.to(()=>const SelectPage());
+    EStudent? result = await Get.to(()=>const SelectPage(multiple: false,));
     if(result == null) return;
     UserConfig.sp.setInt("customGreetStudent", result.id);
     UserConfig.customGreetStudent = result.id;
-    BotToast.showText(text: "已成功将问候学生设置为${StudentManager.instance.getStudentName(result.id)}");
+    BotToast.showText(text: "已成功将问候学生设置为${Students().getStudentName(result.id)}");
   }
 
   void setCustomGreetContent()async{
@@ -209,9 +210,9 @@ class _seitoSet extends State<StudentSetting>{
     var cencel = BotToast.showCustomLoading(toastBuilder: (b)=>defaultDialog());
     var dio = Dio();
     int i = 0;
-    int length = StudentManager.instance.studentDirctory.length;
+    int length = Students().studentMap.length;
     //下载工具
-    for(var item in StudentManager.instance.toolStudentDirctory.entries){
+    for(var item in Students().toolStudentMap.entries){
       EStudent student = item.value;
       try{
         await dio.download("https:${student.avatar}", join(AppLibrary.applicationPath,"Resources","Avatars","${student.id}_0.png"));
@@ -222,7 +223,7 @@ class _seitoSet extends State<StudentSetting>{
     }
     await dio.download("https://gitee.com/honoki/mtkresouce/raw/master/assets/images/icon/unkown.webp", join(AppLibrary.applicationPath,"Resources","Avatars","99_0.png"));
     //下载学生
-    for(var item in StudentManager.instance.studentDirctory.entries){
+    for(var item in Students().studentMap.entries){
       EStudent student = item.value;
       var skinIndex = 0;
       for(var skin in student.skinList){
@@ -246,13 +247,24 @@ class _seitoSet extends State<StudentSetting>{
       BotToast.showText(text: "请求过于频繁，请等待30分钟后重启软件后再次下载");
       return;
     }
-    EStudent? student = await Get.to(()=>const SelectPage(),transition: Transition.rightToLeftWithFade);
+    EStudent? student = await Get.to(()=>const SelectPage(multiple: false,),transition: Transition.rightToLeftWithFade);
     if(student == null) return;
     var cancel = BotToast.showLoading();
     await downloadSingleEmotion(student);
     cancel();
     AppLibrary.requestTimes++;
     BotToast.showText(text: "下载完成");
+  }
+
+  void downloadCircle()async{
+    if(AppLibrary.requestTimes > 12){
+      BotToast.showText(text: "请求过于频繁，请等待30分钟后重启软件后再次下载");
+      return;
+    }
+    EStudent student = Students().circleStudent;
+    var cancel = BotToast.showLoading();
+    await downloadSingleEmotion(student);
+    cancel();
   }
 
   Future downloadSingleEmotion(EStudent student)async{
@@ -280,8 +292,8 @@ class _seitoSet extends State<StudentSetting>{
     var cencel = BotToast.showCustomLoading(toastBuilder: (b)=>defaultDialog());
     BotToast.showText(text: "若出现进度条卡顿，请使用单个学生下载");
     int i = 0;
-    int length = StudentManager.instance.studentDirctory.length;
-    for(var item in StudentManager.instance.studentDirctory.entries){
+    int length = Students().studentMap.length;
+    for(var item in Students().studentMap.entries){
       EStudent student = item.value;
       await downloadSingleEmotion(student);
       progroessValue.value = i.toDouble()/length;

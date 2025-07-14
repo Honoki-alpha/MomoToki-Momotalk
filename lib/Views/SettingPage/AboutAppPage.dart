@@ -2,9 +2,10 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/AppData/InitApplication.dart';
-import 'package:motoki/Utils/CommonComponents.dart';
+import 'package:motoki/Components/SettingBox.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../Utils/CommonFunctions.dart';
+import '../../Utils/WidgetUtils.dart';
 
 class AboutAppPage extends StatelessWidget{
   const AboutAppPage({super.key});
@@ -12,10 +13,10 @@ class AboutAppPage extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:getPlatformAppBar(const Text("关于软件")),
+      appBar:WidgetUtils().getPlatformAppBar(const Text("关于软件")),
       body: ListView(
         children: [
-          getSettingBorderBox([
+          SettingBox(children:[
             ListTile(title: const Text("软件教程"),trailing: const Icon(Icons.help),onTap: ()async{
               final Uri url = Uri.parse("https://www.yuque.com/unfriendly/cetwzc/ceaeblm4h7g9nmxk");
               if (!await launchUrl(url,mode:LaunchMode.platformDefault)) {

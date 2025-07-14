@@ -9,12 +9,12 @@ import '../Entity/EStudent.dart';
 import '../Utils/EventBus.dart';
 import 'JsonFileManager.dart';
 
-class ChatGroupManager{
+class ChatGroups{
 
   //单例
-  static ChatGroupManager instance = ChatGroupManager._();
-  ChatGroupManager._(); // 私有构造函数
-
+  static ChatGroups _instance = ChatGroups._();
+  ChatGroups._(); // 私有构造函数
+  factory ChatGroups() => _instance;
 
   int selectedGroupIndex = -1; //当前选中的分组
   int selectedTileIndex = 0;

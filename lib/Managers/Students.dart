@@ -3,15 +3,16 @@ import '../AppData/UserConfig.dart';
 import '../Entity/EStudent.dart';
 import 'JsonFileManager.dart';
 
-class StudentManager{
+class Students{
   //单例
-  static StudentManager instance = StudentManager._();
-  StudentManager._(); // 私有构造函数
+  static final Students _instance = Students._();
+  Students._(); // 私有构造函数
+  factory Students() => _instance;
 
-  Map<int,EStudent> studentDirctory = {};//学生列表
-  Map<int,EStudent> diyStudentDirctory = {};//自定义学生列表
-  Map<int,EStudent> toolStudentDirctory = {};//聊天工具列表
-  Map<int,int> birthdayStudent = {};
+  Map<int,EStudent> studentMap = {};//学生列表
+  Map<int,EStudent> diyStudentMap = {};//自定义学生列表
+  Map<int,EStudent> toolStudentMap = {};//聊天工具列表
+  Map<int,int> birthdayStudentMap = {};
   Map<String,dynamic> studentNickName = {};//学生备注名
   List<String> usualStudents = [];//常用学生(以"ID||skinIndex"形式存储)
 
@@ -21,12 +22,12 @@ class StudentManager{
   late EStudent circleStudent;
 
   EStudent getStudentById(int id){
-    if(studentDirctory.containsKey(id)){
-      return studentDirctory[id]!;
-    }else if(toolStudentDirctory.containsKey(id)){
-      return toolStudentDirctory[id]!;
-    }else if(diyStudentDirctory.containsKey(id)){
-      return diyStudentDirctory[id]!;
+    if(studentMap.containsKey(id)){
+      return studentMap[id]!;
+    }else if(toolStudentMap.containsKey(id)){
+      return toolStudentMap[id]!;
+    }else if(diyStudentMap.containsKey(id)){
+      return diyStudentMap[id]!;
     }else if(id == 7){
       return circleStudent;
     }else{
@@ -96,23 +97,23 @@ class StudentManager{
   }
 
   void addDIYStudent(EStudent student){
-    diyStudentDirctory[student.id] = student;
+    diyStudentMap[student.id] = student;
     saveDIYStudent();
   }
 
   void alterDIYStudent(int originID,EStudent student){
-    diyStudentDirctory.remove(originID);
-    diyStudentDirctory[student.id] = student;
+    diyStudentMap.remove(originID);
+    diyStudentMap[student.id] = student;
     saveDIYStudent();
   }
 
   void deleteDIYStudent(int id){
-    diyStudentDirctory.remove(id);
+    diyStudentMap.remove(id);
     saveDIYStudent();
   }
 
   Future saveDIYStudent()async{
-    List dList = diyStudentDirctory.values.toList();
+    List dList = diyStudentMap.values.toList();
     await JsonFileManager.instance.saveJsonFile("Users", "DIY.json", json.encode(dList));
   }
 

@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/AppData/UserConfig.dart';
 import 'package:motoki/Components/SettingIcon.dart';
-import 'package:motoki/Managers/ChatGroupManager.dart';
+import 'package:motoki/Managers/ChatGroups.dart';
 import 'package:motoki/Managers/ThemeManager.dart';
 import 'package:motoki/Views/Home/WindowHome.dart';
 import 'package:motoki/Views/Secondary/ThanksPage.dart';
@@ -80,11 +80,10 @@ class _configureState extends State<Configure>{
                   },
                   trailing:const Text("空间ᐅ"),
               )),)),
-          Positioned(
+          Positioned.fill(
             top:170,
             child: Container(
               width: configWidth,
-              height: containerHeight,
               decoration: BoxDecoration(
                 color: ThemeManager.currentTheme.cardColor,
                 borderRadius: const BorderRadius.only(topLeft: Radius.circular(25),topRight: Radius.circular(25))

@@ -3,16 +3,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
+import 'package:motoki/Components/StudentCircleAvatar.dart';
 import 'package:motoki/Dialog/InquireDialog.dart';
 import 'package:motoki/Managers/ThemeManager.dart';
 import 'package:motoki/Views/Home/WindowHome.dart';
 import 'package:motoki/Views/MessagePage/StoryPage.dart';
 import 'package:path/path.dart';
-
 import '../Entity/EMessageBox.dart';
 import '../Managers/MessageManager.dart';
-import '../Managers/StudentManager.dart';
-import '../Utils/CommonComponents.dart';
+import '../Managers/Students.dart';
 
 
 class MessageBox extends StatefulWidget{
@@ -70,7 +69,7 @@ class _messageBoxState extends State<MessageBox>{
   Widget nomalBox(){
     int rightIndex = messageBox.boxAlign?0:1;
     //头像
-    Widget avatar = getCicleStudentAvatar(messageBox.senderId,skinIndex: messageBox.senderSkinIndex);
+    Widget avatar = StudentCircleAvatar(id:messageBox.senderId,skinIndex: messageBox.senderSkinIndex);
     return ListTile(
       titleAlignment: ListTileTitleAlignment.top,
       //判断对齐，显示头像位置
@@ -80,7 +79,7 @@ class _messageBoxState extends State<MessageBox>{
       title:Text(
         //如果备注为空显示名字，否则显示备注
         messageBox.sendMessageName == ""?
-        StudentManager.instance.getStudentName(messageBox.senderId,skinIndex:messageBox.senderSkinIndex):messageBox.sendMessageName,
+        Students().getStudentName(messageBox.senderId,skinIndex:messageBox.senderSkinIndex):messageBox.sendMessageName,
         style: const TextStyle(fontSize: 15),textAlign: [TextAlign.right,null][rightIndex],),
       //设置消息列表
       subtitle:Container(

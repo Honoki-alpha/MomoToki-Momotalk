@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:bot_toast/bot_toast.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -7,12 +6,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:get/get.dart';
 import 'package:motoki/AppData/UserConfig.dart';
+import 'package:motoki/Components/SettingBox.dart';
 import 'package:motoki/Dialog/InquireDialog.dart';
 import 'package:motoki/Managers/ThemeManager.dart';
-import 'package:motoki/Utils/CommonComponents.dart';
 import 'package:path/path.dart';
 
 import '../../AppData/AppLibrary.dart';
+import '../../Utils/WidgetUtils.dart';
 
 class AppSetting extends StatefulWidget{
   const AppSetting({super.key});
@@ -38,13 +38,13 @@ class _SettingState extends State<AppSetting>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: getPlatformAppBar(const Text("软件设置")),
+        appBar: WidgetUtils().getPlatformAppBar(const Text("软件设置")),
         body: Column(
           children: [
             Expanded(child:
               ListView(
                 children: [
-                  getSettingBorderBox([
+                  SettingBox(children:[
                     ListTile(
                       title: const Text("主题模式"),
                       trailing: DropdownButton(
@@ -55,10 +55,8 @@ class _SettingState extends State<AppSetting>{
                         DropdownMenuItem(value:2,child: Text("BlueArchive")),
                         DropdownMenuItem(value:99,child: Text("自定义"))
                       ],
-                      onChanged:Get.mediaQuery.platformBrightness == Brightness.dark?null:dayOrNightChange,
+                      onChanged:dayOrNightChange,
                     ),
-                      enabled: Get.mediaQuery.platformBrightness != Brightness.dark,
-                      subtitle: Get.mediaQuery.platformBrightness == Brightness.dark?const Text("深色模式下不允许修改主题！"):null,
                     ),
                     ListTile(
                       enabled: UserConfig.themeIndex==99,
@@ -115,7 +113,7 @@ class _SettingState extends State<AppSetting>{
                         });
                       },
                     ),)]),
-                  getSettingBorderBox([
+                  SettingBox(children:[
                     ListTile(title: const Text("背景跟随主题"),trailing:Switch(
                       value: UserConfig.denpendTheme,
                       onChanged: (value){
@@ -240,10 +238,14 @@ class _SettingState extends State<AppSetting>{
 
   void setAIChatUrl()async{
     var result = await Get.dialog(inputDialog(true));
-    if(result == null) return;
-    UserConfig.sp.setString("aiChatUrl", result);
+    if(result == null || result=="") {
+      UserConfig.sp.setString("aiChatUrl", "");
+    }else{
+      UserConfig.sp.setString("aiChatUrl", result);
+    }
+
     setState(() {
-      UserConfig.aiChatUrl = result;
+      UserConfig.aiChatUrl = result ?? "";
     });
   }
 
