@@ -107,7 +107,7 @@ class _selectPageState extends State<SelectPage> with SingleTickerProviderStateM
   void studentAvatarClick(bool diy,index)async{
     List current = diy?diyStudentList:eStudentList;
     if(!widget.multiple){
-      Get.back(result: eStudentList[index]);
+      Get.back(result: current[index]);
     }else{
       if(backList.contains(current[index].id)){
         backList.remove(current[index].id);

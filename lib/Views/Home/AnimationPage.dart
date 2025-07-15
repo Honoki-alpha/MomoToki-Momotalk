@@ -557,9 +557,14 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
   Future loadUsualJson()async{
     File usualStudent = File(Files().joinAppPath("Users","Usually.json"));
     if(!usualStudent.existsSync()) return;
-    for(var usual in Files().jsonDecode(usualStudent.readAsStringSync())){
-      Students().usualStudents.add(usual);
+    try{
+      for(var usual in Files().jsonDecode(usualStudent.readAsStringSync())){
+        Students().usualStudents.add(usual);
+      }
+    }catch(e){
+      Students().usualStudents = [];
     }
+
   }
 
   ///
