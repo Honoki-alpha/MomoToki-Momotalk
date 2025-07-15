@@ -44,6 +44,8 @@ class StudentCircleAvatar extends StatelessWidget{
     File f = File(Files().getReleaseStudentPath(id, skinIndex!));
     if(student!.avatar.length >7 && student!.avatar.substring(0,7) == "NIY:://"){
       f = File(Files().joinAppPath("PictureCache","DIY",student!.avatar.substring(7)));
+    }else if(f.existsSync() && UserConfig.applyOfflineMode){
+
     }else{
       f = File(student!.avatar);
     }
