@@ -6,47 +6,34 @@ import 'package:motoki/Entity/EStudent.dart';
 import 'package:motoki/Managers/Files.dart';
 import 'package:motoki/Managers/Students.dart';
 
-class StudentCircleAvatar extends StatefulWidget{
-  StudentCircleAvatar({super.key, required this.id,this.skinIndex,this.customWidth,this.student,this.selected});
+import '../AppData/AppLibrary.dart';
 
-  @override
-  State<StatefulWidget> createState() => _StudentCircleAvatarState();
-  final int id;
-  int? skinIndex;
+class StudentCircleAvatar extends StatelessWidget{
+  StudentCircleAvatar({super.key, required this.id,this.skinIndex,this.customWidth,this.student,this.selected});
+  int id;
+  int? skinIndex = 0;
   double? customWidth;
   EStudent? student;
   bool? selected;
-}
-
-class _StudentCircleAvatarState extends State<StudentCircleAvatar>{
-  int id = 0;
-  int skinIndex = 0;
-  late EStudent student;
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    id = widget.id;
-    skinIndex = widget.skinIndex??0;
-    student = widget.student ?? Students().getStudentById(id);
-  }
 
   @override
   Widget build(BuildContext context) {
+    id = id ??0;
+    skinIndex = skinIndex ?? 0;
+    student = student ?? Students().getStudentById(id);
     return Container(
-        width:widget.customWidth??50,
+        width:customWidth??50,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
             shape: BoxShape.circle,
         ),
-        child: getAvatar(widget.selected??false));
+        child: getAvatar(selected??false));
   }
 
   Widget getAvatar(bool selected){
-    if(id==1){
+    if(id == 1){
       return senseiAvatar(selected);
-    }else if(UserConfig.applyOfflineMode){
+    }else if(UserConfig.applyOfflineMode || id > 10000){
       return localAvatar(selected);
     }else{
       return netAvatar(selected);
@@ -54,11 +41,13 @@ class _StudentCircleAvatarState extends State<StudentCircleAvatar>{
   }
 
   Widget localAvatar(bool selected){
-    File? f = Files().safeFile(Files().getReleaseStudentPath(id, skinIndex));
-    if(student.avatar.length >7 && student.avatar.substring(0,7) == "NIY:://"){
-      f = Files().safeFile(Files().joinAppPath("PictureCache","DIY",student.avatar.substring(7)));
+    File f = File(Files().getReleaseStudentPath(id, skinIndex!));
+    if(student!.avatar.length >7 && student!.avatar.substring(0,7) == "NIY:://"){
+      f = File(Files().joinAppPath("PictureCache","DIY",student!.avatar.substring(7)));
+    }else{
+      f = File(student!.avatar);
     }
-    if(f ==null || !f.existsSync()){
+    if(!f.existsSync()){
       return Image.asset("assets/images/icon/IMAGELOST.png",fit: BoxFit.fitWidth, color: selected?Colors.redAccent:null,);
     }
     return Image.file(f,
@@ -69,9 +58,9 @@ class _StudentCircleAvatarState extends State<StudentCircleAvatar>{
   }
 
   Widget netAvatar(bool selected){
-    String url = "https:${student.avatar}";
-    if(skinIndex < student.skinList.length){
-      url = "https:${student.skinList[skinIndex]["avatar"]}";
+    String url = "https:${student!.avatar}";
+    if(skinIndex! < student!.skinList.length){
+      url = "https:${student!.skinList[skinIndex!]["avatar"]}";
     }
     return Image.network(
       url,
@@ -99,16 +88,16 @@ class _StudentCircleAvatarState extends State<StudentCircleAvatar>{
   }
 
   Widget senseiAvatar(bool selected){
-    File f = Files().customSenseiAvatar;
-    if(!f.existsSync()) f = Files().safeFile(Files().getReleaseStudentPath(id, skinIndex))!;
+    File? f = AppLibrary.customSenseiAvatar;
+    if(!f.existsSync())  f = File(Files().getReleaseStudentPath(id, skinIndex!));
     if(f.existsSync() || UserConfig.applyOfflineMode){
-      return Image.file(Files().customSenseiAvatar,
+      return Image.file(AppLibrary.customSenseiAvatar,
           height: 50,
           fit: BoxFit.cover,
           errorBuilder: (b,o,t){return Image.asset("assets/images/icon/IMAGELOST.png",fit: BoxFit.fitWidth,);});
     }
     return Image.network(
-      "https:://gitee.com/honoki/mtkresouce/raw/master/assets/images/icon/sensei.jpg",
+      "https://gitee.com/honoki/mtkresouce/raw/master/assets/images/icon/sensei.jpg",
       filterQuality: FilterQuality.low,
       color: selected?Colors.redAccent:null,
       fit: BoxFit.cover,

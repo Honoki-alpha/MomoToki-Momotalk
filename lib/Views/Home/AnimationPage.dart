@@ -486,8 +486,8 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
   /// 并计算出学生的生日差值导入到生日列表
   ///
   Future loadStudentInfoFromLocal()async{
-    File? students = Files().safeFile(Files().joinAppPath("Resources","students.json"));
-    if(students == null) {
+    File students = File(Files().joinAppPath("Resources","students.json"));
+    if(!students.existsSync()) {
       UserConfig.sp.setBool("applyOfflineMode", false);
       return;
     }
@@ -517,8 +517,8 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
   /// 从本地获取部分资源
   ///
   Future loadAppDataFromLocal()async{
-    File? datas = Files().safeFile(Files().joinAppPath("Resources","appDatas.json"));
-    if(datas == null) {
+    File datas = File(Files().joinAppPath("Resources","appDatas.json"));
+    if(!datas.existsSync()) {
       UserConfig.sp.setBool("applyOfflineMode", false);
       return;
     }
@@ -529,8 +529,11 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
   /// 读取本地json聊天块列表记录
   ///
   Future loadJsonFiles()async{
-    File? chatTileGroupJson = Files().safeFile(Files().joinAppPath("ChatTiles","ChatTilesGroups.json"));
-    if(chatTileGroupJson == null) return;
+    File chatTileGroupJson = File(Files().joinAppPath("ChatTiles","ChatTilesGroups.json"));
+    if(!chatTileGroupJson.existsSync()) {
+      chatTileGroupJson.create(recursive: true);
+      return;
+    }
     for(var chatGroup in Files().jsonDecode(chatTileGroupJson.readAsStringSync())){
       ChatGroups().chatTileGroups.add(EChatTileGroup.fromMap(chatGroup));
     }
@@ -540,8 +543,8 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
   ///读取本地DIY学生列表
   ///
   Future loadDIYJson()async{
-    File? diyStudent = Files().safeFile(Files().joinAppPath("Users","DIY.json"));
-    if(diyStudent == null) return;
+    File diyStudent = File(Files().joinAppPath("Users","DIY.json"));
+    if(!diyStudent.existsSync()) return;
     for(var student in Files().jsonDecode(diyStudent.readAsStringSync())){
       EStudent s = EStudent.fromMap(student);
       Students().diyStudentMap[s.id] = s;
@@ -552,8 +555,8 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
   /// 获取常用学生
   ///
   Future loadUsualJson()async{
-    File? usualStudent = Files().safeFile(Files().joinAppPath("Users","Usually.json"));
-    if(usualStudent == null) return;
+    File usualStudent = File(Files().joinAppPath("Users","Usually.json"));
+    if(!usualStudent.existsSync()) return;
     for(var usual in Files().jsonDecode(usualStudent.readAsStringSync())){
       Students().usualStudents.add(usual);
     }
@@ -563,9 +566,13 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
   /// 获取学生备注
   ///
   Future loadStudentNickName()async{
-    File studentNickName = Files().safeFile(Files().joinAppPath("Users","NickName.json"),create: true)!;
-    print(studentNickName.readAsStringSync());
-    Students().studentNickName = Files().jsonDecode(studentNickName.readAsStringSync());
+    File? studentNickName = File(Files().joinAppPath("Users","NickName.json"));
+    if(!studentNickName.existsSync()){
+      Students().studentNickName = {};
+      studentNickName.create(recursive: true);
+    }else{
+      Students().studentNickName = Files().jsonDecode(studentNickName.readAsStringSync());
+    }
   }
 
   ///

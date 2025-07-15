@@ -187,8 +187,7 @@ class _messagePageState extends State<MessagePage>{
                             icon:GestureDetector(
                               child: Obx(()=>SizedBox(
                                   width: 40,
-                                  child: StudentCircleAvatar(id:
-                                      currentStudent.id,
+                                  child: StudentCircleAvatar(id: currentStudent.id,
                                       skinIndex: currentStudentSkinIndex.value))),
                               onTap: (){
                                 setState(() {
@@ -293,8 +292,15 @@ class _messagePageState extends State<MessagePage>{
                                 onTap: (){
                                   currentStudentSkinIndex.value = iconSkin;
                                   currentStudent = Students().getStudentById(iconId);
-
                                   setState(() {});
+                                },
+                                onDoubleTap: (){
+                                  if(index < length) return;
+                                  int sl = Students().getStudentById(iconId).skinList.length;
+                                  iconSkin = iconSkin+1>sl ? 0 : iconSkin+1;
+                                  setState(() {
+                                   Students().usualStudents[index-length] = "$iconId||$iconSkin";
+                                  });
                                 },
                                 onLongPress: ()=>deleteUsualStudent(index),
                               );
