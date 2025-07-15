@@ -14,6 +14,7 @@ import 'UserConfig.dart';
 
 
 Future initApplication()async{
+  await initWindowsConfig();
   await requestAppPermission();//申请软件权限
   await setDefaultApplicationPath();//设置软件路径
   await createNecessaryDirctory();//创建必要文件

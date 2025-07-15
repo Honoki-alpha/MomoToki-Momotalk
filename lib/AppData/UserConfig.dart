@@ -40,8 +40,8 @@ class UserConfig{
   static int? customGreetStudent;
   //自定义问候语
   static String? customGreetContent;
-  static double customWindowHeight = 1228.0;
-  static double customWindowWidth = 648.0;
+  static double customWindowHeight = 648.0;
+  static double customWindowWidth = 1228.0;
 
   Future initUserConfig()async{
     sp = await SharedPreferences.getInstance();

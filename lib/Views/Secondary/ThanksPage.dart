@@ -27,6 +27,9 @@ class ThanksPageState extends State<ThanksPage>{
     dynamic result = await Requests().request("https://gitee.com/honoki/momotoki/raw/master/public/thanks.json");
     biliList = result["bili"];
     afdList = result["afd"];
+    setState(() {
+
+    });
   }
 
   @override

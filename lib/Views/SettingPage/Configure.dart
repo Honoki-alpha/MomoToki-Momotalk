@@ -1,4 +1,6 @@
 
+import 'dart:math';
+
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -170,8 +172,8 @@ class _configureState extends State<Configure>{
 
   void getWindowsSize()async{
     Size s = await windowManager.getSize();
-    windowWidth.value = s.width;
-    windowHeight.value = s.height;
+    windowWidth.value = min(max(s.width, 921 ), 1535);
+    windowHeight.value = min(max(s.height,486), 810);
     setState(() {
       containerHeight = s.height - 256;
     });
