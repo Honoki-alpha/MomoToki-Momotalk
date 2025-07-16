@@ -285,7 +285,7 @@ class _ChatState extends State<Chat>{
       });
     }
     else if(result["command"] == "AI"){
-      if(UserConfig.aiChatKey == null || UserConfig.aiChatKey!.startsWith("sk-")){
+      if(UserConfig.aiChatKey == null || !UserConfig.aiChatKey!.startsWith("sk-")){
         BotToast.showText(text: "未配置API KEY或KEY格式错误,可前往关于软件中查看教程");
         return;
       }
