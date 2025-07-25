@@ -62,6 +62,7 @@ class Requests{
       try{
         _dio.download(url, path);
       }catch(e){
+        BotToast.showText(text: "资源下载失败，请检查网络问题");
         continue;
       }
     }

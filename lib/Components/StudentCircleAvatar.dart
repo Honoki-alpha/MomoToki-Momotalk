@@ -91,8 +91,8 @@ class StudentCircleAvatar extends StatelessWidget{
 
   Widget senseiAvatar(bool selected){
     File? f = AppLibrary.customSenseiAvatar;
-    if(!f.existsSync())  f = File(Files().getReleaseStudentPath(id, skinIndex!));
-    if(f.existsSync() || UserConfig.applyOfflineMode){
+    if(!f.existsSync()&&UserConfig.applyOfflineMode)  f = File(Files().getReleaseStudentPath(id, skinIndex!));
+    if(f.existsSync()){
       return Image.file(AppLibrary.customSenseiAvatar,
           height: 50,
           fit: BoxFit.cover,

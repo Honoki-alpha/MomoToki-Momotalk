@@ -536,48 +536,67 @@ class _messagePageState extends State<MessagePage>{
   void screenShotButton()async{
     var result = await Get.dialog(ScreenShotDialog());
     if(result == null) return;
+
     int x = 0;
+
     //检测输入是否为0
-    if(result["x"]==0 && result["command"] != "whole") {
+    if(result["x"]<=0 && result["command"] != "whole") {
       BotToast.showText(text: "输入的值需大于0");
       return;
     }
+
     //检测是否有消息
     if(MessageManager.instance.messages.isEmpty){
       BotToast.showText(text: "空消息无法截图");
       return;
     }
+    //检测是否选中了消息盒子
+    if(result["command"] == "after" && currentSelectedIndex.value < 0){
+          BotToast.showText(text: "还未选中消息盒子");
+          return;
+    }
+    //保存消息记录
     await saveButtonClick();
+
     if(result["command"] == "every"){
       x = result["x"];
-    }else if(result["command"] == "part"){
-      x = (MessageManager.instance.messages.length / result["x"]).ceil();
-    }else if(result["command"] == "after"){
-      if(currentSelectedIndex.value < 0){
-        BotToast.showText(text: "还未选中消息盒子");
-        return;
-      }
-      int sP = currentSelectedIndex.value;
-      int eP = sP + result["x"] as int;
-      if(eP>=MessageManager.instance.messages.length){
-        eP = MessageManager.instance.messages.length;
-      }
-      await gotoRightPageByPf(ScreenShotPage(startPointer: sP, endPointer: eP));
-      WindowHomeState.setRightPage(this.widget);
-      return;
-    }else if(result["command"] == "whole"){
-      await gotoRightPageByPf(ScreenShotPage(startPointer: 0, endPointer: MessageManager.instance.messages.length));
-      WindowHomeState.setRightPage(this.widget);
-      return;
+    }else if(result["command"] == "part") {
+      x = (MessageManager.instance.messages.length / result["x"]).round();
     }
-    for(var i = 0;i<MessageManager.instance.messages.length;i=i+x){
-      var endPointer = i+x;
-      if(endPointer >= MessageManager.instance.messages.length){
-        endPointer = MessageManager.instance.messages.length;
-      }
-      await gotoRightPageByPf(ScreenShotPage(startPointer: i, endPointer: endPointer));
+
+    if(AppLibrary.appLandscapeMode){
+      WindowHomeState.setRightPage(ScreenShotPage(x: x, command: result["command"],start: currentSelectedIndex.value,));
+    }else{
+      Get.to(()=>ScreenShotPage(x: x, command: result["command"],start: currentSelectedIndex.value,));
     }
-    WindowHomeState.setRightPage(this.widget);
+
+
+    //else if(result["command"] == "after"){
+    //   if(currentSelectedIndex.value < 0){
+    //     BotToast.showText(text: "还未选中消息盒子");
+    //     return;
+    //   }
+    //   int sP = currentSelectedIndex.value;
+    //   int eP = sP + result["x"] as int;
+    //   if(eP>=MessageManager.instance.messages.length){
+    //     eP = MessageManager.instance.messages.length;
+    //   }
+    //   await gotoRightPageByPf(ScreenShotPage(startPointer: sP, endPointer: eP));
+    //   WindowHomeState.setRightPage(this.widget);
+    //   return;
+    // }else if(result["command"] == "whole"){
+    //   await gotoRightPageByPf(ScreenShotPage(startPointer: 0, endPointer: MessageManager.instance.messages.length));
+    //   WindowHomeState.setRightPage(this.widget);
+    //   return;
+    // }
+    // for(var i = 0;i<MessageManager.instance.messages.length;i=i+x){
+    //   var endPointer = i+x;
+    //   if(endPointer >= MessageManager.instance.messages.length){
+    //     endPointer = MessageManager.instance.messages.length;
+    //   }
+    //   await gotoRightPageByPf(ScreenShotPage(startPointer: i, endPointer: endPointer));
+    // }
+    // WindowHomeState.setRightPage(this.widget);
   }
 
   Future gotoRightPageByPf(Widget page)async{

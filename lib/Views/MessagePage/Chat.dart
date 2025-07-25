@@ -338,8 +338,11 @@ class _ChatState extends State<Chat>{
 
     cancel();
     BotToast.showText(text: "成功获取消息记录(*^_^*)");
-    if(GetPlatform.isMobile){
+    if(!AppLibrary.appLandscapeMode){
       Get.to(()=>const AIChatPage(),transition: Transition.rightToLeftWithFade);
+    }else{
+      WindowHomeState.tempWidget = AIChatPage();
+      WindowHomeState.setRightPage(AIChatPage());
     }
     setState(() {
       tile.unreadNum = 0;

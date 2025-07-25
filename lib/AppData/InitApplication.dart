@@ -28,9 +28,6 @@ Future setDefaultApplicationPath()async{
   if(GetPlatform.isWindows){
     AppLibrary.applicationPath = join(Directory.current.path,"Momotalk");
   }
-  // else if(GetPlatform.isAndroid){
-  //   AppLibrary.applicationPath = join((await getExternalStorageDirectory())!.path,"Momotalk");
-  // }
   else {
     AppLibrary.applicationPath = join((await getApplicationDocumentsDirectory()).path,"Momotalk");
   }

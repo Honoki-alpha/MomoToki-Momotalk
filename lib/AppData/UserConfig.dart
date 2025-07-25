@@ -40,6 +40,7 @@ class UserConfig{
   static int? customGreetStudent;
   //自定义问候语
   static String? customGreetContent;
+  //自定义桌面端尺寸
   static double customWindowHeight = 648.0;
   static double customWindowWidth = 1228.0;
 
