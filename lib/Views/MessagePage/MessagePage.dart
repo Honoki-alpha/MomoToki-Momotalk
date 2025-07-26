@@ -558,10 +558,10 @@ class _messagePageState extends State<MessagePage>{
     //保存消息记录
     await saveButtonClick();
 
-    if(result["command"] == "every"){
-      x = result["x"];
-    }else if(result["command"] == "part") {
+    if(result["command"] == "part") {
       x = (MessageManager.instance.messages.length / result["x"]).round();
+    }else{
+      x = result["x"];
     }
 
     if(AppLibrary.appLandscapeMode){
