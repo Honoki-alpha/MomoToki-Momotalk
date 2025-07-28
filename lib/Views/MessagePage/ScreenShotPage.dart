@@ -15,11 +15,13 @@ import '../../Managers/MessageManager.dart';
 import '../../Managers/ThemeManager.dart';
 
 class ScreenShotPage extends StatefulWidget{
-  const ScreenShotPage({super.key, required this.x,required this.command, this.start,this.length});
+  const ScreenShotPage({super.key, required this.x,required this.delayTime,required this.command, this.start,this.length, });
   final int x;//一共截图X次
+  final int delayTime;//每多少秒截取一次
   final String command;//怎么截图
   final int? start;//开始的截图点
   final int? length;//截图多长
+
 
   @override
   State<StatefulWidget> createState() => ScreenShotPageState();
@@ -89,7 +91,7 @@ class ScreenShotPageState extends State<ScreenShotPage>{
         shotOnce(MessageManager.instance.messages);
         break;
       case "after":
-        shotOnce(MessageManager.instance.messages.sublist(start,min(start + widget.x+1, MessageManager.instance.messages.length)));
+        shotOnce(MessageManager.instance.messages.sublist(start,min(start + widget.x, MessageManager.instance.messages.length)));
         break;
       default:
         int m = 0;//m是当前的起始点
@@ -110,11 +112,11 @@ class ScreenShotPageState extends State<ScreenShotPage>{
       currentList = target;
     });
     await Future.delayed(const Duration(milliseconds: 800));
-    shotSave();
+    await shotSave();
   }
 
 
-  void shotSave()async{
+  Future shotSave()async{
     pixelRatio = PlatformDispatcher.instance.views.elementAt(0).devicePixelRatio;
     var result = await screenshotController.capture(pixelRatio: pixelRatio*2);
     if(result == null)return;

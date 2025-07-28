@@ -533,9 +533,28 @@ class _messagePageState extends State<MessagePage>{
     BotToast.showText(text: "删除成功！");
   }
 
+  TextEditingController delayController = TextEditingController();
   void screenShotButton()async{
     var result = await Get.dialog(ScreenShotDialog());
     if(result == null) return;
+
+    int delayTime = 800;
+    delayController.text = "800";
+    bool? con = await Get.defaultDialog(
+      title: "请设置截取间隔",
+      middleText: "你好",
+      content: TextField(controller: delayController,keyboardType: TextInputType.number,decoration: InputDecoration(
+        helperText: "若图片加载过慢可延长截图时间，推荐:2000",
+        labelText: "单位：毫秒"
+      ),),
+      actions: [
+        TextButton(onPressed: (){Get.back(result: false);}, child: Text("取消")),
+        TextButton(onPressed: (){Get.back(result: true);}, child: Text("确认")),
+      ]
+    );
+
+    if(con != true) return;
+
 
     int x = 0;
 
@@ -565,9 +584,9 @@ class _messagePageState extends State<MessagePage>{
     }
 
     if(AppLibrary.appLandscapeMode){
-      WindowHomeState.setRightPage(ScreenShotPage(x: x, command: result["command"],start: currentSelectedIndex.value,));
+      WindowHomeState.setRightPage(ScreenShotPage(x: x,delayTime: int.parse(delayController.text), command: result["command"],start: currentSelectedIndex.value,));
     }else{
-      Get.to(()=>ScreenShotPage(x: x, command: result["command"],start: currentSelectedIndex.value,));
+      Get.to(()=>ScreenShotPage(x: x,delayTime: int.parse(delayController.text), command: result["command"],start: currentSelectedIndex.value,));
     }
 
 
