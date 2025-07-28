@@ -111,7 +111,8 @@ class ScreenShotPageState extends State<ScreenShotPage>{
     setState(() {
       currentList = target;
     });
-    await Future.delayed(const Duration(milliseconds: 800));
+    print(widget.delayTime);
+    await Future.delayed(Duration(milliseconds: widget.delayTime));
     await shotSave();
   }
 
