@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
+import 'package:motoki/AppData/UserConfig.dart';
 import 'package:motoki/Dialog/InquireDialog.dart';
 import 'package:path/path.dart';
 
@@ -32,9 +34,15 @@ class _BackUpDataState extends State<BackUpData> {
           ListTile(title: const Text("消息导出"),trailing: const Icon(Icons.arrow_right),onTap: exportData,),
           ListTile(title: const Text("消息导入(覆盖)"),trailing: const Icon(Icons.arrow_right),onTap: importData,),
           ListTile(title: const Text("消息导入(不覆盖)"),trailing: const Icon(Icons.arrow_right),onTap: importDataAttend,),
+          ListTile(title: const Text("删除配置文件"),trailing: const Icon(Icons.arrow_right),onTap: deleteConfigFile)
         ],
       ),
     );
+  }
+
+  void deleteConfigFile()async{
+    bool result = await UserConfig.sp.clear();
+    BotToast.showText(text: "删除${result?"成功":"失败"}");
   }
 
   void exportData()async{

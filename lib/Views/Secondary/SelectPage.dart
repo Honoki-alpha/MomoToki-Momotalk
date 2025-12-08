@@ -136,8 +136,16 @@ class _selectPageState extends State<SelectPage> with SingleTickerProviderStateM
         temp.add(item);
       }
     }
+    List<EStudent> tempDiy = [];
+    for(var item in Students().diyStudentMap.values.toList()){
+      if(item.familyName.values.toList().join(".").contains(text) ||
+          item.givenName.values.toList().join(".").contains(text)){
+        tempDiy.add(item);
+      }
+    }
     setState(() {
       eStudentList = temp;
+      diyStudentList = tempDiy;
     });
   }
 
@@ -158,6 +166,7 @@ class _selectPageState extends State<SelectPage> with SingleTickerProviderStateM
   //初始化数据
   void initPageData() async{
     eStudentList = Students().studentMap.values.toList();
+    diyStudentList = Students().diyStudentMap.values.toList();
   }
 
 

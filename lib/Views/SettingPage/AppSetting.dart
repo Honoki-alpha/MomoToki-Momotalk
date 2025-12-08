@@ -9,6 +9,7 @@ import 'package:motoki/AppData/UserConfig.dart';
 import 'package:motoki/Components/SettingBox.dart';
 import 'package:motoki/Dialog/InquireDialog.dart';
 import 'package:motoki/Managers/ThemeManager.dart';
+import 'package:motoki/Views/Secondary/DIYMessageBox.dart';
 import 'package:path/path.dart';
 
 import '../../AppData/AppLibrary.dart';
@@ -129,6 +130,7 @@ class _SettingState extends State<AppSetting>{
                       onTap: setPageBackGroundColor,
                       trailing: !UserConfig.denpendTheme?Container(color:pickerColor.value,height: 10,width: 10,):null,
                     ),
+                    ListTile(title: const Text("自定义对话框"),onTap: ()=>Get.to(()=>DIYMessageBox()),),
                     ListTile(title: Obx(()=>Text("软件字号(${fontSize.value.toStringAsFixed(2)})"))
                       ,subtitle: Obx(()=>Slider(
                         min: 10.0,

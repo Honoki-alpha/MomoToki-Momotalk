@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:motoki/Apis/Requests.dart';
+import 'package:motoki/Dialog/InquireDialog.dart';
 import 'package:motoki/Utils/Utils.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/AppData/UserConfig.dart';
 import 'package:motoki/Managers/Students.dart';
-import 'package:universal_html/html.dart' hide File;
+import 'package:motoki/Views/SettingPage/AppSetting.dart';
+import 'package:motoki/Views/SettingPage/BackUpData.dart';
+import 'package:universal_html/html.dart' hide File,Text;
 import 'package:motoki/Managers/ThemeManager.dart';
 import 'package:motoki/Views/Home/AndroidHome.dart';
 import 'package:motoki/Views/Home/WindowHome.dart';
@@ -27,26 +30,66 @@ class AnimationPage extends StatefulWidget{
 }
 
 class _AnimationPageState extends State<AnimationPage> with TickerProviderStateMixin{
-
+  bool isLoaded = false;
   @override
   void initState() {
     super.initState();
-
-
     initApp();
   }
 
   @override
   Widget build(BuildContext context) {
+
+
     return Container(
       color: Colors.white,
       child: Container(
         color: ThemeManager.currentTheme.appBarTheme.backgroundColor,
+        padding: EdgeInsets.symmetric(vertical: 20),
         alignment: Alignment.center,
-        child:SizedBox(
-          height: 300,
-          width: 300,
-          child: Image.asset("assets/images/icon/start_logo.png"),),
+        child:Column(
+          children: [
+            SizedBox(
+              height: 300,
+              width: 300,
+              child: Image.asset("assets/images/icon/start_logo.png"),),
+            Spacer(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(onPressed: ()async{
+                  if(!isLoaded){
+                    var result = await Get.dialog(Inquiredialog(title: "警告",content: "急救模式下将进入消息备份界面，可进行备份消息",));
+                    if (result ?? false) return;
+                    Get.off(()=>BackUpData());
+                  }else{
+                    Get.off(()=>BackUpData());
+                  }
+                }, child: Text("急救模式",style: TextStyle(color: Colors.white),)),
+                TextButton(onPressed: ()async{
+                  if(!isLoaded){
+                    var result = await Get.dialog(Inquiredialog(title: "警告",content: "进入设置页面可关闭部分配置导致的报错问题",));
+                    if (result ?? false) return;
+                    Get.off(()=>AppSetting());
+                  }else{
+                    Get.off(()=>AppSetting());
+                  }
+                }, child: Text("进入设置",style: TextStyle(color: Colors.white),)),
+                TextButton(onPressed: ()async{
+                  if(!isLoaded){
+                    var result = await Get.dialog(Inquiredialog(title: "警告",content: "当前所有数据暂未加载成功，是否继续进入？（可能会造成消息和自定义学生等文件的丢失）",));
+                    if (result ?? false) return;
+                    Timer(const Duration(milliseconds: 300), enterHomePage);
+                  }else{
+                    Timer(const Duration(milliseconds: 300), enterHomePage);
+                  }
+                }, child: Text("强制进入",style: TextStyle(color: Colors.white),)),
+              ],
+
+            )
+
+          ],
+        ),
       ),
     );
   }
@@ -55,7 +98,6 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
   /// 进入主页前加载App
   ///
   void initApp()async{
-
     // 获取学生json列表以及app部分必要资源
     if(UserConfig.applyOfflineMode){
       await loadStudentInfoFromLocal();
@@ -70,6 +112,7 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
     await loadDIYJson();//获取DIY学生
     await loadStudentNickName();//获取学生备注
     await loadUsualJson();//添加常用学生
+    isLoaded = true;
     // 进入主页
     Timer(const Duration(milliseconds: 300), enterHomePage);
   }
@@ -510,8 +553,10 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
   Future loadAppDataFromNet()async{
     dynamic resource = await Requests().request("https://gitee.com/honoki/mtkresouce/raw/master/public/appDatas.json");
     if(resource == null) return;
-    print(resource);
     AppLibrary.schoolList = resource["schoolList"];
+    AppLibrary.adTitle = resource["adtitle"];
+    AppLibrary.adContent = resource["adcontent"];
+    AppLibrary.adImage = resource["adimage"];
   }
   ///
   /// 从本地获取部分资源
@@ -522,7 +567,11 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
       UserConfig.sp.setBool("applyOfflineMode", false);
       return;
     }
-    AppLibrary.schoolList = Files().jsonDecode(datas.readAsStringSync())["schoolList"];
+    var resource = Files().jsonDecode(datas.readAsStringSync());
+    AppLibrary.schoolList = resource["schoolList"];
+    AppLibrary.adTitle = resource["adtitle"];
+    AppLibrary.adContent = resource["adcontent"];
+    AppLibrary.adImage = resource["adimage"];
   }
 
   ///

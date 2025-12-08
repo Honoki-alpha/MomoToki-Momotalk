@@ -9,6 +9,7 @@ import 'package:motoki/Managers/ThemeManager.dart';
 import 'package:motoki/Views/Home/WindowHome.dart';
 import 'package:motoki/Views/MessagePage/StoryPage.dart';
 import 'package:path/path.dart';
+import '../AppData/UserConfig.dart';
 import '../Entity/EMessageBox.dart';
 import '../Managers/MessageManager.dart';
 import '../Managers/Students.dart';
@@ -42,7 +43,6 @@ class _messageBoxState extends State<MessageBox>{
     if(!( widget.isPlayMode && playedIndex < messageBox.messageContentList.length )){
       timer.cancel();
     }
-
     scaleValue = List.filled(messageBox.messageContentList.length, 1.0);
 
   }
@@ -111,12 +111,13 @@ class _messageBoxState extends State<MessageBox>{
       if(isImg) fileName = "load_img.gif";
       child = Image.asset("assets/images/chatres/$fileName",fit: BoxFit.fitHeight,height: 16,);
     }
+    Color normalBoxC = Color.fromRGBO(UserConfig.normalBoxColor[0], UserConfig.normalBoxColor[1], UserConfig.normalBoxColor[2], 1);
     return Row(
       textDirection: isRight?TextDirection.rtl:TextDirection.ltr,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         //添加左侧箭头
-        index==0&&!isImg?Image.asset("assets/images/chatres/arrow_$arrow.webp",scale: 20,alignment: Alignment.bottomRight):const SizedBox(width: 6,),
+        index==0&&!isImg?Image.asset(color: normalBoxC,"assets/images/chatres/arrow_$arrow.webp",scale: 20,alignment: Alignment.bottomRight):const SizedBox(width: 6,),
         Expanded(
             child: Align(
                 alignment: isRight?Alignment.centerRight:Alignment.centerLeft,
@@ -129,8 +130,8 @@ class _messageBoxState extends State<MessageBox>{
                     decoration: BoxDecoration(
                       //根据是不是图片出现描边和底色背景
                       border: isImg?Border.all(width: 0.3):null,
-                      color: isImg?Colors.white:const Color(0xFF4C5B70),
-                      borderRadius: const BorderRadius.all(Radius.circular(6)),
+                      color: isImg?Colors.white:normalBoxC,
+                      borderRadius: BorderRadius.all(Radius.circular(UserConfig.boxRadius)),
                     ),
                     child: child)
             ))
@@ -167,6 +168,7 @@ class _messageBoxState extends State<MessageBox>{
 
   //老师的消息盒子
   Widget senseiBox(){
+    Color senseiBoxC = Color.fromRGBO(UserConfig.senseiBoxColor[0], UserConfig.senseiBoxColor[1], UserConfig.senseiBoxColor[2], 1);
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 3),
       child: Column(children: [
@@ -193,12 +195,12 @@ class _messageBoxState extends State<MessageBox>{
                         decoration: BoxDecoration(
                           //根据图片是否白色底色+描边
                           border: isImg?Border.all(width: 0.3):null,
-                          color: isImg?Colors.white:const Color(0xFF4A8ACB),
-                          borderRadius: const BorderRadius.all(Radius.circular(6)),
+                          color: isImg?Colors.white:senseiBoxC,
+                          borderRadius: BorderRadius.all(Radius.circular(UserConfig.boxRadius)),
                         ),
                         child: GestureDetector(child: getBoxItemContent(message,isImg))
                     ),)),
-                  (isImg||i>0)?const SizedBox(width: 6,):Image.asset("assets/images/chatres/arrow_teacher.webp",scale: 20)
+                  (isImg||i>0)?const SizedBox(width: 6,):Image.asset("assets/images/chatres/arrow_teacher.webp",scale: 20,color: senseiBoxC,)
                 ],
               );
             })],),
@@ -338,7 +340,7 @@ class _messageBoxState extends State<MessageBox>{
               )],
               border: Border.all(color: Colors.grey, width: 0.3),
               color: Colors.white,
-              borderRadius:const BorderRadius.all(Radius.circular(6)),
+              borderRadius:BorderRadius.all(Radius.circular(UserConfig.boxRadius)),
             ),
             child: Text(mes,textAlign: TextAlign.center,style: const TextStyle(
               color: Color.fromRGBO(90,90,125, 1),

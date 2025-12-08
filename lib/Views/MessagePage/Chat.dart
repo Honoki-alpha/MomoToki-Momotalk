@@ -46,7 +46,7 @@ class _ChatState extends State<Chat>{
   Widget build(BuildContext context) {
     return Column(
       children: [
-        if(Students().birthdayStudentMap.isNotEmpty) Obx(()=>ExpansionPanelList(
+        if(Students().birthdayStudentMap.isNotEmpty)  Obx(()=>ExpansionPanelList(
           expansionCallback: (value,expanded){
             birthdayIsShow.value = !birthdayIsShow.value;
           },

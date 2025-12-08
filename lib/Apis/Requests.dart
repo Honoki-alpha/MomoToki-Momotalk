@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dio/dio.dart';
 import 'package:path/path.dart';
@@ -11,6 +10,7 @@ class Requests{
   static Requests? _instance;
   factory Requests() => _instance??Requests._();
   Dio _dio = Dio();
+  Dio _deepseek = Dio();
   Requests._(){
     _instance = this;
     _dio = Dio(
@@ -20,6 +20,17 @@ class Requests{
         connectTimeout: const Duration(seconds: 10)
       )
     );
+    _deepseek = Dio(BaseOptions(
+        headers: {
+          //'Content-Type': 'application/json',
+          //'Accept': 'application/json',
+          'Authorization': 'Bearer sk-6e71dfdeedf348069e9d1d2d405acfc8'
+        },
+        validateStatus: (status) {
+          return true; // 这样就不会因为状态码而抛出异常，我们可以自己处理
+        },
+    ));
+
   }
 
 
@@ -68,4 +79,19 @@ class Requests{
     }
   }
 
+  Future getAiMessage(String content)async{
+    try {
+      final response = await _deepseek.post(
+        'https://api.deepseek.com/chat/completions',
+        data: {
+          "model": "deepseek-chat",
+          "messages": "hi",
+        },
+      );
+      print(response.data);
+      return response.data;
+    } on DioException catch (e) {
+      print(e);
+    }
+  }
 }

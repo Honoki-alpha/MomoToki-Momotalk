@@ -13,7 +13,7 @@ enum MessageType{
 class AppLibrary{
   ///软件运行信息
   static String applicationPath = "";//软件位置
-  static String appVersion = "V0.6.33";//软件版本号
+  static String appVersion = "V0.6.40";//软件版本号
   static int requestTimes = 0;//请求次数
   static String appFontSource = "ResourceHanCN";
   static bool appLandscapeMode = true;//软件当前是否为横屏模式
@@ -29,6 +29,9 @@ class AppLibrary{
 
   ///软件需求资源
   static List schoolList = [];
+  static String adTitle = "";
+  static String adContent = "";
+  static String adImage = "";
 
   static String generateUID(){
     var dt = DateTime.now();

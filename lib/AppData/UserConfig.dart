@@ -43,6 +43,11 @@ class UserConfig{
   //自定义桌面端尺寸
   static double customWindowHeight = 648.0;
   static double customWindowWidth = 1228.0;
+  //自定义对话框
+  static double boxRadius = 6.0;
+  static List<int> normalBoxColor = [76,91,112];
+  static List<int> senseiBoxColor = [74,138,203];
+
 
   Future initUserConfig()async{
     sp = await SharedPreferences.getInstance();
@@ -75,5 +80,17 @@ class UserConfig{
     customGreetContent = sp.getString("customGreetContent");
     customWindowHeight = sp.getDouble("customWindowHeight") ?? 648;
     customWindowWidth = sp.getDouble("customWindowWidth") ?? 1228;
+
+    boxRadius = sp.getDouble("boxRadius") ?? 6.0;
+    List<String> normalBoxColors = sp.getStringList("normalBoxColor") ?? ["76","91","112"];
+    normalBoxColor = [int.parse(normalBoxColors[0]),int.parse(normalBoxColors[1]),int.parse(normalBoxColors[2])];
+    List<String> senseiBoxColors = sp.getStringList("senseiBoxColor") ??  ["74","138","203"];
+    senseiBoxColor = [int.parse(senseiBoxColors[0]),int.parse(senseiBoxColors[1]),int.parse(senseiBoxColors[2])];
+  }
+
+  void saveBoxDiy(){
+    sp.setDouble("boxRadius", boxRadius);
+    sp.setStringList("normalBoxColor", [normalBoxColor[0].toString(),normalBoxColor[1].toString(),normalBoxColor[2].toString()]);
+    sp.setStringList("senseiBoxColor", [senseiBoxColor[0].toString(),senseiBoxColor[1].toString(),senseiBoxColor[2].toString()]);
   }
 }

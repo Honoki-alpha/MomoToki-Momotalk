@@ -12,6 +12,7 @@ import 'package:motoki/Managers/ThemeManager.dart';
 import 'package:motoki/Views/Home/WindowHome.dart';
 import 'package:motoki/Views/Secondary/ThanksPage.dart';
 import 'package:motoki/Views/SettingPage/AboutAppPage.dart';
+import 'package:motoki/Views/SettingPage/AdView.dart';
 import 'package:motoki/Views/SettingPage/BackUpData.dart';
 import 'package:motoki/Views/SettingPage/DIYStudentSetting.dart';
 import 'package:motoki/Views/SettingPage/StudentSetting.dart';
@@ -102,6 +103,7 @@ class _configureState extends State<Configure>{
                     }),
                     ListTile(title: const Text("消息管理(测试)"),leading: const Icon(Icons.chat_bubble),onTap: ()=>Get.to(()=>BackUpData()),),
                     ListTile(title: const Text("感谢名单"),onTap: ()=>Get.to(()=>ThanksPage()),leading: const Icon(Icons.list),),
+                    ListTile(title: Text(AppLibrary.adTitle),onTap:()=>Get.to(()=>AdView()),leading: const Icon(Icons.star),),
                     const Divider(indent: 10,endIndent: 10,),
                     ListTile(title: const Text("软件教程"),leading: const Icon(Icons.book),onTap: ()async{
                       final Uri url = Uri.parse("https://www.yuque.com/unfriendly/cetwzc/ceaeblm4h7g9nmxk");
