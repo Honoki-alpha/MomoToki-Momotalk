@@ -1,16 +1,13 @@
-# motoki
+## MomoToki
 
-An Application to Build Momotalk Story Like Blue Archive
+此仓库为软件MomoToki的开源仓库
 
-## Getting Started
+软件使用`Flutter 3.24.0 `构建
 
-This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 其他
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+由于本人并非专业Flutter开发人员，且该软件是边学习Flutter边写的代码，所以可以说是一个十足的💩山
+
+本人将不解答关于该项目的问题，欢迎各位前来维护的老师做好心理准备（ 
