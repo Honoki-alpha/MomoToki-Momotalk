@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:bot_toast/bot_toast.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -10,6 +12,7 @@ import 'package:motoki/AppData/UserConfig.dart';
 import 'package:motoki/Managers/Students.dart';
 import 'package:motoki/Views/SettingPage/AppSetting.dart';
 import 'package:motoki/Views/SettingPage/BackUpData.dart';
+import 'package:path/path.dart';
 import 'package:universal_html/html.dart' hide File,Text;
 import 'package:motoki/Managers/ThemeManager.dart';
 import 'package:motoki/Views/Home/AndroidHome.dart';
@@ -31,6 +34,9 @@ class AnimationPage extends StatefulWidget{
 
 class _AnimationPageState extends State<AnimationPage> with TickerProviderStateMixin{
   bool isLoaded = false;
+  bool isCanLoad = true;
+  bool progress = false;
+
   @override
   void initState() {
     super.initState();
@@ -54,6 +60,7 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
               width: 300,
               child: Image.asset("assets/images/icon/start_logo.png"),),
             Spacer(),
+            TextButton(onPressed: useLocalResource, child: Text("使用离线资源进入",style: TextStyle(color: Colors.white,fontSize: 18),)),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -61,8 +68,10 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
                   if(!isLoaded){
                     var result = await Get.dialog(Inquiredialog(title: "警告",content: "急救模式下将进入消息备份界面，可进行备份消息",));
                     if (result ?? false) return;
+                    AppLibrary.isSaveMode = true;
                     Get.off(()=>BackUpData());
                   }else{
+                    AppLibrary.isSaveMode = true;
                     Get.off(()=>BackUpData());
                   }
                 }, child: Text("急救模式",style: TextStyle(color: Colors.white),)),
@@ -70,8 +79,10 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
                   if(!isLoaded){
                     var result = await Get.dialog(Inquiredialog(title: "警告",content: "进入设置页面可关闭部分配置导致的报错问题",));
                     if (result ?? false) return;
+                    AppLibrary.isSaveMode = true;
                     Get.off(()=>AppSetting());
                   }else{
+                    AppLibrary.isSaveMode = true;
                     Get.off(()=>AppSetting());
                   }
                 }, child: Text("进入设置",style: TextStyle(color: Colors.white),)),
@@ -79,8 +90,10 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
                   if(!isLoaded){
                     var result = await Get.dialog(Inquiredialog(title: "警告",content: "当前所有数据暂未加载成功，是否继续进入？（可能会造成消息和自定义学生等文件的丢失）",));
                     if (result ?? false) return;
+                    AppLibrary.isSaveMode = true;
                     Timer(const Duration(milliseconds: 300), enterHomePage);
                   }else{
+                    AppLibrary.isSaveMode = true;
                     Timer(const Duration(milliseconds: 300), enterHomePage);
                   }
                 }, child: Text("强制进入",style: TextStyle(color: Colors.white),)),
@@ -94,6 +107,31 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
     );
   }
 
+  void useLocalResource()async{
+    if(!progress){
+      BotToast.showText(text: "请先等待软件加载，约10秒");
+      return;
+    }
+    File readme = File(join(UserConfig.localPath,"README.md"));
+    if(!readme.existsSync()){
+      BotToast.showText(text: "未检测到本地资源文件，请选择");
+      await Future.delayed(const Duration(seconds: 1));
+      var path = await FilePicker.platform.getDirectoryPath(dialogTitle: "选择ReadME.md");
+      if (path == null ) return;
+      if (!File(join(path,"README.md")).existsSync()) {
+        BotToast.showText(text: "未检测到README文件，请重新选择");
+        return;
+      }
+      UserConfig().saveLocalPath(path);
+      UserConfig.localPath = path;
+
+    }
+    await loadStudentInfoFromLocal(path:UserConfig.localPath);
+    await loadAppDataFromLocal(path: UserConfig.localPath);
+    BotToast.showText(text: "载入成功，即将进入");
+    Timer(const Duration(milliseconds: 300), enterHomePage);
+  }
+  
   ///
   /// 进入主页前加载App
   ///
@@ -107,14 +145,23 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
       await loadAppDataFromNet();
     }
     // 实例化特殊学生
-    initSpecialStudent();
-    await loadJsonFiles();//获取本地聊天记录
-    await loadDIYJson();//获取DIY学生
-    await loadStudentNickName();//获取学生备注
-    await loadUsualJson();//添加常用学生
+    try {
+      initSpecialStudent();
+      await loadJsonFiles();//获取本地聊天记录
+      await loadDIYJson();//获取DIY学生
+      await loadStudentNickName();//获取学生备注
+      await loadUsualJson();//添加常用学生
+    }catch(e){
+      BotToast.showText(text: "错误问题:$e");
+      isCanLoad = false;
+    }
+
     isLoaded = true;
+    progress = true;
     // 进入主页
-    Timer(const Duration(milliseconds: 300), enterHomePage);
+    if(isCanLoad) {
+      Timer(const Duration(milliseconds: 300), enterHomePage);
+    }
   }
 
   ///
@@ -124,10 +171,12 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
   ///
   Future loadStudentInfoFromNet()async{
     var netData = await Requests().request("https://gitee.com/honoki/mtkresouce/raw/master/public/students.json");
-    if(netData == null) return;
+    if(netData == null) {
+      isCanLoad = false;
+      return;
+    }
     for(var student in netData){
       Students().studentMap[student["id"]] = EStudent.fromMap(student);
-
       int birthDayDifference = Utils().getDayDifference(student);
       //print("该学生是：${student["givenName"]["nm"]},她的差值是：${birthDayDifference}");
       if(birthDayDifference >= 0 && birthDayDifference < 5){
@@ -528,10 +577,14 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
   /// 获取学生信息-从本地
   /// 并计算出学生的生日差值导入到生日列表
   ///
-  Future loadStudentInfoFromLocal()async{
-    File students = File(Files().joinAppPath("Resources","students.json"));
+  Future loadStudentInfoFromLocal({String? path})async{
+    String basePath = Files().joinAppPath("Resources","students.json");
+    if (path != null) basePath = join(path,"public","students.json");
+    File students = File(basePath);
     if(!students.existsSync()) {
+      BotToast.showText(text: "错误的本地资源，请重新选择或者下载");
       UserConfig.sp.setBool("applyOfflineMode", false);
+      isCanLoad = false;
       return;
     }
     for(var student in Files().jsonDecode(students.readAsStringSync())){
@@ -552,7 +605,14 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
   ///
   Future loadAppDataFromNet()async{
     dynamic resource = await Requests().request("https://gitee.com/honoki/mtkresouce/raw/master/public/appDatas.json");
-    if(resource == null) return;
+    if(resource == null){
+      isCanLoad = false;
+      return;
+    }
+    File datas = File(Files().joinAppPath("Resources","appDatas.json"));
+    if(!datas.existsSync()){
+      Requests().downloadList(datas.path, ["https://gitee.com/honoki/mtkresouce/raw/master/public/appDatas.json"]);
+    }
     AppLibrary.schoolList = resource["schoolList"];
     AppLibrary.adTitle = resource["adtitle"];
     AppLibrary.adContent = resource["adcontent"];
@@ -561,10 +621,14 @@ class _AnimationPageState extends State<AnimationPage> with TickerProviderStateM
   ///
   /// 从本地获取部分资源
   ///
-  Future loadAppDataFromLocal()async{
-    File datas = File(Files().joinAppPath("Resources","appDatas.json"));
+  Future loadAppDataFromLocal({String? path})async{
+    String basePath = Files().joinAppPath("Resources","appDatas.json");
+    if(path != null) basePath = join(path,"public","appDatas.json");
+    File datas = File(basePath);
     if(!datas.existsSync()) {
       UserConfig.sp.setBool("applyOfflineMode", false);
+      isCanLoad = false;
+      BotToast.showText(text: "错误的本地资源，请重新选择或者下载");
       return;
     }
     var resource = Files().jsonDecode(datas.readAsStringSync());

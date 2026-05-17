@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/AppData/UserConfig.dart';
 import 'package:motoki/Dialog/InquireDialog.dart';
+import 'package:motoki/Utils/WidgetUtils.dart';
 import 'package:path/path.dart';
 
 import '../../Entity/EChatTileGroup.dart';
@@ -27,7 +28,7 @@ class _BackUpDataState extends State<BackUpData> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("消息管理"),centerTitle: true,),
+      appBar: WidgetUtils().getPlatformAppBar(const Text("消息管理 ")),
       body: ListView(
         children: [
           const Text("注意事项\n1.测试阶段可能存在BUG，请谨慎使用\n2.跨机型同步可能会造成图片信息丢失\n但其余消息将正常同步\n3.在同步前请确保软件获取存储权限",textAlign: TextAlign.center,),

@@ -153,7 +153,13 @@ class _SettingState extends State<AppSetting>{
                     ListTile(
                         title: const Text("AI聊天KEY", style: TextStyle(color: Colors.blue),),
                         trailing: Text(UserConfig.aiChatKey==null?"未配置":"已配置", style: TextStyle(color:UserConfig.aiChatKey==null?Colors.red:Colors.blue)),
-                        onTap: setAIChatKey),]),
+                        onTap: setAIChatKey),
+                    ListTile(
+                        title: const Text("DeepSeek ApiKey", style: TextStyle(color: Colors.blue),),
+                        trailing: Text(UserConfig.deepSeekKey==""?"未配置":"已配置", style: TextStyle(color:UserConfig.deepSeekKey==""?Colors.red:Colors.blue)),
+                        onTap: setDeepSeekKey)
+                  ]),
+
                 ],
               )
             )
@@ -230,7 +236,7 @@ class _SettingState extends State<AppSetting>{
   }
 
   void setAIChatKey()async{
-    var result = await Get.dialog(inputDialog(false));
+    var result = await Get.dialog(inputDialog("请配置ApiKey",UserConfig.aiChatKey??""));
     if(result == null) return;
     UserConfig.sp.setString("aiChatKey", result);
     setState(() {
@@ -238,8 +244,17 @@ class _SettingState extends State<AppSetting>{
     });
   }
 
+  void setDeepSeekKey()async{
+    var result = await Get.dialog(inputDialog("请输入DeepSeekAPi",UserConfig.deepSeekKey??""));
+    if(result == null) return;
+    UserConfig.sp.setString("deepSeekKey", result);
+    setState(() {
+      UserConfig.deepSeekKey = result;
+    });
+  }
+
   void setAIChatUrl()async{
-    var result = await Get.dialog(inputDialog(true));
+    var result = await Get.dialog(inputDialog("请输入Host",UserConfig.aiChatUrl??""));
     if(result == null || result=="") {
       UserConfig.sp.setString("aiChatUrl", "");
     }else{
@@ -252,11 +267,10 @@ class _SettingState extends State<AppSetting>{
   }
 
   TextEditingController sc = TextEditingController();
-  Widget inputDialog(bool isUrl){
-    sc.text = UserConfig.aiChatKey??"";
-    if(isUrl) sc.text = UserConfig.aiChatUrl??"";
+  Widget inputDialog(String initTitle,String initContent){
+    sc.text = initContent;
     return AlertDialog(
-      title: Text(isUrl?"请输入AI HOST":"请输入API KEY"),
+      title: Text(initTitle),
       content: TextField(
         controller: sc,
       ),

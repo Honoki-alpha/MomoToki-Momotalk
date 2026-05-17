@@ -1,13 +1,12 @@
-
+import 'dart:developer' as dev;
 import 'dart:math';
-
 import 'package:bot_toast/bot_toast.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:motoki/AppData/AppLibrary.dart';
 import 'package:motoki/AppData/UserConfig.dart';
-import 'package:motoki/Components/SettingIcon.dart';
-import 'package:motoki/Managers/ChatGroups.dart';
+
 import 'package:motoki/Managers/ThemeManager.dart';
 import 'package:motoki/Views/Home/WindowHome.dart';
 import 'package:motoki/Views/Secondary/ThanksPage.dart';
@@ -96,14 +95,32 @@ class _configureState extends State<Configure>{
                   children: [
                     ListTile(title: const Text("自定义学生/角色"),leading: const Icon(Icons.assignment_ind_sharp),onTap:(){
                       if(AppLibrary.appLandscapeMode){
-                        WindowHomeState.setLeftPage(const DIYStudentSetting());
+                        WindowHomeState.setRightPage(const DIYStudentSetting());
                       }else{
                         Get.to(()=>const DIYStudentSetting(),transition: Transition.rightToLeftWithFade);
                       }
                     }),
-                    ListTile(title: const Text("消息管理(测试)"),leading: const Icon(Icons.chat_bubble),onTap: ()=>Get.to(()=>BackUpData()),),
-                    ListTile(title: const Text("感谢名单"),onTap: ()=>Get.to(()=>ThanksPage()),leading: const Icon(Icons.list),),
-                    ListTile(title: Text(AppLibrary.adTitle),onTap:()=>Get.to(()=>AdView()),leading: const Icon(Icons.star),),
+                    ListTile(title: const Text("消息管理(测试)"),leading: const Icon(Icons.chat_bubble),onTap: (){
+                      if(AppLibrary.appLandscapeMode){
+                        WindowHomeState.setRightPage(BackUpData());
+                      }else{
+                        Get.to(()=>BackUpData());
+                      }
+                    },),
+                    ListTile(title: const Text("感谢名单"),onTap: (){
+                      if(AppLibrary.appLandscapeMode){
+                        WindowHomeState.setRightPage(const ThanksPage());
+                      }else{
+                        Get.to(()=>ThanksPage());
+                      }
+                    },leading: const Icon(Icons.list),),
+                    ListTile(title: Text(AppLibrary.adTitle),onTap:(){
+                      if(AppLibrary.appLandscapeMode){
+                        WindowHomeState.setRightPage(const AdView());
+                      }else{
+                        Get.to(()=>AdView(),transition: Transition.rightToLeftWithFade);
+                      }
+                    },leading: const Icon(Icons.star),),
                     const Divider(indent: 10,endIndent: 10,),
                     ListTile(title: const Text("软件教程"),leading: const Icon(Icons.book),onTap: ()async{
                       final Uri url = Uri.parse("https://www.yuque.com/unfriendly/cetwzc/ceaeblm4h7g9nmxk");
@@ -114,21 +131,21 @@ class _configureState extends State<Configure>{
                     }),
                     ListTile(title: const Text("关于软件"),leading:const Icon(Icons.apps),onTap: (){
                       if(AppLibrary.appLandscapeMode){
-                        WindowHomeState.setLeftPage(const AboutAppPage());
+                        WindowHomeState.setRightPage(const AboutAppPage());
                       }else{
                         Get.to(()=>const AboutAppPage(),transition: Transition.rightToLeftWithFade);
                       }
                     },),
                     ListTile(title: const Text("学生设置"),leading:const Icon(Icons.person_pin),onTap: (){
                       if(AppLibrary.appLandscapeMode){
-                        WindowHomeState.setLeftPage(const StudentSetting());
+                        WindowHomeState.setRightPage(const StudentSetting());
                       }else{
                         Get.to(()=>const StudentSetting(),transition: Transition.rightToLeftWithFade);
                       }
                     }),
                     ListTile(title: const Text("软件设置"),leading:const Icon(Icons.settings),onTap: ()async{
                       if(AppLibrary.appLandscapeMode){
-                        WindowHomeState.setLeftPage(const AppSetting());
+                        WindowHomeState.setRightPage(const AppSetting());
                       }else{
                         await Get.to(()=>const AppSetting(),transition: Transition.rightToLeftWithFade);
                         setState(() {});
@@ -171,6 +188,7 @@ class _configureState extends State<Configure>{
       )
     );
   }
+
 
   void getWindowsSize()async{
     Size s = await windowManager.getSize();

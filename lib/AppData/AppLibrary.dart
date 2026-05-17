@@ -13,13 +13,14 @@ enum MessageType{
 class AppLibrary{
   ///软件运行信息
   static String applicationPath = "";//软件位置
-  static String appVersion = "V0.6.40";//软件版本号
+  static String appVersion = "V0.7.0";//软件版本号
   static int requestTimes = 0;//请求次数
   static String appFontSource = "ResourceHanCN";
   static bool appLandscapeMode = true;//软件当前是否为横屏模式
   static List<MessageType> messageTypeIndex = [MessageType.nomal,MessageType.sensei,MessageType.aside,MessageType.transaside,MessageType.reply,MessageType.story];
   static EventBus globalEvent = EventBus();
   static File customSenseiAvatar = File(applicationPath);
+  static bool isSaveMode = false;
 
   static int ellipsisTime = 1500; //省略号存在时间
   static int perMessageTime = 2000; //每条消息出现时长

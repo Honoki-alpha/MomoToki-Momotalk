@@ -1,5 +1,6 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:motoki/Utils/WidgetUtils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../Apis/Requests.dart';
@@ -35,7 +36,7 @@ class ThanksPageState extends State<ThanksPage>{
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      appBar: AppBar(title: const Text("感谢名单"),),
+      appBar: WidgetUtils().getPlatformAppBar(const Text("感谢名单")),
       body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,

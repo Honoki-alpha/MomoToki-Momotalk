@@ -16,10 +16,11 @@ import '../Managers/Students.dart';
 
 
 class MessageBox extends StatefulWidget{
-  const MessageBox({super.key,required this.index, required this.isPlayMode,this.tempBox});
+  const MessageBox({super.key,required this.index, required this.isPlayMode,this.tempBox, this.delay});
   final int index;
   final bool isPlayMode;
   final Map? tempBox;
+  final Future? delay;
   @override
   State<StatefulWidget> createState() =>_messageBoxState();
 }
@@ -44,9 +45,7 @@ class _messageBoxState extends State<MessageBox>{
       timer.cancel();
     }
     scaleValue = List.filled(messageBox.messageContentList.length, 1.0);
-
   }
-
 
   @override
   Widget build(BuildContext context) {

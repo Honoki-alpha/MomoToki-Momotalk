@@ -105,7 +105,12 @@ class _messagePageState extends State<MessagePage>{
   }
 
   void initHotKey()async{
-    await hotKeyManager.register(_sendKey,keyDownHandler: (hotkey)=>sendButtonClick());
+    await hotKeyManager.register(_sendKey,keyDownHandler: (hotkey)async{
+      sendButtonClick();
+      Future.delayed(const Duration(milliseconds: 200),(){
+        input.clear();
+      });
+    });
     await hotKeyManager.register(_attachKey,keyDownHandler: (hotkey)=>addtionButtonClick());
     await hotKeyManager.register(_emojiKey,keyDownHandler: (hotkey)=>emojiButtonClick());
     await hotKeyManager.register(_imgKey,keyDownHandler: (hotkey)=>imagePickerClick());

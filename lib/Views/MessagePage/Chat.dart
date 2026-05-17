@@ -182,6 +182,9 @@ class _ChatState extends State<Chat>{
             ),
             controller: asnameC,),
           TextButton(onPressed: ()=>changeGroupButton(group,tileIndex), child: const Text("更改分组")),
+          TextButton(onPressed: (){
+            Get.back(result: {"command":"deepseek","host":host});
+          }, child: const Text("DeepSeek")),
         ],
       ),
       actions: [
@@ -284,12 +287,20 @@ class _ChatState extends State<Chat>{
             int.parse(result["unreadNum"] ?? "0"));
       });
     }
-    else if(result["command"] == "AI"){
-      if(UserConfig.aiChatKey == null || !UserConfig.aiChatKey!.startsWith("sk-")){
-        BotToast.showText(text: "未配置API KEY或KEY格式错误,可前往关于软件中查看教程");
-        return;
+    else if(result["command"] == "AI" || result["command"] == "deepseek"){
+      bool isDeepSeek = result["command"]== "deepseek";
+      if(isDeepSeek){
+        if(UserConfig.deepSeekKey == null || !UserConfig.deepSeekKey!.startsWith("sk-")){
+          BotToast.showText(text: "未配置API KEY或KEY格式错误,可前往关于软件中查看教程");
+          return;
+        }
+      }else{
+        if(UserConfig.aiChatKey == null || !UserConfig.aiChatKey!.startsWith("sk-")){
+          BotToast.showText(text: "未配置API KEY或KEY格式错误,可前往关于软件中查看教程");
+          return;
+        }
       }
-      visitAIPage(group,index);
+      visitAIPage(group,index,isDeepSeek);
     }
     ChatGroups().saveAsJson();
   }
@@ -312,7 +323,7 @@ class _ChatState extends State<Chat>{
     });
   }
 
-  void visitAIPage(EChatTileGroup group,int index)async{
+  void visitAIPage(EChatTileGroup group,int index,bool isDeepSeek)async{
     if(MessageManager.instance.aiMessages.isNotEmpty && MessageManager.instance.messageHasEdit){
       MessageManager.instance.saveAIMessages();
     }
@@ -339,10 +350,10 @@ class _ChatState extends State<Chat>{
     cancel();
     BotToast.showText(text: "成功获取消息记录(*^_^*)");
     if(!AppLibrary.appLandscapeMode){
-      Get.to(()=>const AIChatPage(),transition: Transition.rightToLeftWithFade);
+      Get.to(()=>AIChatPage(isDeepSeek:isDeepSeek),transition: Transition.rightToLeftWithFade);
     }else{
-      WindowHomeState.tempWidget = AIChatPage();
-      WindowHomeState.setRightPage(AIChatPage());
+      WindowHomeState.tempWidget = AIChatPage(isDeepSeek:isDeepSeek);
+      WindowHomeState.setRightPage(AIChatPage(isDeepSeek:isDeepSeek));
     }
     setState(() {
       tile.unreadNum = 0;

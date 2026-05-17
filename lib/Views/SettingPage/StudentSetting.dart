@@ -19,7 +19,6 @@ import 'package:motoki/Views/Secondary/SelectPage.dart';
 import 'package:motoki/Views/SettingPage/StudentNickNameSetting.dart';
 import 'package:path/path.dart';
 
-import '../../Utils/CommonFunctions.dart';
 import '../../Utils/WidgetUtils.dart';
 
 class StudentSetting extends StatefulWidget{

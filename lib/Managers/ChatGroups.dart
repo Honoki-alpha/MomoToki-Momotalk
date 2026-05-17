@@ -91,6 +91,7 @@ class ChatGroups{
     for(var group in chatTileGroups){
       maps.add(group.toMap());
     }
+    if(maps.isEmpty) return;
     JsonFileManager.instance.saveJsonFile("ChatTiles", "ChatTilesGroups.json", json.encode(maps));
   }
 }

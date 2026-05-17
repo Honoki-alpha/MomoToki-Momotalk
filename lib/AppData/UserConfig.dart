@@ -47,6 +47,8 @@ class UserConfig{
   static double boxRadius = 6.0;
   static List<int> normalBoxColor = [76,91,112];
   static List<int> senseiBoxColor = [74,138,203];
+  static String? deepSeekKey = "";
+  static String localPath = "";
 
 
   Future initUserConfig()async{
@@ -67,7 +69,7 @@ class UserConfig{
     List<String> ccolors = sp.getStringList("customAppThemeColor") ?? ["255","255","255"];
     customAppThemeColor = Color.fromRGBO(int.parse(ccolors[0]), int.parse(ccolors[1]), int.parse(ccolors[2]), 1);
     autoSaveMessage = sp.getBool("autoSaveMessage") ?? false;
-
+    deepSeekKey = sp.getString("deepSeekKey") ?? "";
     //自定义差分存储路径
     faceSaveDirectory = sp.getString("faceSaveDirectory") ?? "";
     AppLibrary.faceBasePath = AppLibrary.applicationPath;
@@ -86,11 +88,17 @@ class UserConfig{
     normalBoxColor = [int.parse(normalBoxColors[0]),int.parse(normalBoxColors[1]),int.parse(normalBoxColors[2])];
     List<String> senseiBoxColors = sp.getStringList("senseiBoxColor") ??  ["74","138","203"];
     senseiBoxColor = [int.parse(senseiBoxColors[0]),int.parse(senseiBoxColors[1]),int.parse(senseiBoxColors[2])];
+    localPath = sp.getString("localPath") ?? "";
   }
 
   void saveBoxDiy(){
     sp.setDouble("boxRadius", boxRadius);
     sp.setStringList("normalBoxColor", [normalBoxColor[0].toString(),normalBoxColor[1].toString(),normalBoxColor[2].toString()]);
     sp.setStringList("senseiBoxColor", [senseiBoxColor[0].toString(),senseiBoxColor[1].toString(),senseiBoxColor[2].toString()]);
+  }
+
+  void saveLocalPath(String value){
+    localPath = value;
+    sp.setString("localPath", value);
   }
 }

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:bot_toast/bot_toast.dart';
-import 'package:deepseek/deepseek.dart';
+import 'dart:developer' as dev;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,7 +19,8 @@ import '../../Components/StudentCircleAvatar.dart';
 import '../../Entity/EStudent.dart';
 
 class AIChatPage extends StatefulWidget{
-  const AIChatPage({super.key});
+  const AIChatPage({super.key, required this.isDeepSeek});
+  final bool isDeepSeek;
 
   @override
   State<StatefulWidget> createState() => _AiChatPage();
@@ -35,10 +36,22 @@ class _AiChatPage extends State<AIChatPage>{
 
   RxBool isWating = false.obs;
   RxBool usualVisable = false.obs;
+  var isReasoner = false.obs;
+
+  // 1. 配置 Dio 实例
+  final dio = Dio(BaseOptions(
+    baseUrl: 'https://api.deepseek.com/v1',
+    connectTimeout: const Duration(seconds: 30),
+    receiveTimeout: const Duration(seconds: 30),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization':"Bearer ${UserConfig.deepSeekKey}" , // apikey
+    },
+  ));
 
   final List<Map<String,String>> historyMessage = [{
     "role": "system",
-    "content": "You are a helpful assistant."
+    "content": "You are a student."
   }];
   final Map errorCodeMap = {
     "400 Bad_Request":"请求格式错误或无效。老师的请求参数有误，请检查请求信息中是否含有非法字符并修正请求参数。",
@@ -111,6 +124,16 @@ class _AiChatPage extends State<AIChatPage>{
                 ),
               ),
               //点击“发送”按钮效果
+
+            ],
+          ),
+          Row(
+            children: [
+              Obx(()=>Checkbox(value: isReasoner.value, onChanged: (change){
+                isReasoner.value = change ?? false;
+              })),
+              const Text("深度思考"),
+              Spacer(),
               ElevatedButton(onPressed: sendButtonClick, child:const Text("发送")),
             ],
           ),
@@ -120,9 +143,9 @@ class _AiChatPage extends State<AIChatPage>{
                   height: 120,
                   child: GridView.builder(
                       itemCount: Students().usualStudents.length,
-                      gridDelegate:const SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate:SliverGridDelegateWithFixedCrossAxisCount(
                         mainAxisSpacing: 5,
-                        crossAxisCount: 7, //每行五列
+                        crossAxisCount: AppLibrary.appLandscapeMode?9:7, //每行五列
                         childAspectRatio: 1.0, //显示区域宽高相等
                       ), itemBuilder: (context, index){
                     List studentAndSkin = Students().usualStudents[index].split("||");
@@ -157,10 +180,15 @@ class _AiChatPage extends State<AIChatPage>{
     //使用添加消息函数
     addMessage(1, input.text);
     updateHistoryMessage("user",input.text);
-    //使用获取AI消息函数
-    await getAIMessage();
-    isWating.value = false;
     input.text = "";
+    //使用获取AI消息函数
+    if(widget.isDeepSeek){
+      await getDeepSeekMessage();
+    }else{
+      await getAIMessage();
+    }
+    isWating.value = false;
+
   }
 
   Future getAIMessage()async{
@@ -189,19 +217,38 @@ class _AiChatPage extends State<AIChatPage>{
     }
   }
 
-  void updateHistoryMessage(String role,String content){
-    if(historyMessage.length < 5){
-      historyMessage.add({
-        "role":role,
-        "content":content
-      });
-    }else{
-      historyMessage.removeAt(0);
-      historyMessage.add({
-        "role":role,
-        "content":content
-      });
+  Future getDeepSeekMessage()async{
+    // 构建请求体
+    final data = {
+      "model": isReasoner.value?"deepseek-v4-pro":"deepseek-v4-flash",
+      "messages": historyMessage,
+      "stream": false
+    };
+
+    try {
+      // 发送 POST 请求
+      final response = await dio.post('/chat/completions', data: data);
+      // 解析响应
+      if (response.statusCode == 200) {
+        final answer = response.data['choices'][0]['message']['content'];
+        updateHistoryMessage("assistant", answer);//历史对话中添加上AI的回复
+        addMessage(currentStudent.id, answer);
+        refreshBottom();
+      } else {
+        addMessage(currentStudent.id, "请求错误，错误原因可能为:\n1.Api Key填写错误；\n2.Api Key余额不足请前往deepseek官网充值\n3.网络问题");
+        refreshBottom();
+      }
+    } catch (e) {
+      addMessage(currentStudent.id, "请求错误，错误原因可能为:\n1.Api Key填写错误；\n2.Api Key余额不足请前往deepseek官网充值\n3.网络问题");
+      refreshBottom();
     }
+  }
+
+  void updateHistoryMessage(String role,String content){
+    historyMessage.add({
+      "role":role,
+      "content":content
+    });
   }
 
   void refreshBottom(){

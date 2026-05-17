@@ -122,6 +122,7 @@ class _homeState extends State<AndroidHome>{
           floatingActionButton: SpeedDial(
             overlayColor: Colors.black45,
             direction: SpeedDialDirection.up,
+            visible: !AppLibrary.isSaveMode,
             children: [
               SpeedDialChild(child: const Icon(Icons.add),onTap: addChatStudent,label: "添加学生"),
               SpeedDialChild(child: const Icon(Icons.add_road),onTap: addGroupDialog,label: "添加分组"),

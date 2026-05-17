@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dio/dio.dart';
+import 'package:motoki/AppData/UserConfig.dart';
 import 'package:path/path.dart';
 
 enum Methods {
@@ -24,7 +25,7 @@ class Requests{
         headers: {
           //'Content-Type': 'application/json',
           //'Accept': 'application/json',
-          'Authorization': 'Bearer sk-6e71dfdeedf348069e9d1d2d405acfc8'
+          'Authorization': 'Bearer ${UserConfig.deepSeekKey}'
         },
         validateStatus: (status) {
           return true; // 这样就不会因为状态码而抛出异常，我们可以自己处理
